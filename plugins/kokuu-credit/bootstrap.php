@@ -1020,30 +1020,38 @@ return function ($plugin) {
      *   此刻视图还没开始输出。
      */
     app(\Blessing\Filter::class)->add('grid:admin.index', function ($grid) {
-        // 先算好数据挂到视图上，两个 widget 各自读，不重复查库
+        // 先算好数据挂到视图上，积分卡与流水都读它，不重复查库
         View::share('kcDash', kokuu_credit_dashboard_data(auth()->user()));
 
-        return [
-            'layout' => [
-                ['md-7', 'md-5'],
-            ],
-            'widgets' => [
-                // ⚠️⚠️ 三层嵌套，别少写一层！
-                //   shared/grid.twig 是：
-                //     for row in grid.widgets        <- 行
-                //       for col in row              <- 列
-                //         for widget in col        <- 挂在列里的 widget
-                //   core 原值[[usage, notification], [chart]] 就是这个形状：
-                //     行0 = [ 列0=[usage], 列1=[notification] ]
-                //     行1 = [ 列0=[chart] ]
-                //   我最初写成 [[w1, w2]]（行0 里只有 1 列，列里塞 2 个 widget），
-                //   结果第二个 widget 挤在第一列里上下堆叠，
-                //   截图上表现为「卡片全纵向排开」，而layout 的 md-5 根本没被消费。
-                [
-                    ['KokuuStudio\\KokuuCredit::dashboard.credit'],
-                ],
-            ],
+        /*
+         * ⚠️ 这里是**追加**，不是替换（2026-11-03 修正）
+         *
+         * 历史问题：早期实现直接 return 一个只含积分卡的新 grid，
+         * 把内核原生的注册人数 / 角色数 / 材质数 / 存储空间 / 图表
+         * 全部挤掉了。用户反馈「管理后台仪表盘被积分管理接管了，
+         * 其实我还想看原来那个注册人数什么的」。
+         *
+         * 现在做法：原样保留内核的 layout/widgets，只在第一行
+         * 追加一列放积分卡。内核将来调整 grid 结构也能自动跟随。
+         *
+         * 内核原始结构（AdminController::index）：
+         *   layout  = [ ['md-6','md-6'] ]
+         *   widgets = [ [ [usage, notification], [chart] ] ]
+         *   即：1 行 2 列；列0 挂 usage+notification，列1 挂 chart
+         *
+         * 追加后：1 行 3 列，列2 放积分卡，layout 相应均分。
+         */
+        if (! isset($grid['widgets'][0]) || ! is_array($grid['widgets'][0])) {
+            // grid 结构异常时退回原样，绝不因为插件把后台搞坏
+            return $grid;
+        }
+
+        $grid['layout'] = [
+            ['md-4', 'md-4', 'md-4'],
         ];
+        $grid['widgets'][0][] = ['KokuuStudio\\KokuuCredit::dashboard.credit'];
+
+        return $grid;
     });
 
     /*

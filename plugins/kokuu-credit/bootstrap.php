@@ -298,14 +298,15 @@ if (! function_exists('kokuu_credit_source_labels')) {
      */
     function kokuu_credit_source_labels(): array
     {
+        /*
+         * 只保留当前仍在产生流水的来源。
+         * 论坛/兑换码/兑换等已下线，对应的 thread/reply/liked/
+         * exchange/coupon_* 不再列出（历史记录已在 2026-11-03 清理）。
+         */
         return [
-            'thread' => '发起主题',
-            'reply'  => '回复帖子',
-            'liked'  => '帖子被赞',
-            'sign'   => '每日签到',
-            'manual' => '管理员手动',
+            'sign'    => '每日签到',
+            'manual'  => '管理员手动',
             'lottery' => '抽奖',
-            'legacy' => '历史补录',
         ];
     }
 }
@@ -416,19 +417,79 @@ return function ($plugin) {
         // ---- 流水列表（后台 AJAX） ----
         $router->get('plugin/kokuu-credit/api/ledger', function (\Illuminate\Http\Request $request) {
             $user = $request->user();
-            abort_if (! $user || $user->permission < User::ADMIN, 403);
+            abort_if(! $user || $user->permission < User::ADMIN, 403);
 
             kokuu_credit_ensure_tables();
 
-            $limit = max(1, min(200, (int) $request->query('limit', 50)));
-            $uid   = (int) $request->query('uid', 0);
+            /*
+             * 支持多维筛选 + 分页（2026-11-03 重做）
+             *
+             * 旧版只支持 uid + limit，管理端只能一直往下翻，无法定位。
+             * 现在支持：
+             *   q      关键词（昵称 / 邮箱 / 事件ID / 备注 模糊匹配）
+             *   uid    指定用户
+             *   source 来源（sign / manual / lottery ...）
+             *   from   起始日期（Y-m-d，含）
+             *   to     结束日期（Y-m-d，含）
+             *   page   页码（1 起）
+             *   per    每页条数（默认 20，上限 100）
+             *
+             * 返回 total / page / pages，供前端分页。
+             */
+            $per    = max(1, min(100, (int) $request->query('per', 20)));
+            $page   = max(1, (int) $request->query('page', 1));
+            $uid    = (int) $request->query('uid', 0);
+            $q      = trim((string) $request->query('q', ''));
+            $source = trim((string) $request->query('source', ''));
+            $from   = trim((string) $request->query('from', ''));
+            $to     = trim((string) $request->query('to', ''));
 
-            $query = DB::table('credit_ledger')->orderByDesc('id')->limit($limit);
-            if ($uid > 0) {
-                $query->where('uid', $uid);
+            $build = function () use ($uid, $q, $source, $from, $to) {
+                $query = DB::table('credit_ledger');
+
+                if ($uid > 0) {
+                    $query->where('uid', $uid);
+                }
+                if ($source !== '') {
+                    $query->where('source', $source);
+                }
+                if ($from !== '' && preg_match('/^\d{4}-\d{2}-\d{2}$/', $from)) {
+                    $query->where('created_at', '>=', $from.' 00:00:00');
+                }
+                if ($to !== '' && preg_match('/^\d{4}-\d{2}-\d{2}$/', $to)) {
+                    $query->where('created_at', '<=', $to.' 23:59:59');
+                }
+                if ($q !== '') {
+                    // 关键词同时匹配 event_id / note / 以及关联用户的昵称邮箱
+                    $matchedUids = User::where('nickname', 'like', '%'.$q.'%')
+                        ->orWhere('email', 'like', '%'.$q.'%')
+                        ->pluck('uid')->all();
+
+                    $query->where(function ($w) use ($q, $matchedUids) {
+                        $w->where('event_id', 'like', '%'.$q.'%')
+                          ->orWhere('note', 'like', '%'.$q.'%');
+                        if ($matchedUids) {
+                            $w->orWhereIn('uid', $matchedUids);
+                        }
+                    });
+                }
+
+                return $query;
+            };
+
+            $total = (int) $build()->count();
+            $pages = max(1, (int) ceil($total / $per));
+            if ($page > $pages) {
+                $page = $pages;
             }
+            $offset = ($page - 1) * $per;
 
-            $rows = $query->get();
+            $rows = $build()
+                ->orderByDesc('id')
+                ->offset($offset)
+                ->limit($per)
+                ->get();
+
             $nicknames = [];
             $uids = $rows->pluck('uid')->filter(fn ($v) => $v > 0)->unique()->all();
             if ($uids) {
@@ -439,20 +500,41 @@ return function ($plugin) {
                 'code' => 0,
                 'items' => $rows->map(function ($r) use ($nicknames) {
                     return [
-                        'id'          => (int) $r->id,
-                        'event_id'    => $r->event_id,
-                        'uid'         => (int) $r->uid,
-                        'nickname'    => $nicknames[$r->uid] ?? ($r->uid > 0 ? '已注销' : '—'),
-                        'delta'       => (int) $r->delta,
+                        'id'            => (int) $r->id,
+                        'event_id'      => $r->event_id,
+                        'uid'           => (int) $r->uid,
+                        'nickname'      => $nicknames[$r->uid] ?? ($r->uid > 0 ? '已注销' : '—'),
+                        'delta'         => (int) $r->delta,
                         'balance_after' => (int) $r->balance_after,
-                        'source'      => $r->source,
-                        'source_label' => kokuu_credit_source_label($r->source),
-                        'note'        => $r->note,
-                        'created_at'  => (string) $r->created_at,
+                        'source'        => $r->source,
+                        'source_label'  => kokuu_credit_source_label($r->source),
+                        'note'          => $r->note,
+                        'created_at'    => (string) $r->created_at,
                     ];
                 })->all(),
+                'total' => $total,
+                'page'  => $page,
+                'pages' => $pages,
+                'per'   => $per,
                 'stats' => kokuu_credit_stats(),
             ]);
+        })->middleware(['web']);
+
+        // ---- 来源列表（供筛选下拉）----
+        $router->get('plugin/kokuu-credit/api/ledger/sources', function (\Illuminate\Http\Request $request) {
+            $user = $request->user();
+            abort_if(! $user || $user->permission < User::ADMIN, 403);
+
+            kokuu_credit_ensure_tables();
+            $used = DB::table('credit_ledger')->select('source')->distinct()->pluck('source')->all();
+            $labels = kokuu_credit_source_labels();
+
+            $out = [];
+            foreach ($used as $src) {
+                $out[] = ['value' => $src, 'label' => $labels[$src] ?? $src];
+            }
+
+            return response()->json(['code' => 0, 'data' => $out]);
         })->middleware(['web']);
 
         // ---- 用户搜索（调分面板用，管理员 AJAX） ----

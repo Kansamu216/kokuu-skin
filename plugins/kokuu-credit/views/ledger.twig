@@ -1,36 +1,34 @@
 {#
-  积分流水
+  积分流水（管理后台）
 
-  用户原话：「我对并不需要那么复杂的记录，或者把这个积分流水的侧边栏折叠起来」
+  【2026-11-03 重做】用户反馈：「这个积分流水的页面我现在感觉不合理，
+  没有查询，只是一直在排，很不好用」
 
-  → 两个诉求合并处理：
-    1. **去掉技术字段**。变动后余额 / 事件 ID / 备注这三列是给
-       排查幂等问题用的，管理员一年也用不到两次，普通用户完全无意义。
-       默认视图只留「时间 / 来源 / 变动」。
-    2. **技术信息折叠**。剩下的余额、事件 ID、备注、所属用户
-       放进每条记录自己的 `<details>` 里，默认收起——
-       这就是「折叠起来」的落点，而不是折叠整个侧边栏
-       （侧边栏是 AdminLTE 骨架，折叠它会影响所有页面）。
+  旧版问题：
+    · 只有一个折叠的「按用户筛选」UID 输入框
+    · 列表固定拉 50 条，无分页
+    · 无法按来源/时间/关键词定位
 
-  另外把表格换成了卡片流：7 列表格在 390px 移动端必须横向滚动，
-  而积分变动本身就是「一条一条的事」，纵向卡片天然可读。
+  新版：
+    · 顶部一排查询条件：关键词、来源、日期范围
+    · 查询栏常驻展开（这是管理工具的首要操作，不该藏起来）
+    · 分页：显示总数 / 页码 / 上一页下一页
+    · 「重置」一键清空条件
 
-  数据由 bootstrap.php 的路由用
-  View::share('ledgerStats'|'sourceLabels', ...) 挂进来；
-  列表本身走 /plugin/kokuu-credit/api/ledger 异步拉。
+  数据由以下接口提供：
+    GET /plugin/kokuu-credit/api/ledger
+        ?q=&source=&uid=&from=&to=&page=&per=
+    GET /plugin/kokuu-credit/api/ledger/sources   （筛选下拉的选项）
 
-  ⚠️ 顶部「用户积分操作」面板是管理员调分入口（用户需求：
-     「给管理员加一个可以操作所有用户积分的功能」）。
-     它**刻意放在同一个页面**而不是单独一页 —— 调完分立刻能在
-     下方流水里看到那条 manual 记录，不用来回跳。
-     面板默认收起：它是低频操作，而流水是高频浏览。
+  调分面板仍保留在最上方（低频操作，默认收起）。
 #}
 {% extends 'user.base.twig' %}
 
 {% block content %}
 <div class="container kcPage"
      data-users-url="{{ url('/plugin/kokuu-credit/api/users') }}"
-     data-adjust-url="{{ url('/plugin/kokuu-credit/api/adjust') }}">
+     data-adjust-url="{{ url('/plugin/kokuu-credit/api/adjust') }}"
+     data-sources-url="{{ url('/plugin/kokuu-credit/api/ledger/sources') }}">
 
   {# ---- 管理员调分面板（默认收起） ---- #}
   <details class="kcPage-tools kcAdj" id="kc-adj">
@@ -41,11 +39,9 @@
     <div class="kcPage-tools-body">
       <p class="help-text">
         余额改动<strong>一定</strong>会写进下方流水（来源「管理员手动」），
-        并记录操作人。扣分<strong>不受底仓限制</strong>（底仓只保护用户自己消费），
-        但不允许扣成负数。
+        并记录操作人。扣分<strong>不受底仓限制</strong>，但不允许扣成负数。
       </p>
 
-      {# ---- 1. 选用户 ---- #}
       <div class="kcAdj-row">
         <label class="kcPage-label" for="kc-adj-q">搜索用户</label>
         <input class="kcPage-input" type="text" id="kc-adj-q"
@@ -54,7 +50,6 @@
       </div>
       <div id="kc-adj-results" class="kcAdj-results" hidden></div>
 
-      {# ---- 2. 选中的人 ---- #}
       <div class="kcAdj-picked" id="kc-adj-picked" hidden>
         <div class="kcAdj-picked-name">
           <span id="kc-adj-picked-nickname"></span>
@@ -66,7 +61,6 @@
         </div>
       </div>
 
-      {# ---- 3. 操作 ---- #}
       <div class="kcAdj-form" id="kc-adj-form" hidden>
         <div class="kcAdj-row">
           <label class="kcPage-label">操作</label>
@@ -102,7 +96,7 @@
         积分流水
       </h2>
       <p class="kcPage-sub">
-        所有积分变动记录。全站只有一个余额字段 users.score。
+        所有积分变动记录。可按关键词、来源、时间筛选。
       </p>
     </div>
     <button id="kc-refresh" class="kcPage-btn" type="button">
@@ -111,7 +105,7 @@
     </button>
   </header>
 
-  {# ---- 三个概览数字 ---- #}
+  {# ---- 概览数字 ---- #}
   <div class="kcPage-stats">
     <div class="kcPage-stat">
       <span class="kcPage-stat-num" id="kc-stat-total">{{ stats.total }}</span>
@@ -127,26 +121,57 @@
     </div>
   </div>
 
-  {#
-    UID 筛选也收进折叠区。
-    它是管理员工具（排查某个用户的加分），不是浏览流水时的常用操作，
-    默认展开反而抢注意力。
-  #}
-  <details class="kcPage-tools">
-    <summary class="kcPage-tools-sum">
-      <i class="fas fa-sliders"></i>
-      按用户筛选
-    </summary>
-    <div class="kcPage-tools-body">
-      <label class="kcPage-label" for="kc-uid">皮肤站 UID</label>
-      <input class="kcPage-input" type="number" id="kc-uid" min="1" placeholder="留空看全部用户">
-      <button class="kcPage-btn kcPage-btn--go" id="kc-uid-go" type="button">筛选</button>
+  {# ---- 查询栏（常驻，不折叠） ---- #}
+  <form class="kcQuery" id="kc-query" autocomplete="off">
+    <div class="kcQuery-row">
+      <div class="kcQuery-field kcQuery-field--grow">
+        <label class="kcPage-label" for="kc-q">关键词</label>
+        <input class="kcPage-input" type="text" id="kc-q"
+               placeholder="用户昵称 / 邮箱 / 事件ID / 备注">
+      </div>
+
+      <div class="kcQuery-field">
+        <label class="kcPage-label" for="kc-source">来源</label>
+        <select class="kcPage-input" id="kc-source">
+          <option value="">全部来源</option>
+        </select>
+      </div>
+
+      <div class="kcQuery-field">
+        <label class="kcPage-label" for="kc-from">起始日期</label>
+        <input class="kcPage-input" type="date" id="kc-from">
+      </div>
+
+      <div class="kcQuery-field">
+        <label class="kcPage-label" for="kc-to">结束日期</label>
+        <input class="kcPage-input" type="date" id="kc-to">
+      </div>
+
+      <div class="kcQuery-actions">
+        <button class="kcPage-btn kcPage-btn--go" id="kc-search" type="submit">
+          <i class="fas fa-magnifying-glass"></i> 查询
+        </button>
+        <button class="kcPage-btn" id="kc-reset" type="button">重置</button>
+      </div>
     </div>
-  </details>
+  </form>
+
+  {# ---- 查询结果计数 ---- #}
+  <div class="kcQuery-meta" id="kc-query-meta" hidden>
+    共 <b id="kc-total">0</b> 条记录
+  </div>
 
   {# ---- 列表 ---- #}
   <div id="kc-list" data-url="{{ url('/plugin/kokuu-credit/api/ledger') }}">
     <div class="kcPage-empty">加载中…</div>
   </div>
+
+  {# ---- 分页 ---- #}
+  <nav class="kcPager" id="kc-pager" hidden>
+    <button class="kcPage-btn" id="kc-prev" type="button">上一页</button>
+    <span class="kcPager-info" id="kc-pager-info"></span>
+    <button class="kcPage-btn" id="kc-next" type="button">下一页</button>
+  </nav>
 </div>
 {% endblock %}
+

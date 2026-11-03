@@ -32,6 +32,28 @@ use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\View;
 
+/*
+ * ---- Core/Host 分层：服务工厂 ----
+ *
+ * 积分核心逻辑已抽到 src/Core（可移植，零宿主依赖）+
+ * src/Host（BlessingSkin 适配）。下面的 kokuu_credit_* 辅助函数
+ * 保留原签名，内部委托给 Core，保持向后兼容。
+ */
+if (! function_exists('kokuu_credit_service')) {
+    function kokuu_credit_service(): \Kokuu\Credit\Core\CreditService
+    {
+        static $svc = null;
+        if ($svc === null) {
+            $svc = new \Kokuu\Credit\Core\CreditService(
+                new \Kokuu\Credit\Host\DbLedgerRepository(),
+                new \Kokuu\Credit\Host\BsAccountRepository()
+            );
+        }
+
+        return $svc;
+    }
+}
+
 if (! function_exists('kokuu_credit_config')) {
     /**
      * 读取插件配置（存 options 表，键前缀 kokuu_credit_）。
@@ -104,54 +126,21 @@ if (! function_exists('kokuu_credit_ensure_tables')) {
 
 if (! function_exists('kokuu_credit_ledger')) {
     /**
-     * 写一条流水并原子累加余额。
+     * 写一条流水并原子累加余额（委托给 Core\CreditService）。
      *
-     * 全程在事务里，且余额用 increment（数据库层自增）而非「读出来 + 完写回」，
-     * 避免两个并发请求同时读到同一个旧余额、其中一个的增量被覆盖。
+     * 保留此函数是为了向后兼容：抽奖插件、管理端路由等仍调用它。
+     * 真正的实现已抽到 src/Core/CreditService + src/Host/DbLedgerRepository，
+     * 那段代码可脱离 BlessingSkin 在任意 PHP 项目复用。
      *
-     * event_id唯一索引冲突时返回false，表示这个事件已处理过（幂等命中）。
+     * @return bool true=写入成功；false=event_id 已存在（幂等命中）
      */
     function kokuu_credit_ledger(int $uid, int $delta, string $source, string $eventId, ?string $ref = null, ?string $note = null): bool
     {
         kokuu_credit_ensure_tables();
 
-        return DB::transaction(function () use ($uid, $delta, $source, $eventId, $ref, $note) {
-            // 先占坑：event_id 冲突就说明处理过了，直接判定为幂等命中
-            try {
-                DB::table('credit_ledger')->insert([
-                    'event_id'       => $eventId,
-                    'uid'            => $uid,
-                    'delta'          => 0,   // 下面拿到新余额后再回填，先占位保证唯一键生效
-                    'balance_after'  => 0,
-                    'source'         => $source,
-                    'ref'            => $ref,
-                    'note'           => $note,
-                    'created_at'     => now(),
-                    'updated_at'     => now(),
-                ]);
-            } catch (\Illuminate\Database\QueryException $e) {
-                // 1062 = duplicate entry，即 event_id 已存在 → 幂等命中
-                if ($e->getCode() === '23000' || $e->getCode() === 23000) {
-                    return false;
-                }
-                throw $e;
-            }
+        $result = kokuu_credit_service()->record($uid, $delta, $source, $eventId, $ref, $note);
 
-            $ledgerId = DB::table('credit_ledger')
-                ->where('event_id', $eventId)
-                ->value('id');
-
-            // 原子自增，再读回新余额
-            DB::table('users')->where('uid', $uid)->increment('score', $delta);
-            $balance = (int) DB::table('users')->where('uid', $uid)->value('score');
-
-            DB::table('credit_ledger')->where('id', $ledgerId)->update([
-                'delta'         => $delta,
-                'balance_after' => $balance,
-            ]);
-
-            return true;
-        });
+        return $result->written;
     }
 }
 

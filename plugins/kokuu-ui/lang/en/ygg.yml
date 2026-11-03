@@ -1,0 +1,11 @@
+# English fallback for the Yggdrasil card (see zh_CN/ygg.yml for rationale).
+# Launcher names (HMCL / PCL) are proper nouns — never translate them.
+
+eyebrow: Yggdrasil API
+title: Add to your launcher in one drag
+
+urlLabel: Verification address
+
+button: Drag this button into your launcher
+
+noteLabel: Only supports

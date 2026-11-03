@@ -1,0 +1,56 @@
+{#
+ # ============================================================================
+ #  Yggdrasil API「启动器配置」卡片 —— Apple 扁平化（第二版）
+ # ----------------------------------------------------------------------------
+ #  作用：这是一个**视图覆盖**，本文件不属于 yggdrasil-api 插件，
+ #        而是由 kokuu-ui 在 bootstrap 里通过 View 工厂的 replaceNamespace()
+ #        挂到 `Yggdrasil::dnd` 这个视图名上（见 bootstrap.php）。
+ #
+ #  第二版改了什么（第一版的实测反馈）：
+ #    ① 地址裸放着不知道是什么 → 加「本站验证地址」标签
+ #    ② 按钮不够醒目→ 加高、加大字号、加内高光
+ #    ③ 「仅支持 HMCL 与 PCL」写成一行居中小字，排列松散 →
+ #       拆成「前缀 + 两个胶囊徽章」，成为一组视觉单元
+ #
+ #  设计取舍：**只有一个动作** —— 把按钮拖进启动器。
+ #  早期版本写过「三步清单 + 说明段落」，实测是冗余的：
+ #  这张卡片的唯一用户动作就是拖拽，按钮本身就是说明书。
+ #
+ #  ⚠️ 必须保留的契约（否则插件自带的 assets/dnd.js 会失效）：
+ #   - 按钮 id 必须是 ygg-dnd-button（JS 用它做点击复制）
+ #   - 必须保留 data-clipboard-text（点击复制与拖拽写入都读它）
+ #   拖拽写入的格式 `authlib-injector:yggdrasil-server:<url>` 由 dnd.js 拼装，
+ #  视图这边不用也不该管。
+ # ============================================================================
+#}
+
+<section class="kyCard kyCard--slim">
+
+  <header class="kyCard-head">
+    <span class="kyCard-eyebrow">
+      <i class="fas fa-cubes"></i>{{ trans('KokuuStudio\\KokuuUi::ygg.eyebrow') }}
+    </span>
+  </header>
+
+  <h3 class="kyCard-title">{{ trans('KokuuStudio\\KokuuUi::ygg.title') }}</h3>
+
+  {# ---- 地址块：标签说明「这是什么」，等宽 URL 方便核对/手填 ---- #}
+  <div class="kyCard-url">
+    <span class="kyCard-url-label">{{ trans('KokuuStudio\\KokuuUi::ygg.urlLabel') }}</span>
+    <code class="kyCard-url-code">{{ url('/api/yggdrasil') }}</code>
+  </div>
+
+  {# ---- 主按钮：卡片上唯一的动作。做大、做出"实体感"，暗示可以拖走 ---- #}
+  <button type="button" id="ygg-dnd-button" class="kyCard-drag"
+          draggable="true" data-clipboard-text="{{ url('/api/yggdrasil') }}">
+    <i class="fas fa-hand-pointer"></i>{{ trans('KokuuStudio\\KokuuUi::ygg.button') }}
+  </button>
+
+  {# ---- 兼容性：前缀 + 两个胶囊徽章。徽章化之后不再是一句松散的说明 ---- #}
+  <div class="kyCard-note">
+    <span class="kyCard-note-label">{{ trans('KokuuStudio\\KokuuUi::ygg.noteLabel') }}</span>
+    <span class="kyCard-chip">HMCL</span>
+    <span class="kyCard-chip">PCL</span>
+  </div>
+
+</section>

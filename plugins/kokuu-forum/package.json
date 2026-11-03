@@ -1,0 +1,15 @@
+{
+  "name": "kokuu-forum",
+  "version": "1.2.0",
+  "title": "KokuuSkin 论坛聚合",
+  "description": "把 Flarum 论坛的最新讨论以卡片形式嵌进皮肤站仪表盘，接管内核的公告卡片（改为置顶指定帖子实现），并显示每个帖子最近 1-2 条评论摘要。服务端代理 Flarum API 以规避 CORS，评论用单次批量请求抓取（不随帖子数增长）；评论正文在服务端洗成纯文本，避免 XSS。论坛故障不影响皮肤站本身。",
+  "author": "KokuuStudio",
+  "namespace": "KokuuStudio\\KokuuForum",
+  "config": "config.blade.php",
+  "require": {
+    "kokuu-core": "^1.0.0",
+    "kokuu-home": "^1.0.0",
+    "blessing-skin-server": "^6.0",
+    "php": ">=8.1"
+  }
+}

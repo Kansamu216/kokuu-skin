@@ -1,0 +1,15 @@
+{
+  "name": "kokuu-quote",
+  "version": "1.0.0",
+  "title": "KokuuSkin 提瓦特一言",
+  "description": "在后台顶栏右侧展示一条提瓦特大陆的短句，点击即可换一句。内置挪德卡莱「空月之歌」台词 40 条，可在插件配置页中自由增删。依赖 kokuu-home 与 kokuu-ui 以融入站点主题。台词著作权归上海米哈游天命科技有限公司所有，仅作个人学习与非商业展示。",
+  "author": "KokuuStudio",
+  "namespace": "KokuuStudio\\KokuuQuote",
+  "config": "config.blade.php",
+  "require": {
+    "kokuu-home": "^1.0.0",
+    "kokuu-ui": "^1.0.0",
+    "blessing-skin-server": "^6.0",
+    "php": ">=8.1"
+  }
+}

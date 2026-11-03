@@ -1,0 +1,323 @@
+/* =========================================================
+   提瓦特一言（kokuu-quote）· 样式 v5
+   ------------------------------------------------------------
+   v5 的核心变化：**响应式重设计**，不再是「小屏就藏起来」。
+
+   [v4 的问题]
+   v4 在 max-width:640px 里写了 `.kq-body { display: none }`，
+   把台词整个藏了，只留下元素点 + 刷新图标 —— 手机上看起来就是
+   「一个小方块」，用户完全看不到内容。隐藏不是响应式，是功能缺失。
+
+   [v5 的方案]
+   - 桌面（>900px）：维持顶栏右侧单行胶囊（原来的形态）
+   - 移动（≤900px）：整条脱离顶栏，**固定在页面底部**做浮层卡片，
+     带元素徽标 + 完整台词 + 出处。顶栏本来就不够宽，硬塞只会挤成竖排。
+
+   [为什么不改HTML 结构]
+   一言是 quote.js 动态创建的 <li>，插到顶栏 .navbar-nav.ml-auto 里。
+   移动端要换位置，纯 CSS 就能做到（position: fixed 脱离文档流），
+   不用改 JS 的挂载逻辑，也不会影响桌面端。
+   ========================================================= */
+
+/* =========================================================
+   一、共用
+   ========================================================= */
+.kq-item {
+  --kq-el: #8B7FD4;                /* 元素色，由 teyvat.css 按 data-el 覆盖 */
+  --kq-pad: 6px 11px 6px 12px;
+}
+
+.kq-text { margin: 0; }
+
+.kq-refresh {
+  flex: none;
+  font-size: 12px; line-height: 1;
+  color: inherit;
+  background: transparent;
+  border: none;
+  border-radius: 6px;
+  padding: 3px 4px;
+  cursor: pointer;
+  opacity: .4;
+  transition: opacity .2s, transform .35s cubic-bezier(.16,1,.3,1);
+}
+.kq-refresh:hover { opacity: .9; }
+.kq-refresh:active { transform: rotate(180deg); }
+
+/* 换一句时的淡入 */
+@keyframes kqSwap {
+  from { opacity: 0; transform: translateY(4px); }
+  to   { opacity: 1; transform: none; }
+}
+.kq-swap .kq-text,
+.kq-swap .kq-by,
+.kq-swap .kq-el-badge { animation: kqSwap .45s cubic-bezier(.16,1,.3,1) both; }
+.kq-swap .kq-by { animation-delay: .05s; }
+
+/* =========================================================
+   二、桌面端：顶栏右侧单行胶囊
+   ========================================================= */
+.kq-item .kq-top {
+  position: relative;             /* 供 ::after 光晕定位 */
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  max-width: 380px;
+  padding: var(--kq-pad);
+  border-radius: 999px;
+  color: var(--a-text-2, #6E6E73) !important;
+  background: rgba(0, 0, 0, .022);
+  border: 1px solid var(--a-sep, rgba(60,60,67,.11));
+  cursor: pointer;
+  overflow: hidden;/* 统一裁剪内部所有内容 */
+  transition: background .22s cubic-bezier(.4,0,.2,1),
+              box-shadow .22s,
+              border-color .22s;
+}
+.kq-item .kq-top:hover {
+  background: rgba(0, 0, 0, .05);
+  border-color: color-mix(in srgb, var(--kq-el) 40%, transparent);
+  box-shadow: 0 2px 10px rgba(43, 31, 82, .08);
+}
+
+/* 元素色小方块（呼应七元素） */
+.kq-item .kq-top::before {
+  content: "";
+  flex: none;
+  width: 6px; height: 6px;
+  border-radius: 1px;
+  background: var(--kq-el);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--kq-el) 22%, transparent);
+  transition: background .3s;
+}
+
+/* 台词 + 出处 合并容器：作为一个整体被截断 */
+.kq-body {
+  display: flex;
+  align-items: baseline;
+  gap: 7px;
+  min-width: 0;                    /* 允许在 flex 中收缩 */
+  overflow: hidden;
+}
+.kq-item .kq-text {
+  flex: 0 1 auto;
+  min-width: 0;
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 1.5;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+/* 出处：始终在胶囊内，贴右显示，不可溢出 */
+.kq-item .kq-by {
+  flex: none;
+  font-size: 11.5px;
+  color: var(--a-text-3, #A1A1A6);
+  white-space: nowrap;
+  padding-left: 7px;
+  border-left: 1px solid var(--a-sep, rgba(60,60,67,.13));
+}
+
+/* 桌面端不显示元素名徽标（只有小方块，点一下能换句就够） */
+.kq-el-badge { display: none !important; }
+
+/* =========================================================
+   三、夜间态（Apple Dark）
+   ========================================================= */
+body.dark-mode .kq-item .kq-top {
+  background: rgba(255, 255, 255, .06);
+  border-color: rgba(84, 84, 88, .5);
+  color: var(--a-text-2, #AEAEB2) !important;
+}
+body.dark-mode .kq-item .kq-top:hover { background: rgba(255, 255, 255, .1); }
+body.dark-mode .kq-item .kq-by {
+  color: var(--a-text-3, #7C7C80);
+  border-left-color: rgba(84, 84, 88, .5);
+}
+
+/* =========================================================
+   四、响应式
+   ========================================================= */
+
+/* ---- 中屏：只缩窄，不改形态 ---- */
+@media (max-width: 1100px) {
+  .kq-item .kq-top { max-width: 260px; }
+  .kq-item .kq-by { display: none; }   /* 中屏隐藏出处，只留台词 */
+}
+
+/* ---- 移动端：脱离顶栏，固定到页面底部 ----
+ *
+ * 为什么不再塞进顶栏：
+ *   内核顶栏是 navbar-expand（**无断点后缀**），所有宽度都保持展开态。
+ *   窄屏下顶栏里的按钮本来就是勉强横排的，再加一条一言胶囊，
+ *   结果就是 kokuu-home 反馈的「按钮变成竖的」——一言是帮凶之一。
+ *   移出去顶栏就松了，一言自己也终于有地方显示完整内容。
+ *
+ * ⚠️⚠️ 为什么必须先把 <li> 移出 .navbar-nav（v6 起由 JS 负责）：
+ *   只要一言还留在顶栏 DOM 里，它的任何祖先元素上的
+ *   transform / filter / backdrop-filter / will-change / contain
+ *   都会**创建包含块**，使 position:fixed 相对那个祖先定位而不是视口。
+ *
+ *   线上真实踩中的坑：kokuu-home 的 void.css 里有
+ *       body.dark-mode .main-header { backdrop-filter: blur(12px) }
+ *   一开暗色模式，顶栏就成了一言的包含块，
+ *   bottom:0 从「贴视口底部」变成「贴顶栏底边」——
+ *   实测一言矩形从 [0,797,390,47] 变成 [0,9,390,47]，
+ *   正好整条盖在用户头像和语言切换上（用户反馈「叠在头像上面」）。
+ *
+ *   这些 backdrop-filter 规则不能删（那是 kokuu-home 的暗色毛玻璃效果），
+ *   所以唯一可靠的解法是**让一言的祖先链上不存在任何滤镜** ——
+ *   即把 <li> 挂到 <body> 末尾，彻底脱离顶栏。
+ *   CSS 里的 position:fixed 只是「再贴到视口底部」的定位手段。
+ */
+@media (max-width: 900px) {
+  .kq-item {
+    /* 从顶栏 flex 子项变成固定定位元素（此时它已是 body 的直接子元素） */
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 1030;                /* 高于 AdminLTE 顶栏的 1000，压住页脚 */
+    padding: 0 10px calc(10px + env(safe-area-inset-bottom, 0px));
+    pointer-events: none;         /* 整条只有卡片本身可点，避免挡住页面 */
+    max-width: 100%;
+    box-sizing: border-box;
+
+    /* 挂到 body 后不再是 <ul> 的子项，要清掉 <li> 的浏览器默认样式，
+       否则会出现 list-style 圆点与继承自 ul 的 padding/margin。 */
+    list-style: none;
+    margin: 0;
+    display: block;
+  }
+  /* body 直接子元素的 <li> 也不该带任何继承缩进 */
+  body > .kq-item { padding-left: 0; text-indent: 0; }
+
+  .main-header .kq-item {
+    /* 兜底：仍在顶栏里时（fixed 被祖先滤镜吃掉、且 JS 复查判定失败），
+       退化为一个正常宽度的 flex 子项，而不是 100% 宽的块。
+       JS 会给这种情况加 .kq-inline-fallback，形态更收敛。 */
+    width: auto;
+    max-width: 46vw;
+    align-self: center;
+  }
+
+  /* 兜底形态：明确收窄，绝不占满顶栏一行。
+   * 宁可只显示一个窄胶囊（用户能点、能换句），
+   * 也不能出现「一条横条盖住整行、用户头像和语言切换全被盖」。
+   */
+  .kq-item.kq-inline-fallback {
+    left: auto;
+    right: 8px;
+    bottom: auto;
+    top: 50%;
+    transform: translateY(-50%);
+    width: auto;
+    max-width: 40vw;
+    padding: 0;
+  }
+  .kq-item.kq-inline-fallback .kq-top {
+    width: auto;
+    padding: 6px 9px;
+    border-radius: 999px;
+  }
+  .kq-item.kq-inline-fallback .kq-text {
+    -webkit-line-clamp: 1;
+    max-width: 26vw;
+  }
+  .kq-item.kq-inline-fallback .kq-by { display: none; }
+
+  .kq-item .kq-top {
+    /* 整条卡片形态：不再是胶囊，是一块可点的面板 */
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    width: 100%;
+    max-width: none;
+    padding: 10px 12px;
+    border-radius: 14px;
+    background: var(--a-surface, rgba(255,255,255,.92));
+    border: 1px solid var(--a-sep, rgba(60,60,67,.12));
+    box-shadow: 0 6px 24px rgba(43, 31, 82, .10);
+    -webkit-backdrop-filter: saturate(180%) blur(20px);
+    backdrop-filter: saturate(180%) blur(20px);
+    pointer-events: auto;         /* 恢复可点 */
+    overflow: visible;            /* 让光晕铺开，桌面端是 hidden */
+  }
+  .kq-item .kq-top.kq-float { /* JS 会给移动端卡片加这个类 */
+    background: var(--a-surface, rgba(255,255,255,.92));
+  }
+
+  /* 移动端显示元素名徽标（见 teyvat.css 第二节） */
+  .kq-el-badge {
+    display: inline-flex !important;
+    order: -1;                    /* 放到最左，紧贴元素点 */
+  }
+
+  /* 台词允许换行 —— 这是关键：v4 隐藏台词正是因为一行放不下，
+     但换行才是移动端该做的事，不是隐藏 */
+  .kq-body {
+    flex: 1 1 auto;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1px;
+    overflow: hidden;
+  }
+  .kq-item .kq-text {
+    flex: none;
+    width: 100%;
+    font-size: 14px;
+    line-height: 1.45;
+    white-space: normal;          /* ← 关键：允许折行 */
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;         /* 最多两行，超出省略 */
+    -webkit-box-orient: vertical;
+  }
+  .kq-item .kq-by {
+    display: block;
+    flex: none;
+    font-size: 11px;
+    padding-left: 0;
+    border-left: none;            /* 换行布局下竖线很怪 */
+    opacity: .8;
+  }
+
+  .kq-item .kq-top::before {
+    display: none;                /* 徽标已经带了元素色，方块多余 */
+  }
+}
+
+/* ---- 超窄屏：进一步瘦身 ---- */
+@media (max-width: 400px) {
+  .kq-item { padding: 0 7px calc(7px + env(safe-area-inset-bottom, 0px)); }
+  .kq-item .kq-top { padding: 9px 10px; gap: 7px; border-radius: 12px; }
+  .kq-item .kq-text { font-size: 13px; -webkit-line-clamp: 2; }
+  .kq-el-badge { height: 17px; padding: 0 6px 0 4px; font-size: 10.5px; }
+}
+
+/* ---- 横屏手机：底部浮层会挡住内容，缩成一行 ---- */
+@media (max-width: 900px) and (orientation: landscape) and (max-height: 480px) {
+  .kq-item .kq-text {
+    -webkit-line-clamp: 1;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    display: block;
+  }
+  .kq-item .kq-by { display: none; }
+}
+
+/* ---- 首页不显示 ---- */
+body.kokuu-on .kq-item { display: none !important; }
+
+/* =========================================================
+   五、无障碍
+   ========================================================= */
+@media (prefers-reduced-motion: reduce) {
+  .kq-swap .kq-text,
+  .kq-swap .kq-by,
+  .kq-swap .kq-el-badge { animation: none; }
+  .kq-item .kq-top,
+  .kq-refresh { transition: none; }
+}

@@ -1,0 +1,903 @@
+/* =========================================================
+   KokuuSkin 后台界面重塑 · Apple 扁平风格
+   由 kokuu-ui 插件注入（*）。与 kokuu-home 主题协同：
+   浅色态 = Apple 扁平（纯净/大留白/细腻阴影/半透明导航）；
+   深色态 = 沿用 kokuu-home 的「虚空」深色（在 body.dark-mode 下微调为 Apple Dark）。
+
+   设计原则（Apple Human Interface 精神）：
+   - 扁平纯净：去重阴影/描边，靠极淡分隔线 + 大圆角区分层次
+   - 大留白：内容区间距宽松，让呼吸感承担层次
+   - 毛玻璃仅用于导航（顶栏/侧边栏），内容卡片保持纯净
+   - 克制用色：中性灰阶为主，品牌色只用于强调与选中态
+   复用 kokuu-home 定义的调色变量（--rain/--lilac/--ink 等）
+   ========================================================= */
+
+:root {
+  /*
+   * 品牌色：引用 kokuu-home 的定义，不自己写第二份。
+   *
+   * v1.2 起这里曾是 `--k-rain: #0FA3A3` 这样的**字面量副本**，
+   * 与 kokuu-home 的 `--rain: #0FA3A3` 数值相同却是两个名字。
+   * 后果是：改主题色要改两处，漏一处就出现「部分元素还是旧颜色」，
+   * 而且写错变量名不会报错，只是静默回退到继承色 —— 极难排查。
+   *
+   * 现在用 `var(--rain, #0FA3A3)` 的形式：**优先取kokuu-home 的值，
+   * 取不到才用后面的字面量兜底**。这样 kokuu-home 停用时本站仍可看，
+   * 而两者都在时永远以 kokuu-home 为准，不存在两份真相。
+   *
+   * 保留 --k-* 这个名字是为了兼容 kokuu-forum / kokuu-credit
+   * （它们也在用），但它现在是**别名**而不是副本。
+   */
+  --k-paper: var(--paper, #F5F3EE);
+  --k-ink:   var(--ink,   #2B1F52);
+  --k-rain:  var(--rain,  #0FA3A3);
+  --k-lilac: var(--lilac, #8B7FD4);
+
+  /* Apple 扁平体系 */
+  --a-bg: #F2F2F7;              /* 苹果系统级浅灰底 */
+  --a-surface: #FFFFFF;         /* 卡片面 */
+  --a-surface-2: #FBFBFD;       /* 次级面（表头等） */
+  --a-text: #1C1C1E;            /* 主文字 */
+  --a-text-2: #6E6E73;          /* 次文字 */
+  --a-text-3: #A1A1A6;          /* 三级/占位 */
+  --a-sep: rgba(60, 60, 67, 0.13);   /* 极淡分隔线 */
+  --a-sep-strong: rgba(60, 60, 67, 0.20);
+  --a-radius: 18px;             /* 大圆角 */
+  --a-radius-sm: 12px;
+  --a-radius-lg: 24px;
+  --a-shadow: 0 1px 2px rgba(0,0,0,.04), 0 6px 20px rgba(0,0,0,.05);  /* 细腻柔和 */
+  --a-shadow-hover: 0 2px 6px rgba(0,0,0,.06), 0 12px 32px rgba(0,0,0,.10);
+  --a-blur: saturate(180%) blur(20px);
+  --a-ease: cubic-bezier(.4, 0, .2, 1);       /* Apple 标准缓动 */
+  --a-ease-out: cubic-bezier(.16, 1, .3, 1);  /* 更丝滑的出场 */
+  --a-nav-h: 56px;
+  --a-side-w: 248px;
+}
+
+/* =========================================================
+   一、外壳骨架重塑：AdminLTE 尺寸/圆角/层次
+   ========================================================= */
+body.kokuu-apple .wrapper {
+  background: var(--a-bg);
+  min-height: 100vh;
+}
+
+/* ---- 顶栏：半透明毛玻璃导航（Apple 标志性），扁平无重阴影 ---- */
+body.kokuu-apple .main-header,
+body.kokuu-apple .main-header.navbar {
+  background: rgba(255, 255, 255, 0.72) !important;
+  backdrop-filter: var(--a-blur);
+  -webkit-backdrop-filter: var(--a-blur);
+  border: 0 !important;
+  border-bottom: 1px solid var(--a-sep) !important;
+  box-shadow: none !important;
+  min-height: var(--a-nav-h);
+  padding: 0 clamp(12px, 2vw, 24px);
+}
+body.kokuu-apple .main-header .nav-link,
+body.kokuu-apple .main-header .navbar-nav > li > a,
+body.kokuu-apple .main-header .navbar-nav > .nav-item > .nav-link {
+  color: var(--a-text) !important;
+  font-weight: 500;
+  border-radius: 10px;
+  transition: background .2s var(--a-ease), color .2s var(--a-ease);
+}
+body.kokuu-apple .main-header .nav-link:hover,
+body.kokuu-apple .main-header .navbar-nav > li > a:hover {
+  background: rgba(0, 0, 0, 0.05) !important;
+  color: var(--a-text) !important;
+}
+body.kokuu-apple .main-header .nav-item.active > .nav-link,
+body.kokuu-apple .main-header .navbar-nav > .active > a {
+  color: var(--k-rain) !important;
+  font-weight: 600;
+}
+body.kokuu-apple .main-header .navbar-brand {
+  font-weight: 700;
+  font-size: 17px;
+  letter-spacing: -0.2px;
+  color: var(--a-text) !important;
+}
+body.kokuu-apple .main-header .dropdown-menu {
+  background: rgba(255, 255, 255, 0.86);
+  backdrop-filter: var(--a-blur);
+  -webkit-backdrop-filter: var(--a-blur);
+  border: 1px solid var(--a-sep);
+  border-radius: 14px;
+  box-shadow: var(--a-shadow);
+  padding: 6px;
+}
+body.kokuu-apple .main-header .dropdown-item {
+  border-radius: 9px;
+  padding: 8px 12px;
+  color: var(--a-text);
+}
+body.kokuu-apple .main-header .dropdown-item:hover {
+  background: rgba(0, 0, 0, 0.05);
+}
+
+/*
+ * ---- 内容区下拉菜单（不只是顶栏）----
+ *
+ * 衣柜卡片右下角齿轮的菜单就在这里。之前只有 `.main-header .dropdown-menu`
+ * 有样式，卡片内的菜单是**没被 apple 接管**的裸 Bootstrap 样式。
+ *
+ * ⚠️ z-index 必须足够高：卡片里可能还有 hover 阴影等，菜单要压在所有内容之上。
+ *   Bootstrap 默认 1000，顶栏是 1030 左右；这里给 1080，
+ *   与页面模态框（1050+）同量级但不冲突（模态框打开时菜单必然已关闭）。
+ */
+body.kokuu-apple .dropdown-menu {
+  background: var(--a-surface, #fff) !important;
+  border: 1px solid var(--a-sep, rgba(60, 60, 67, .13)) !important;
+  border-radius: 14px !important;
+  box-shadow: 0 12px 32px rgba(0, 0, 0, .14) !important;
+  padding: 6px;
+  z-index: 1080;
+}
+body.kokuu-apple .dropdown-item {
+  border-radius: 9px;
+  padding: 8px 12px;
+  color: var(--a-text, #1C1C1E) !important;
+  font-size: 13px;
+  transition: background-color .16s var(--a-ease, ease);
+}
+body.kokuu-apple .dropdown-item:hover,
+body.kokuu-apple .dropdown-item:focus {
+  background: rgba(120, 120, 128, .1) !important;
+  color: var(--a-text, #1C1C1E) !important;
+}
+body.kokuu-apple.dark-mode .dropdown-menu {
+  background: rgba(44, 44, 46, .96) !important;
+  border-color: rgba(255, 255, 255, .12) !important;
+}
+body.kokuu-apple.dark-mode .dropdown-item {
+  color: var(--a-text, #F2F2F7) !important;
+}
+body.kokuu-apple.dark-mode .dropdown-item:hover,
+body.kokuu-apple.dark-mode .dropdown-item:focus {
+  background: rgba(255, 255, 255, .1) !important;
+}
+
+/* ---- 侧边栏：纯净白面 + 极淡右边框（扁平，不用深色渐变） ---- */
+body.kokuu-apple .main-sidebar,
+body.kokuu-apple .sidebar {
+  background: var(--a-surface) !important;
+  border-right: 1px solid var(--a-sep) !important;
+  box-shadow: none !important;
+  width: var(--a-side-w);
+  transition: width .3s var(--a-ease), transform .3s var(--a-ease);
+}
+body.kokuu-apple .brand-link {
+  border-bottom: 1px solid var(--a-sep) !important;
+  color: var(--a-text) !important;
+  font-weight: 700;
+  padding: 0 calc(1rem + 2px);
+  height: var(--a-nav-h);
+  display: flex;
+  align-items: center;
+  font-size: 17px;
+  letter-spacing: -0.2px;
+}
+body.kokuu-apple .user-panel {
+  border-bottom: 1px solid var(--a-sep) !important;
+  padding: 14px 16px;
+}
+body.kokuu-apple .user-panel .info a { color: var(--a-text) !important; font-weight: 600; }
+body.kokuu-apple .user-panel .info small { color: var(--a-text-2); }
+
+/* 侧栏导航：扁平、圆角、选中为淡品牌色底 */
+body.kokuu-apple .nav-sidebar .nav-link {
+  color: var(--a-text-2) !important;
+  border-radius: 10px;
+  margin: 2px 10px;
+  padding: 9px 12px;
+  font-weight: 500;
+  transition: background .18s var(--a-ease), color .18s var(--a-ease);
+}
+body.kokuu-apple .nav-sidebar .nav-link:hover {
+  background: rgba(0, 0, 0, 0.045) !important;
+  color: var(--a-text) !important;
+}
+body.kokuu-apple .nav-sidebar .nav-link.active,
+body.kokuu-apple .nav-sidebar .nav-item.menu-open > .nav-link,
+body.kokuu-apple .nav-sidebar .nav-item > .nav-link.active {
+  background: rgba(15, 163, 163, 0.12) !important;
+  color: var(--k-rain) !important;
+  font-weight: 600;
+}
+/*
+ * 分组标题（「用户中心」「浏览」…）
+ * ⚠️ 这里原来用 --a-text-3(#A1A1A6)，但那是 Apple 系统灰三档里的
+ *    「三级/占位」色：#A1A1A6 on #FFF 只有 2.57:1，AA 正文需 4.5:1。
+ *    11.5px 的分组标题虽算「小字」而非大字，阈值不降 —— 实测浅色下
+ *    侧栏那几行几乎看不见（2026-10-03 截图）。
+ *    改用 --a-text-2(#6E6E73) = 5.07:1，仍明显弱于菜单项的 --a-text，
+ *    层级感保留，对比度达标。
+ */
+body.kokuu-apple .nav-header {
+  color: var(--a-text-2) !important;
+  font-size: 11.5px;
+  font-weight: 700;
+  letter-spacing: .6px;
+  text-transform: uppercase;
+  padding: 18px 16px 6px;
+}
+body.kokuu-apple .nav-sidebar .nav-icon { color: inherit !important; }
+
+/* 折叠态（AdminLTE sidebar-collapse）紧凑化 */
+body.kokuu-apple.sidebar-collapse .main-sidebar,
+body.kokuu-apple.sidebar-mini.sidebar-collapse .main-sidebar { width: 64px; }
+body.kokuu-apple.sidebar-collapse .nav-sidebar .nav-link p,
+body.kokuu-apple.sidebar-collapse .nav-sidebar .nav-header { opacity: 0; pointer-events: none; }
+
+/* ---- 内容区：大留白纯净底 ---- */
+body.kokuu-apple .content-wrapper {
+  background: var(--a-bg);
+  padding: 0 clamp(16px, 3vw, 40px) 60px;
+}
+body.kokuu-apple .content-header {
+  padding: 28px 0 6px;
+}
+body.kokuu-apple .content-header h1,
+body.kokuu-apple section.content h1 {
+  color: var(--a-text) !important;
+  font-weight: 700;
+  font-size: clamp(24px, 2.4vw, 32px);
+  letter-spacing: -0.5px;
+}
+body.kokuu-apple .content .container-fluid { padding: 0; max-width: 1200px; }
+
+/* ---- 浅色态背景兜底（与下方深色段对称）----
+   同样原因：layout-top-nav 无侧边栏，body 背景会裸露。 */
+body.kokuu-apple:not(.dark-mode),
+body.kokuu-apple:not(.dark-mode) .wrapper,
+body.kokuu-apple:not(.dark-mode) .content-wrapper,
+body.kokuu-apple:not(.dark-mode) .content {
+  background-color: var(--a-bg) !important;
+  background-image: none !important;
+}
+
+/* ---- 无侧栏布局（layout-top-nav，如皮肤库）专属修正 ----
+   皮肤库 body 是 .layout-top-nav：没有 .main-sidebar，.content 直接全宽；
+   且 React 挂在 .content-wrapper **内部**（route.tsx: el: '.content-wrapper'），
+   组件自己还会再套一层 .container / .container-fluid。
+   因此这里不能用「.content .container-fluid」这种后代选择器（选不中），
+   直接对 .content-wrapper 内的容器层级做处理：
+     - 恢复 Bootstrap 默认内边距（原先被全局 padding:0 清零，控件会粘连）
+     - 居中并限宽，避免贴边或在大屏上散开
+     - 补回网格行间距，emotion 组件自身不带外边距 */
+body.kokuu-apple.layout-top-nav .content-wrapper {
+  padding: 0 clamp(16px, 4vw, 56px) 64px;
+}
+body.kokuu-apple.layout-top-nav .content-wrapper > .container,
+body.kokuu-apple.layout-top-nav .content-wrapper > .container-fluid,
+body.kokuu-apple.layout-top-nav .content .container,
+body.kokuu-apple.layout-top-nav .content .container-fluid {
+  padding-left: 12px;
+  padding-right: 12px;
+  max-width: 1280px;
+  margin-left: auto;
+  margin-right: auto;
+  width: 100%;
+}
+/* 筛选区与网格之间的呼吸空间 */
+body.kokuu-apple.layout-top-nav .content-wrapper > * + * { margin-top: 18px; }
+body.kokuu-apple.layout-top-nav .row { row-gap: 20px; }
+body.kokuu-apple.layout-top-nav [class*="col-"] { padding-left: 8px; padding-right: 8px; }
+
+/* 用户自己填了 {year}（footer.js 替换成功）时，
+   把内核致谢降级成极淡小字：保留开源致谢但不与自定义署名抢视觉。
+   不直接 display:none —— 开源协议要求保留署名。 */
+body.kokuu-apple .main-footer[data-kokuu-year] #copyright-text {
+  font-size: 11px;
+  opacity: .5;
+}
+
+/* ---- 移动端：换行堆叠，不再单边靠左 ---- */
+@media (max-width: 640px) {
+  body.kokuu-apple .main-footer {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 6px;
+    padding: 18px 0 24px;
+  }
+  /* 内核的 d-none d-sm-inline 会让致谢在移动端完全消失，
+     这里显式恢复显示 —— 用户要的是「排列整齐」，不是「少一块」 */
+  body.kokuu-apple .main-footer #copyright-text {
+    display: block !important;
+    order: 2;
+  }
+  body.kokuu-apple .main-footer .kokuu-footer-note,
+  body.kokuu-apple .main-footer > b {
+    order: 1;
+    font-size: 12px;
+    line-height: 1.65;
+  }
+}
+
+/* =========================================================
+   二、卡片 / 列表：纯净面 + 大圆角 + 细腻阴影（扁平核心）
+   ========================================================= */
+body.kokuu-apple .card {
+  background: var(--a-surface) !important;
+  border: 1px solid var(--a-sep) !important;
+  border-radius: var(--a-radius) !important;
+  box-shadow: var(--a-shadow) !important;
+  /*
+   * ⚠️⚠️ 这里**绝不能**用 `overflow: hidden` —— 衣柜卡片实测踩中。
+   *
+   * overflow:hidden 的本意是让卡片内部内容（图片/表头）跟着
+   * 圆角一起裁掉。但它同时会**裁掉向下弹出的下拉菜单**：
+   *   衣柜卡片右下角那个齿轮（.drop-down > [data-toggle=dropdown]
+   *   + .dropdown-menu）挂在 .card-footer 里，菜单 absolute 定位
+   *   向下展开 → 超出卡片边界 → 被 overflow:hidden 直接切掉，
+   *   「重命名 / 从衣柜移除 / 在皮肤库中查看 / 设为头像」四项
+   *   全部落在裁切区外，命中测试全打到 .card-footer 上，
+   *   用户表现为「设置菜单出来了但点不了」。
+   *
+   * overflow 一旦非 visible 还会**裁剪** + 成为 containing block，
+   * 对内部 absolute 元素是双重伤害。
+   *
+   * 修法：卡片本身放开裁切，圆角由 border-radius 保留；
+   *   需要被圆角裁的东西（图片等）单独处理，见下方 .card-img-top 规则。
+   */
+  overflow: visible;
+  margin-bottom: 20px;
+  transition: box-shadow .28s var(--a-ease), border-color .28s var(--a-ease);
+}
+body.kokuu-apple .card .card-header {
+  background: transparent !important;
+  border-bottom: 1px solid var(--a-sep) !important;
+  padding: 16px 20px;
+}
+body.kokuu-apple .card .card-body { background: transparent !important; padding: 20px; }
+body.kokuu-apple .card .card-footer {
+  background: transparent !important;
+  border-top: 1px solid var(--a-sep) !important;
+  padding: 14px 20px;
+}
+body.kokuu-apple .card-title {
+  color: var(--a-text) !important;
+  font-weight: 600;
+  font-size: 17px;
+  letter-spacing: -0.2px;
+}
+body.kokuu-apple .card.card-primary > .card-header,
+body.kokuu-apple .card.card-info > .card-header,
+body.kokuu-apple .card.card-warning > .card-header,
+body.kokuu-apple .card.card-success > .card-header {
+  background: var(--a-surface-2) !important;
+  border-bottom: 1px solid var(--a-sep) !important;
+}
+
+/*
+ * ⚠️⚠️ 标题颜色这行**必须列全四种卡片**，漏一个就出白字压白底。
+ *
+ * 背景：上面把 card-success 的 header 也改成了 --a-surface-2（近白），
+ *   但内核 AdminLTE（public/app/style.*.css）给 card-success 的标题写了
+ *     .card.card-success > .card-header .card-title { color: #F5F3EE !important }
+ *   #F5F3EE 是**虚空深色主题的浅色标题**（配深色 header 用的）。
+ *   apple.css 把 header 翻成近白，却没同步翻标题色 →
+ *   近白底+ 近白字，标题直接看不见。
+ *
+ *   踩过的坑：这条原本只列了 card-primary 和 card-warning，
+ *   card-info / card-success 被漏掉。实测 yggdrasil-api 插件的
+ *   「快速配置启动器」卡片（card-success）就白字压白底。
+ *
+ * 修法：四种都列上，与上面 header 的选择器保持一致 ——
+ *   凡是改了 header 背景的卡片，都必须同时改标题色。
+ */
+body.kokuu-apple .card.card-primary > .card-header .card-title,
+body.kokuu-apple .card.card-info > .card-header .card-title,
+body.kokuu-apple .card.card-warning > .card-header .card-title,
+body.kokuu-apple .card.card-success > .card-header .card-title { color: var(--a-text) !important; }
+
+/*
+ * ⚠️⚠️ 同样的坑，藏在**链接**而不是标题上 —— 衣柜页 tab 实测踩中。
+ *
+ * 背景：AdminLTE 另有一条
+ *   .card-primary:not(.card-outline) > .card-header a { color:#fff }
+ * 它管的是 header 里的 **<a>**。上面只修了 .card-title，
+ * 这条 <a> 完全没被覆盖到 → 白字压近白 header。
+ *
+ * 为什么只有「皮肤」那个 tab 看得见：
+ *   tab 是 `.nav-tabs > .nav-item > .nav-link`。
+ *   「皮肤」带 .active，命中
+ *     .nav-tabs .nav-link.active { color:#495057 }（0,3,0）← 赢
+ *   而「披风 / 上传材质」没有 .active，只剩
+ *     .card-primary:not(...) > .card-header a { color:#fff } ← 赢
+ *   于是同一排 tab：激活的黑字，未激活的白字（=看不见）。
+ *
+ * 修法：把 header 里的 <a> 一并纳入作用域，与 .card-title 用同一个颜色。
+ *   四种卡片都要列 —— 与上方两条规则保持完全一致的选择器集合。
+ */
+body.kokuu-apple .card.card-primary > .card-header a,
+body.kokuu-apple .card.card-info > .card-header a,
+body.kokuu-apple .card.card-warning > .card-header a,
+body.kokuu-apple .card.card-success > .card-header a { color: var(--a-text) !important; }
+
+/* .active 的 tab 有自己的一套配色（白底 + 深字 + 圆角），
+ * 优先级要盖过上面这条统一色，否则激活态会退化成普通文字。
+ * ⚠️ 必须带 body.kokuu-apple（两个 class）才能赢过 AdminLTE 的
+ *   `.nav-tabs .nav-link.active`，详见 README「CSS 铁律」。 */
+body.kokuu-apple .nav-tabs .nav-link {
+  color: var(--a-text-2) !important;
+  border: 0 !important;
+  border-radius: 10px 10px 0 0;
+  padding: 10px 18px;
+  transition: color .2s var(--a-ease), background-color .2s var(--a-ease);
+}
+body.kokuu-apple .nav-tabs .nav-link:hover {
+  color: var(--a-text) !important;
+  background: rgba(120, 120, 128, .08);
+}
+body.kokuu-apple .nav-tabs .nav-link.active {
+  color: var(--a-text) !important;
+  background: var(--a-surface, #fff) !important;
+  font-weight: 600;
+}
+
+/* 深色模式：header 变深，标题必须跟着变浅 —— 同一条规则换变量即可 */
+body.kokuu-apple.dark-mode .card.card-primary > .card-header,
+body.kokuu-apple.dark-mode .card.card-info > .card-header,
+body.kokuu-apple.dark-mode .card.card-warning > .card-header,
+body.kokuu-apple.dark-mode .card.card-success > .card-header {
+  background: rgba(255, 255, 255, 0.04) !important;
+}
+
+/* 卡片 hover：轻微上浮 + 阴影加深（Apple 交互质感） */
+body.kokuu-apple .card:hover {
+  box-shadow: var(--a-shadow-hover) !important;
+}
+
+/* 网格中的卡片（皮肤库/衣柜/后台卡片）
+ *
+ * ⚠️⚠️ 这里**不能用 transform 做 hover 上浮** —— 衣柜卡片实测踩中。
+ *
+ * 原因：`transform ≠ none` 会创建**层叠上下文**。
+ *   要打开卡片里的齿轮菜单就必须先 hover 卡片，
+ *   而 hover 那一刻 translateY(-3px) 生效 → 卡片成为层叠上下文 →
+ *   菜单的 z-index:1000 只能在卡片内部比较，
+ *   无法盖过卡片外任何有 z-index 的兄弟元素。
+ *   叠加 overflow 裁切（已在上方 .card 修掉），菜单要么被切、要么被压。
+ *
+ * 而且这是**只在 hover 时出现**的层叠上下文 ——
+ * 静态截图、不 hover 的自动化检查都发现不了，极难定位。
+ *
+ * 修法：用阴影 + 边框色变化表达「浮起」，完全不用 transform。
+ *   Apple 的 hover 反馈本来也是以阴影为主。
+ */
+body.kokuu-apple .d-flex.flex-wrap > .card,
+body.kokuu-apple .d-flex.flex-wrap > a > .card {
+  transition: box-shadow .3s var(--a-ease-out), border-color .3s var(--a-ease-out);
+}
+body.kokuu-apple .d-flex.flex-wrap > .card:hover,
+body.kokuu-apple .d-flex.flex-wrap > a > .card:hover {
+  box-shadow: 0 12px 32px rgba(0, 0, 0, .14) !important;
+  border-color: rgba(120, 120, 128, .28) !important;
+}
+
+/* 皮肤预览图：白底、完整显示 */
+body.kokuu-apple .card .card-body:has(.card-img-top) {
+  background: var(--a-surface-2) !important;
+  /* 上方 .card 放开了 overflow 裁切（为了让下拉菜单能弹出去），
+   * 这里把圆角补回给图片区，视觉效果与之前一致。 */
+  border-radius: var(--a-radius) var(--a-radius) 0 0;
+}
+body.kokuu-apple .card .card-img-top {
+  object-fit: contain !important;
+  padding: 12px;
+  border-radius: var(--a-radius) var(--a-radius) 0 0;
+}
+
+/* 卡片内容区开放裁切后，若某张卡片内部**确实**需要裁切
+ * （比如带背景图的 hero 卡），用它自己的类去裁，不要动 .card 全局。 */
+body.kokuu-apple .card.card-tabs > .card-header {
+  border-radius: var(--a-radius) var(--a-radius) 0 0;
+}
+
+/* =========================================================
+   三、表单 / 按钮 / 徽章：Apple 控件
+   ========================================================= */
+body.kokuu-apple .form-control,
+body.kokuu-apple .input-group .form-control,
+body.kokuu-apple select.form-control,
+body.kokuu-apple textarea.form-control {
+  background: var(--a-surface) !important;
+  color: var(--a-text) !important;
+  border: 1px solid var(--a-sep-strong) !important;
+  border-radius: var(--a-radius-sm);
+  padding: 10px 14px;
+  box-shadow: none !important;
+  transition: border-color .2s var(--a-ease), box-shadow .2s var(--a-ease);
+}
+body.kokuu-apple .form-control:focus {
+  border-color: var(--k-rain) !important;
+  box-shadow: 0 0 0 4px rgba(15, 163, 163, 0.14) !important;
+}
+body.kokuu-apple .form-control::placeholder { color: var(--a-text-3); }
+body.kokuu-apple label { color: var(--a-text-2); font-weight: 600; }
+body.kokuu-apple .input-group-text,
+body.kokuu-apple .input-group-prepend .btn,
+body.kokuu-apple .input-group-append .btn {
+  background: var(--a-surface-2) !important;
+  color: var(--a-text-2) !important;
+  border-color: var(--a-sep-strong) !important;
+  border-radius: var(--a-radius-sm);
+}
+
+/* 按钮：实心品牌 / 柔和描边，统一 12px 圆角 */
+body.kokuu-apple .btn {
+  border-radius: var(--a-radius-sm) !important;
+  font-weight: 600;
+  transition: transform .16s var(--a-ease), background .2s var(--a-ease), box-shadow .2s var(--a-ease);
+}
+body.kokuu-apple .btn:active { transform: scale(.97); }
+body.kokuu-apple .btn-primary,
+body.kokuu-apple .btn-success,
+body.kokuu-apple .btn-info {
+  background: var(--k-rain) !important;
+  border-color: transparent !important;
+  color: #fff !important;
+}
+body.kokuu-apple .btn-primary:hover,
+body.kokuu-apple .btn-success:hover,
+body.kokuu-apple .btn-info:hover {
+  filter: brightness(1.06);
+  box-shadow: 0 4px 14px rgba(15, 163, 163, .3);
+}
+body.kokuu-apple .btn-secondary,
+body.kokuu-apple .btn-default,
+body.kokuu-apple .btn.bg-olive,
+body.kokuu-apple .btn-light {
+  background: var(--a-surface-2) !important;
+  color: var(--a-text) !important;
+  border: 1px solid var(--a-sep) !important;
+}
+body.kokuu-apple .btn-secondary:hover,
+body.kokuu-apple .btn-default:hover,
+body.kokuu-apple .btn.bg-olive:hover,
+body.kokuu-apple .btn-light:hover { background: #EFEFF4 !important; }
+body.kokuu-apple .btn.bg-olive.active,
+body.kokuu-apple .btn-secondary.active {
+  background: var(--k-rain) !important;
+  color: #fff !important;
+  border-color: transparent !important;
+}
+body.kokuu-apple .btn-outline-primary,
+body.kokuu-apple .btn-outline-info,
+body.kokuu-apple .btn-outline-success {
+  color: var(--k-rain) !important;
+  border-color: var(--k-rain) !important;
+  background: transparent !important;
+}
+body.kokuu-apple .btn-outline-primary:hover,
+body.kokuu-apple .btn-outline-info:hover,
+body.kokuu-apple .btn-outline-success:hover {
+  background: var(--k-rain) !important;
+  color: #fff !important;
+}
+body.kokuu-apple .btn-warning {
+  background: var(--k-lilac) !important;
+  color: #fff !important;
+  border-color: transparent !important;
+}
+body.kokuu-apple .btn-danger { border-radius: var(--a-radius-sm) !important; }
+
+/* 徽章：柔和淡色底 + 同色文字（Apple 标签） */
+body.kokuu-apple .badge {
+  border-radius: 8px !important;
+  padding: 4px 9px;
+  font-weight: 600;
+  font-size: 12px;
+}
+body.kokuu-apple .badge.bg-teal,
+body.kokuu-apple .badge.bg-primary,
+body.kokuu-apple .badge.bg-info,
+body.kokuu-apple .badge.bg-olive {
+  background: rgba(15, 163, 163, 0.14) !important;
+  color: #0B7C7C !important;
+}
+body.kokuu-apple .badge.bg-indigo,
+body.kokuu-apple .badge.bg-warning {
+  background: rgba(139, 127, 212, 0.16) !important;
+  color: #5B4BB0 !important;
+}
+
+/* =========================================================
+   四、表格 / 分页 / 弹窗 / 提示
+   ========================================================= */
+body.kokuu-apple .table-responsive { border-radius: var(--a-radius-sm); }
+body.kokuu-apple .table thead th {
+  background: var(--a-surface-2) !important;
+  color: var(--a-text-2) !important;
+  font-weight: 600;
+  font-size: 13px;
+  border-bottom: 1px solid var(--a-sep) !important;
+  padding: 12px 14px;
+  white-space: nowrap;
+}
+body.kokuu-apple .table td {
+  color: var(--a-text) !important;
+  border-color: var(--a-sep) !important;
+  padding: 14px;
+  vertical-align: middle;
+}
+body.kokuu-apple .table-striped tbody tr:nth-of-type(odd) { background: transparent !important; }
+body.kokuu-apple .table-hover tbody tr { transition: background .16s var(--a-ease); }
+body.kokuu-apple .table-hover tbody tr:hover { background: rgba(0, 0, 0, 0.03) !important; }
+
+body.kokuu-apple .pagination { gap: 4px; }
+body.kokuu-apple .pagination .page-link {
+  background: var(--a-surface) !important;
+  color: var(--a-text) !important;
+  border: 1px solid var(--a-sep) !important;
+  border-radius: 10px !important;
+  padding: 7px 13px;
+  font-weight: 500;
+  transition: background .18s var(--a-ease), color .18s var(--a-ease);
+}
+body.kokuu-apple .pagination .page-link:hover { background: var(--a-surface-2) !important; }
+body.kokuu-apple .pagination .page-item.active .page-link {
+  background: var(--k-rain) !important;
+  color: #fff !important;
+  border-color: transparent !important;
+}
+body.kokuu-apple .pagination .page-item.disabled .page-link { opacity: .4; }
+
+body.kokuu-apple .modal-content {
+  background: var(--a-surface) !important;
+  border: 1px solid var(--a-sep);
+  border-radius: var(--a-radius-lg) !important;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, .18) !important;
+  overflow: hidden;
+}
+body.kokuu-apple .modal-header {
+  border-bottom: 1px solid var(--a-sep) !important;
+  padding: 18px 24px;
+}
+body.kokuu-apple .modal-title { color: var(--a-text) !important; font-weight: 700; font-size: 19px; }
+body.kokuu-apple .modal-body { padding: 22px 24px; color: var(--a-text-2); }
+body.kokuu-apple .modal-footer { border-top: 1px solid var(--a-sep) !important; padding: 14px 24px; }
+
+body.kokuu-apple .toast {
+  background: rgba(255, 255, 255, 0.9) !important;
+  backdrop-filter: var(--a-blur);
+  -webkit-backdrop-filter: var(--a-blur);
+  border: 1px solid var(--a-sep);
+  border-radius: 14px !important;
+  color: var(--a-text);
+  box-shadow: var(--a-shadow-hover) !important;
+}
+body.kokuu-apple .toast-header {
+  background: transparent !important;
+  color: var(--a-text) !important;
+  border-bottom: 1px solid var(--a-sep) !important;
+  font-weight: 600;
+}
+body.kokuu-apple .toast-body { background: transparent !important; color: var(--a-text-2) !important; }
+
+body.kokuu-apple .overlay { background: rgba(242, 242, 247, 0.6) !important; border-radius: var(--a-radius) !important; }
+body.kokuu-apple .text-center.m-5,
+body.kokuu-apple .card-body.text-center { color: var(--a-text-3) !important; }
+
+/* 链接/文字 */
+body.kokuu-apple a { color: var(--k-rain); text-decoration: none; }
+body.kokuu-apple a:hover { color: var(--k-ink); }
+body.kokuu-apple p, body.kokuu-apple .content-wrapper p { color: var(--a-text-2); }
+body.kokuu-apple h1, body.kokuu-apple h2, body.kokuu-apple h3,
+body.kokuu-apple .card-title { color: var(--a-text) !important; }
+
+/* =========================================================
+   五、鉴权页（登录/注册）Apple 化
+   ========================================================= */
+body.kokuu-apple .login-box,
+body.kokuu-apple .card.login-card {
+  background: rgba(255, 255, 255, 0.78) !important;
+  backdrop-filter: var(--a-blur);
+  -webkit-backdrop-filter: var(--a-blur);
+  border: 1px solid var(--a-sep);
+  border-radius: var(--a-radius-lg) !important;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, .14) !important;
+}
+body.kokuu-apple .login-logo a { color: var(--a-text) !important; font-weight: 700; }
+
+/* =========================================================
+   六、滚动条（Apple 风格细滚动条）
+   ========================================================= */
+body.kokuu-apple ::-webkit-scrollbar { width: 10px; height: 10px; }
+body.kokuu-apple ::-webkit-scrollbar-track { background: transparent; }
+body.kokuu-apple ::-webkit-scrollbar-thumb {
+  background: rgba(60, 60, 67, 0.28);
+  border-radius: 999px;
+  border: 2px solid transparent;
+  background-clip: content-box;
+}
+body.kokuu-apple ::-webkit-scrollbar-thumb:hover { background-color: rgba(60, 60, 67, 0.45); }
+
+/* =========================================================
+   七、深色态（body.dark-mode）：Apple Dark 微调
+   基础「虚空」主题由 kokuu-home/void.css 提供，这里做 Apple Dark 的
+   层次/圆角/间距对齐，保证深色下也是 Apple 质感而非纯黑。
+   ========================================================= */
+body.kokuu-apple.dark-mode {
+  --a-bg: #000000;
+  --a-surface: #1C1C1E;
+  --a-surface-2: #2C2C2E;
+  --a-text: #F5F5F7;
+  --a-text-2: #AEAEB2;
+  --a-text-3: #7C7C80;
+  --a-sep: rgba(84, 84, 88, 0.5);
+  --a-sep-strong: rgba(84, 84, 88, 0.7);
+  --a-shadow: 0 1px 2px rgba(0,0,0,.3), 0 8px 24px rgba(0,0,0,.35);
+  --a-shadow-hover: 0 2px 8px rgba(0,0,0,.4), 0 16px 40px rgba(0,0,0,.5);
+}
+body.kokuu-apple.dark-mode .main-header {
+  background: rgba(28, 28, 30, 0.72) !important;
+}
+
+/* ---- 深色态背景兜底 ----
+   侧边栏布局下，body 背景被 .main-sidebar 与 .content-wrapper 遮住，
+   所以之前只需给两者上色。但 layout-top-nav 布局（皮肤库）没有侧边栏，
+   body 背景会整片裸露 —— 截图实测为 AdminLTE 默认的亮蓝紫 rgb(69,77,85)，
+   与深色卡片严重割裂，看起来像「没继承深色主题」。
+   这里显式覆盖 body / wrapper / content 三层，两种布局都一致。 */
+body.kokuu-apple.dark-mode,
+body.kokuu-apple.dark-mode .wrapper,
+body.kokuu-apple.dark-mode .content-wrapper,
+body.kokuu-apple.dark-mode .content,
+body.kokuu-apple.dark-mode .main-footer {
+  background-color: var(--a-bg) !important;
+  background-image: none !important;
+}
+body.kokuu-apple.dark-mode .main-footer {
+  border-top-color: var(--a-sep) !important;
+  color: var(--a-text-3) !important;
+}
+
+body.kokuu-apple.dark-mode .main-sidebar { background: var(--a-surface) !important; }
+body.kokuu-apple.dark-mode .main-header .dropdown-menu,
+body.kokuu-apple.dark-mode .toast { background: rgba(28, 28, 30, 0.86); }
+body.kokuu-apple.dark-mode .nav-sidebar .nav-link:hover,
+body.kokuu-apple.dark-mode .main-header .nav-link:hover,
+body.kokuu-apple .btn.bg-olive:hover { background: rgba(255, 255, 255, 0.08) !important; }
+body.kokuu-apple.dark-mode .nav-sidebar .nav-link.active {
+  background: rgba(79, 227, 208, 0.16) !important;
+  color: #4FE3D0 !important;
+}
+body.kokuu-apple.dark-mode .table-hover tbody tr:hover { background: rgba(255, 255, 255, 0.05) !important; }
+body.kokuu-apple.dark-mode .card .card-body:has(.card-img-top) { background: var(--a-surface-2) !important; }
+body.kokuu-apple.dark-mode .btn.bg-olive,
+body.kokuu-apple.dark-mode .btn-secondary,
+body.kokuu-apple.dark-mode .btn-default,
+body.kokuu-apple.dark-mode .btn-light { color: var(--a-text) !important; }
+body.kokuu-apple.dark-mode .badge.bg-teal { background: rgba(79, 227, 208, 0.16) !important; color: #4FE3D0 !important; }
+body.kokuu-apple.dark-mode .badge.bg-indigo { background: rgba(167, 139, 250, 0.18) !important; color: #C9B8FF !important; }
+
+/* =========================================================
+   页脚（真实选择器版）
+   ------------------------------------------------------------
+   ⚠️ 这一段原本全部挂在 `body.kokuu-apple` 下 —— 而 kokuu-apple 这个
+      body 类**从未被任何 PHP 添加过**，只在本文件里出现过，
+      所以下面这些规则一条都没生效过（2026-10-03 实测确认）。
+      线上真实 body class 是 `hold-transition layout-top-nav` /
+      `hold-transition sidebar-mini`，`hold-transition` 两个布局都有。
+   ========================================================= */
+   页脚
+   ------------------------------------------------------------
+   内核结构是两个**对齐方式冲突**的节点：
+       <div id="copyright-text" class="float-right d-none d-sm-inline">…</div>
+       <b>Copyright © …</b>. All rights reserved.   ← 裸文本，无元素包裹
+
+   用户的原话是「信息排列得很奇怪，是靠左的」。根因有二：
+     a) float-right 只在 d-sm 以上生效，d-none 在移动端把它整个藏了，
+        剩下的裸文本就成了「只有靠左那一半」；
+     b) 裸文本不是元素，跟在 float 元素后面会绕排到 float 下方，
+        两块内容既不同高也不同基线。
+
+   修法：footer 改flex + space-between，让两块真正两端对齐；
+        移动端取消 d-none 的隐藏（改为 flex-wrap 换行）。
+   ========================================================= */
+body.hold-transition .main-footer {
+  background: transparent;
+  border-top: 1px solid var(--a-sep);
+  color: var(--a-text-3);
+  padding: 22px 0 30px;
+  margin: 0 clamp(16px, 3vw, 40px);
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px 20px;
+  flex-wrap: wrap;
+}
+
+/* ★ flex 必须作用在 .container 上，不是 footer：
+     内核的 <footer> 里只有一个直接子元素 <div class="container">，
+     两块内容（#copyright-text 与裸文本）都是 .container 的子节点。
+     flex 加在 footer 上只会让 .container 变成唯一 flex item，
+     内部依然按 float + 裸文本的旧方式排列 —— 症状完全不变。*/
+body.hold-transition .main-footer > .container {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px 20px;
+  flex-wrap: wrap;
+  width: 100%;
+}
+
+/* 覆盖内核的 float-right：flex 布局下 float 是多余的，
+   且 float 会让裸文本绕排到下方 */
+body.hold-transition .main-footer #copyright-text {
+  float: none !important;
+  margin: 0;
+  order: 2;                /* 内核致谢在右 */
+  font-size: 12px;
+  opacity: .75;
+}
+
+/* footer.js 把裸文本包成了 .kokuu-footer-note */
+body.hold-transition .main-footer .kokuu-footer-note {
+  order: 1;                /* 自定义版权在左 */
+  font-size: 12.5px;
+  line-height: 1.6;
+  min-width: 0;
+}
+body.hold-transition .main-footer .kokuu-footer-note b {
+  font-weight: 600;
+  color: var(--a-text-2, #6E6E73);
+}
+
+/* 没跑 JS 时的兜底：裸 <b> 仍要能排好 */
+body.hold-transition .main-footer > b {
+  order: 1;
+  font-size: 12.5px;
+}
+
+body.hold-transition .main-footer {
+  background: transparent;
+  border-top: 1px solid rgba(60, 60, 67, 0.13);
+  color: #A1A1A6;
+  padding: 22px 0 30px;
+  margin: 0 clamp(16px, 3vw, 40px);
+
+  /* flex + space-between：让「自定义版权」与「内核致谢」真正两端对齐。
+     内核原来是 float-right + 裸文本，裸文本不是元素，
+     会绕排到 float 下方 —— 这就是用户说的「排列很奇怪、靠左」 */
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px 20px;
+  flex-wrap: wrap;
+}
+
+/* footer.js 替换成功时把内核致谢降级成极淡小字。
+   不 display:none —— 开源协议要求保留 Blessing Skin 署名。 */
+body.hold-transition .main-footer[data-kokuu-year="1"] #copyright-text {
+  font-size: 11px;
+  opacity: .5;
+}
+
+/* ---- 移动端：换行堆叠，不再单边靠左 ---- */
+@media (max-width: 640px) {
+  body.hold-transition .main-footer {
+    padding: 18px 0 24px;
+  }
+  body.hold-transition .main-footer > .container {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 6px;
+  }
+  /* 内核的 d-none d-sm-inline 会让致谢在移动端完全消失，
+     这里显式恢复显示 —— 用户要的是「排列整齐」，不是「少一块」 */
+  body.hold-transition .main-footer #copyright-text {
+    display: block !important;
+    order: 2;
+  }
+  body.hold-transition .main-footer .kokuu-footer-note,
+  body.hold-transition .main-footer > b {
+    order: 1;
+    font-size: 12px;
+    line-height: 1.65;
+  }
+}

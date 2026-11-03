@@ -1,0 +1,13 @@
+{
+  "name": "kokuu-home",
+  "version": "1.0.0",
+  "title": "KokuuSkin 全站主题",
+  "description": "为 Blessing Skin 注入 KokuuSkin 视觉主题：Apple 扁平风格的首页（像素方块纹理、MC 场景轮播、月光元素），登录/注册页重皮肤，以及全站统一的浅色 / 深色双主题。首页文案与图片可在插件配置页中以表单方式自定义。纯插件实现，不修改内核任何模板。",
+  "author": "KokuuStudio",
+  "namespace": "KokuuStudio\\KokuuHome",
+  "config": "config.blade.php",
+  "require": {
+    "blessing-skin-server": "^6.0",
+    "php": ">=8.1"
+  }
+}

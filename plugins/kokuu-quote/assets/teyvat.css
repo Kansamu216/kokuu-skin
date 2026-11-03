@@ -1,0 +1,132 @@
+/* =========================================================
+   提瓦特元素系统（kokuu-quote）
+   ------------------------------------------------------------
+   【为什么这个文件从 kokuu-ui 搬过来了】
+
+   原来元素装饰（.tw-el 水印、页脚「提瓦特大陆」署名、内容区同心环）
+   放在 kokuu-ui 里，用Hook::addStyleFileToPage(..., ['*']) 全站注入。
+   结果是**首页也被铺上了这些元素**—— 首页是 MC 像素插画风格，
+   和提瓦特水印混在一起既不是风格也干扰内容。
+
+   现在元素装饰只服务于「提瓦特一言」这一个功能：
+     - 七元素配色表统一在这里，一言的徽标/光环/标签都从它取色
+     - 不再往页脚、水印、内容区塞装饰元素
+   所以本文件**只作用于 .kq-item（言组件）**，不再影响页面其它部分。
+
+   [依赖顺序]
+   kokuu-quote 依赖 kokuu-ui（见 package.json），
+   因此本文件可以放心使用 apple.css 定义的 --a-* 变量。
+   ========================================================= */
+
+/* =========================================================
+   一、七元素配色（唯一样板来源）
+   ------------------------------------------------------------
+   一言的每条台词都带一个元素属性（风/岩/雷/水/火/草/冰），
+   JS 侧把颜色写进 .kq-item 的 --kq-el，这里是兜底与兜底的兜底。
+   同一张表在 quote.js 里也有一份（elColor 函数）用于首帧渲染，
+   改颜色时两处都要改—— 或者只改这里，让 JS 只负责写 data-el。
+   ========================================================= */
+.kq-item[data-el="风"] { --kq-el: #7FB2E5; }
+.kq-item[data-el="岩"] { --kq-el: #C8A96A; }
+.kq-item[data-el="雷"] { --kq-el: #A98BE0; }
+.kq-item[data-el="水"] { --kq-el: #5FC6D9; }
+.kq-item[data-el="火"] { --kq-el: #E8794A; }
+.kq-item[data-el="草"] { --kq-el: #7FB069; }
+.kq-item[data-el="冰"] { --kq-el: #8FD4E0; }
+
+/* =========================================================
+   二、元素徽标（移动端的主视觉）
+   ------------------------------------------------------------
+   桌面端只有一个小方块（.kq-top::before），
+   移动端换成带元素名的徽标 —— 小屏上看颜色认不出是哪个元素，
+   必须有文字。这是「移动端重新设计」的核心改动之一。
+   ========================================================= */
+.kq-el-badge {
+  display: none;                 /* 桌面端不显示，由 quote.css 控制 */
+  align-items: center;
+  gap: 4px;
+  flex: none;
+  height: 18px;
+  padding: 0 7px 0 5px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 1;
+  letter-spacing: .3px;
+  white-space: nowrap;
+  color: var(--kq-el);
+  background: color-mix(in srgb, var(--kq-el) 12%, transparent);
+  border: 1px solid color-mix(in srgb, var(--kq-el) 30%, transparent);
+}
+/* 徽标左侧的小方块：像素风，与MC 主题呼应 */
+.kq-el-badge::before {
+  content: "";
+  width: 5px; height: 5px;
+  border-radius: 1px;
+  background: var(--kq-el);
+  image-rendering: pixelated;
+  flex: none;
+}
+/* 台词没带已知元素时 JS 会把徽标文字清空，此时连边框一起收掉，
+   否则会显示一个只有小方块的空胶囊（就是 v4「小方块」的翻版） */
+.kq-el-badge:empty {
+  display: none !important;
+  padding: 0;
+  border-color: transparent;
+  background: none;
+}
+body.dark-mode .kq-el-badge {
+  background: color-mix(in srgb, var(--kq-el) 18%, transparent);
+  border-color: color-mix(in srgb, var(--kq-el) 42%, transparent);
+}
+
+/* =========================================================
+   三、元素光环（台词背后的极淡元素色晕）
+   ------------------------------------------------------------
+   只在桌面端出现：胶囊形态下光晕会被裁切（overflow: hidden），
+   移动端换成整条形态才能铺开。
+   ========================================================= */
+.kq-item .kq-top::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity .3s;
+  background: radial-gradient(
+    120% 160% at 8% 50%,
+    color-mix(in srgb, var(--kq-el) 16%, transparent) 0%,
+    transparent 62%
+  );
+}
+.kq-item .kq-top:hover::after { opacity: 1; }
+
+/* =========================================================
+   四、悬浮卡片：元素色描边
+   ------------------------------------------------------------
+   移动端一言是浮在页面底部的一张卡片，点击换一句。
+   描边用元素色，暗示「这条台词属于哪个元素」。
+   ========================================================= */
+.kq-item .kq-top::after {
+  border-radius: inherit;
+}
+.kq-item .kq-float:hover {
+  border-color: color-mix(in srgb, var(--kq-el) 46%, transparent);
+  box-shadow:
+    0 6px 24px rgba(43, 31, 82, .10),
+    0 0 0 3px color-mix(in srgb, var(--kq-el) 10%, transparent);
+}
+.kq-item .kq-float .kq-refresh { opacity: .55; }
+
+/* =========================================================
+   五、无障碍 / 降级
+   ========================================================= */
+/* 不支持 color-mix 的老浏览器（Safari < 16.2）退回固定紫，
+   避免 --kq-el 整个失效导致文字透明 */
+@supports not (color: color-mix(in srgb, red 10%, transparent)) {
+  .kq-item { --kq-el: #8B7FD4; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .kq-item .kq-top::after { transition: none; }
+}

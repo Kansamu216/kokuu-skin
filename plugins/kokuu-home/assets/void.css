@@ -1,0 +1,420 @@
+/* =========================================================
+   KOKUU 「虚空」深色主题 · VOID THEME
+   由 KokuuHome 插件注入（*）。这不是"把浅色调暗"，而是一套
+   独立设计语言：深空紫黑底 + 星云辉光 + 霓虹描边 + 玻璃拟态
+   + 发光文字。与浅色 KOKUU 纸雨风形成"两个世界"的切换。
+
+   作用范围：
+   - 首页：.kokuu-root.kokuu-void（由 home.js 主题按钮切换）
+   - 后台/鉴权：body.dark-mode（AdminLTE 顶栏 ☀/🌙 按钮切换）
+   ========================================================= */
+
+/* =========================================================
+   第一部分：首页「虚空」主题（.kokuu-void）
+   ========================================================= */
+/* =========================================================
+   第一部分：首页夜间态（Apple Dark 扁平，非科幻虚空）
+   与浅色态同为 Apple 语言：纯黑底、纯净分层面、细腻阴影、
+   大圆角；MC 像素点缀与月神意象保留。
+   ========================================================= */
+.kokuu-root.kokuu-void {
+  --paper:    #000000;
+  --surface:  #1C1C1E;
+  --surface-2:#2C2C2E;
+  --text:     #F5F5F7;
+  --text-2:   #AEAEB2;
+  --text-3:   #7C7C80;
+  --sep:      rgba(84, 84, 88, 0.5);
+  --ink:      #F5F5F7;
+  --rain:     #4FE3D0;
+  --lilac:    #A78BFA;
+  --moon:     #C9BCF0;
+  --shadow:   0 1px 2px rgba(0,0,0,.4), 0 10px 32px rgba(0,0,0,.45);
+  --shadow-h: 0 2px 8px rgba(0,0,0,.5), 0 20px 52px rgba(0,0,0,.6);
+  background: var(--paper);
+  color: var(--text);
+}
+
+/* 像素网格：夜间更淡 */
+.kokuu-void .kokuu-grid {
+  background-image:
+    linear-gradient(to right, rgba(232,228,255,.04) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(232,228,255,.04) 1px, transparent 1px);
+}
+
+/* 顶栏：夜间半透明黑玻璃 */
+.kokuu-void .kokuu-navbar {
+  background: rgba(0, 0, 0, .62);
+  border-bottom-color: var(--sep);
+}
+.kokuu-void .kokuu-brand { color: var(--text); }
+.kokuu-void .kokuu-nav a { color: var(--text-2); }
+.kokuu-void .kokuu-nav a:hover { background: rgba(255,255,255,.08); color: var(--text); }
+.kokuu-void .kokuu-theme-toggle {
+  color: var(--text-2);
+  background: var(--surface);
+  border-color: var(--sep);
+}
+.kokuu-void .kokuu-theme-toggle:hover { color: var(--text); }
+
+/* 标题：像素硬边描边改为夜间色 */
+.kokuu-void .kokuu-title {
+  color: var(--text);
+  text-shadow:
+     3px 0 0 #000, -3px 0 0 #000,
+     0 3px 0 #000,  0 -3px 0 #000,
+     2px 2px 0 #000, -2px 2px 0 #000,
+     2px -2px 0 #000, -2px -2px 0 #000;
+}
+.kokuu-void .kokuu-tagline { color: var(--rain); }
+.kokuu-void .kokuu-sub { color: var(--text-2); }
+.kokuu-void .kokuu-eyebrow { color: var(--text-2); background: rgba(79,227,208,.14); }
+.kokuu-void .kokuu-kicker { color: var(--rain); background: rgba(79,227,208,.14); }
+
+/* 按钮 */
+.kokuu-void .kbtn.primary { background: var(--rain); color: #04211d; box-shadow: 0 4px 18px rgba(79,227,208,.3); }
+.kokuu-void .kbtn.primary:hover { background: var(--lilac); box-shadow: 0 8px 28px rgba(167,139,250,.4); }
+.kokuu-void .kbtn:not(.primary) { background: var(--surface); color: var(--text); border-color: var(--sep); }
+.kokuu-void .kbtn:not(.primary):hover { background: var(--surface-2); }
+
+/* 图片位 */
+.kokuu-void .kokuu-shot {
+  background: var(--surface);
+  border-color: var(--sep);
+}
+.kokuu-void .kokuu-shot-cap { background: rgba(0,0,0,.6); color: #F5F3EE; }
+
+/* 卡片：纯净分层面（无玻璃无霓虹） */
+.kokuu-void .kcard {
+  background: var(--surface);
+  border-color: var(--sep);
+}
+.kokuu-void .kcard:hover { box-shadow: var(--shadow-h); }
+.kokuu-void .kcard-ico { background: var(--surface-2); border-color: var(--sep); }
+.kokuu-void .kcard h3 { color: var(--text); }
+.kokuu-void .kcard p { color: var(--text-2); }
+.kokuu-void .kmore { color: var(--rain); }
+.kokuu-void .kokuu-h2 { color: var(--text); }
+.kokuu-void .kokuu-creed-col:first-child p { color: var(--text); }
+.kokuu-void .kokuu-creed-col:last-child p { color: var(--rain); }
+.kokuu-void .kokuu-creed .small { color: var(--text-2); }
+
+/* 功能小标签 */
+.kokuu-void .kokuu-badges { color: var(--text-2); }
+
+/* 页脚 */
+.kokuu-void .kokuu-foot { border-top-color: var(--sep); }
+.kokuu-void .kokuu-foot-brand { color: var(--text); }
+.kokuu-void .foot-left p,
+.kokuu-void .foot-fine { color: var(--text-3); }
+.kokuu-void .foot-right a { color: var(--text-2); }
+.kokuu-void .foot-right a:hover { color: var(--rain); }
+
+   第二部分：全站「虚空」主题（body.dark-mode）
+   覆盖后台（用户中心/皮肤库/管理后台）与鉴权页。
+   ========================================================= */
+body.dark-mode {
+  --void-bg:      #0B0716;
+  --void-panel:   #150F2C;
+  --void-panel-2: #1C1440;
+  --void-ink:     #E8E4FF;
+  --void-ink-70:  rgba(232, 228, 255, 0.72);
+  --void-ink-45:  rgba(232, 228, 255, 0.45);
+  --void-rain:    #4FE3D0;
+  --void-lilac:   #A78BFA;
+  --void-line:    rgba(167, 139, 250, 0.26);
+}
+
+/* 背景：深空 + 星云 */
+body.dark-mode .content-wrapper,
+body.dark-mode .wrapper {
+  background: var(--void-bg) !important;
+  background-image:
+    radial-gradient(50% 40% at 12% 8%,  rgba(79, 227, 208, 0.10), transparent 60%),
+    radial-gradient(45% 38% at 88% 15%, rgba(167, 139, 250, 0.13), transparent 60%),
+    radial-gradient(60% 50% at 50% 100%, rgba(217, 70, 239, 0.07), transparent 65%) !important;
+  background-attachment: fixed;
+}
+
+/* 顶栏：霓虹描边 + 玻璃 */
+body.dark-mode .main-header,
+body.dark-mode .main-header.navbar {
+  background: rgba(11, 7, 22, 0.82) !important;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-bottom: 1px solid rgba(79, 227, 208, 0.22) !important;
+  box-shadow: 0 8px 40px -18px rgba(0, 0, 0, 0.9);
+}
+body.dark-mode .main-header .nav-link:hover {
+  background: rgba(79, 227, 208, 0.12) !important;
+  color: var(--void-rain) !important;
+}
+body.dark-mode .main-header .nav-item.active > .nav-link { color: var(--void-rain) !important; }
+
+/* 侧栏：深空紫黑渐变 + 霓虹高亮 */
+body.dark-mode .main-sidebar,
+body.dark-mode .sidebar {
+  background: linear-gradient(180deg, #140E2E 0%, #0B0716 100%) !important;
+  border-right: 1px solid rgba(167, 139, 250, 0.18);
+}
+body.dark-mode .nav-sidebar .nav-link.active {
+  background: linear-gradient(90deg, rgba(79, 227, 208, 0.22), rgba(167, 139, 250, 0.16)) !important;
+  color: #fff !important;
+  box-shadow: inset 2px 0 0 var(--void-rain), 0 0 22px rgba(79, 227, 208, 0.18);
+}
+body.dark-mode .nav-sidebar .nav-link:hover {
+  background: rgba(79, 227, 208, 0.08) !important;
+  color: var(--void-rain) !important;
+}
+body.dark-mode .brand-link,
+body.dark-mode .user-panel { border-color: rgba(167, 139, 250, 0.16) !important; }
+body.dark-mode .kokuu-accent { color: var(--void-rain) !important; }
+
+/* 卡片：玻璃拟态 */
+body.dark-mode .card {
+  background: rgba(21, 15, 44, 0.6) !important;
+  border: 1px solid var(--void-line) !important;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  box-shadow: 0 20px 60px -30px rgba(0, 0, 0, 0.9), inset 0 1px 0 rgba(255, 255, 255, 0.05) !important;
+}
+body.dark-mode .card .card-body { background: transparent !important; }
+body.dark-mode .card .card-header,
+body.dark-mode .card .card-footer {
+  border-color: var(--void-line) !important;
+  background: transparent !important;
+}
+body.dark-mode .card.card-primary > .card-header,
+body.dark-mode .card.card-warning > .card-header,
+body.dark-mode .card.card-info > .card-header,
+body.dark-mode .card.card-success > .card-header {
+  background: linear-gradient(90deg, rgba(79,227,208,.16), rgba(167,139,250,.18)) !important;
+  border-bottom: 1px solid var(--void-line) !important;
+}
+body.dark-mode .card-title { color: var(--void-ink) !important; }
+body.dark-mode .card-primary > .card-header .card-title,
+body.dark-mode .card-warning > .card-header .card-title { color: #fff !important; }
+
+/* 预览图容器（皮肤库卡片） */
+body.dark-mode .card .card-body:has(.card-img-top) {
+  background: radial-gradient(60% 60% at 50% 40%, rgba(79,227,208,.08), transparent 70%) !important;
+}
+body.dark-mode .card-img-top { filter: drop-shadow(0 8px 30px rgba(0,0,0,.6)); }
+
+/* 文本 / 链接 */
+body.dark-mode .content-header h1,
+body.dark-mode section.content h1,
+body.dark-mode h1, body.dark-mode h2, body.dark-mode h3,
+body.dark-mode .card-title {
+  color: var(--void-ink) !important;
+}
+body.dark-mode p, body.dark-mode label,
+body.dark-mode .content-wrapper p {
+  color: var(--void-ink-70);
+}
+body.dark-mode a { color: var(--void-rain) !important; }
+body.dark-mode a:hover { color: #7FF0E2 !important; }
+
+/* 表单控件：深色 + 霓虹聚焦 */
+body.dark-mode .form-control,
+body.dark-mode .input-group .form-control,
+body.dark-mode select.form-control,
+body.dark-mode textarea.form-control {
+  background: rgba(11, 7, 22, 0.6) !important;
+  color: var(--void-ink) !important;
+  border: 1.5px solid var(--void-line) !important;
+}
+body.dark-mode .form-control:focus {
+  border-color: var(--void-rain) !important;
+  box-shadow: 0 0 0 0.2rem rgba(79, 227, 208, 0.18), 0 0 24px rgba(79, 227, 208, 0.2) !important;
+}
+body.dark-mode .form-control::placeholder { color: var(--void-ink-45); }
+body.dark-mode .input-group-text,
+body.dark-mode .input-group-prepend .btn,
+body.dark-mode .input-group-append .btn {
+  background: rgba(28, 20, 64, 0.7) !important;
+  color: var(--void-ink-70) !important;
+  border-color: var(--void-line) !important;
+}
+
+/* 按钮：霓虹 */
+body.dark-mode .btn-primary,
+body.dark-mode .btn-info,
+body.dark-mode .btn-success {
+  background: linear-gradient(120deg, var(--void-rain), #34c9b8) !important;
+  border-color: transparent !important;
+  color: #04121a !important;
+  font-weight: 700;
+}
+body.dark-mode .btn-primary:hover,
+body.dark-mode .btn-info:hover,
+body.dark-mode .btn-success:hover {
+  box-shadow: 0 0 30px rgba(79, 227, 208, 0.5) !important;
+}
+body.dark-mode .btn-secondary {
+  background: rgba(28, 20, 64, 0.7) !important;
+  color: var(--void-ink-70) !important;
+  border-color: var(--void-line) !important;
+}
+body.dark-mode .btn-secondary.active {
+  background: linear-gradient(120deg, var(--void-rain), var(--void-lilac)) !important;
+  color: #04121a !important;
+  border-color: transparent !important;
+}
+body.dark-mode .btn.bg-olive {
+  background: rgba(28, 20, 64, 0.7) !important;
+  color: var(--void-ink-70) !important;
+  border: 1px solid var(--void-line) !important;
+}
+body.dark-mode .btn.bg-olive.active,
+body.dark-mode .btn.bg-olive:hover {
+  background: var(--void-rain) !important;
+  color: #04121a !important;
+  border-color: var(--void-rain) !important;
+}
+body.dark-mode .btn-warning {
+  background: var(--void-lilac) !important;
+  color: #0d0620 !important;
+  border-color: transparent !important;
+}
+body.dark-mode .btn-default,
+body.dark-mode .btn-outline-secondary {
+  background: rgba(28, 20, 64, 0.5) !important;
+  color: var(--void-ink) !important;
+  border-color: var(--void-line) !important;
+}
+body.dark-mode .btn-outline-primary,
+body.dark-mode .btn-outline-info,
+body.dark-mode .btn-outline-success {
+  color: var(--void-rain) !important;
+  border-color: rgba(79, 227, 208, 0.5) !important;
+}
+body.dark-mode .btn-outline-primary:hover,
+body.dark-mode .btn-outline-info:hover,
+body.dark-mode .btn-outline-success:hover {
+  background: var(--void-rain) !important;
+  color: #04121a !important;
+}
+
+/* 徽章 */
+body.dark-mode .badge {
+  border: 1px solid var(--void-line);
+  font-weight: 600;
+}
+body.dark-mode .badge.bg-teal,
+body.dark-mode .badge.bg-primary,
+body.dark-mode .badge.bg-info,
+body.dark-mode .badge.bg-olive {
+  background: rgba(79, 227, 208, 0.16) !important;
+  color: var(--void-rain) !important;
+}
+body.dark-mode .badge.bg-indigo,
+body.dark-mode .badge.bg-warning {
+  background: rgba(167, 139, 250, 0.18) !important;
+  color: #C9B8FF !important;
+}
+
+/* 表格 */
+body.dark-mode .table thead th {
+  background: rgba(28, 20, 64, 0.6) !important;
+  color: var(--void-ink) !important;
+  border-bottom: 2px solid var(--void-line) !important;
+}
+body.dark-mode .table td {
+  color: var(--void-ink-70) !important;
+  border-color: rgba(167, 139, 250, 0.12) !important;
+}
+body.dark-mode .table-striped tbody tr:nth-of-type(odd) {
+  background: rgba(28, 20, 64, 0.28) !important;
+}
+body.dark-mode .table-hover tbody tr:hover {
+  background: rgba(79, 227, 208, 0.07) !important;
+}
+
+/* 分页器 */
+body.dark-mode .pagination .page-link {
+  background: rgba(28, 20, 64, 0.6) !important;
+  color: var(--void-ink-70) !important;
+  border: 1px solid var(--void-line) !important;
+}
+body.dark-mode .pagination .page-item.active .page-link {
+  background: linear-gradient(120deg, var(--void-rain), var(--void-lilac)) !important;
+  color: #04121a !important;
+  border-color: transparent !important;
+  box-shadow: 0 0 24px rgba(79, 227, 208, 0.4);
+}
+body.dark-mode .pagination .page-link:hover {
+  background: rgba(79, 227, 208, 0.16) !important;
+  color: var(--void-rain) !important;
+}
+
+/* 弹窗 / Toast */
+body.dark-mode .modal-content {
+  background: rgba(15, 10, 32, 0.94) !important;
+  border: 1px solid var(--void-line) !important;
+  backdrop-filter: blur(16px);
+  box-shadow: 0 30px 80px -30px rgba(0, 0, 0, 0.95), 0 0 40px rgba(79, 227, 208, 0.12) !important;
+}
+body.dark-mode .modal-header,
+body.dark-mode .modal-footer { border-color: var(--void-line) !important; }
+body.dark-mode .modal-title { color: var(--void-ink) !important; }
+body.dark-mode .modal-body { color: var(--void-ink-70) !important; }
+body.dark-mode .toast {
+  background: rgba(21, 15, 44, 0.95) !important;
+  border: 1px solid var(--void-line) !important;
+  color: var(--void-ink) !important;
+}
+body.dark-mode .toast-header {
+  background: linear-gradient(90deg, rgba(79,227,208,.18), rgba(167,139,250,.2)) !important;
+  color: #fff !important;
+}
+body.dark-mode .toast-body { background: transparent !important; color: var(--void-ink) !important; }
+
+/* 遮罩 / 空状态 */
+body.dark-mode .overlay {
+  background: rgba(11, 7, 22, 0.7) !important;
+  border-radius: var(--radius-card, 16px) !important;
+}
+body.dark-mode .text-center.m-5,
+body.dark-mode .card-body.text-center { color: var(--void-ink-45) !important; }
+
+/* 页脚 */
+body.dark-mode .main-footer {
+  background: rgba(11, 7, 22, 0.8) !important;
+  border-top: 1px solid var(--void-line) !important;
+  color: var(--void-ink-45) !important;
+}
+
+/* 滚动条（虚空霓虹） */
+body.dark-mode ::-webkit-scrollbar-thumb {
+  background: rgba(79, 227, 208, 0.28);
+  border-radius: 999px;
+  border: 2px solid var(--void-bg);
+}
+body.dark-mode ::-webkit-scrollbar-thumb:hover {
+  background: rgba(79, 227, 208, 0.5);
+}
+
+/* =========================================================
+   第三部分：鉴权页虚空化（auth 页由 auth.css 建壳，这里只染虚空变量）
+   ========================================================= */
+body.dark-mode .login-box,
+body.dark-mode .card.login-card {
+  background: rgba(21, 15, 44, 0.6) !important;
+  border: 1px solid var(--void-line) !important;
+  backdrop-filter: blur(14px);
+  box-shadow: 0 30px 80px -30px rgba(0, 0, 0, 0.95), 0 0 50px rgba(79, 227, 208, 0.14) !important;
+}
+body.dark-mode .login-logo a { color: var(--void-ink) !important; }
+body.dark-mode .login-box .btn-primary {
+  background: linear-gradient(120deg, var(--void-rain), #34c9b8) !important;
+  color: #04121a !important;
+  border-color: transparent !important;
+}
+
+/* 降低动效偏好 */
+@media (prefers-reduced-motion: reduce) {
+  .kokuu-void .kokuu-aurora,
+  .kokuu-void .kokuu-portal .ring,
+  .kokuu-void .kokuu-portal .core { animation: none !important; }
+}

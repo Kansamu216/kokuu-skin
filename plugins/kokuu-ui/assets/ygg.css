@@ -1,0 +1,232 @@
+/* =========================================================
+   Yggdrasil「启动器配置」卡片 · Apple 扁平化（第二版）
+   由 kokuu-ui 注入（仅 user 页面）。
+
+   这张卡片原本是 yggdrasil-api 自带的 AdminLTE 原生外观
+   （card-success + 渐变表头 + 描边）。kokuu-ui 用
+   replaceNamespace() 顶掉了它的视图（views/ygg/dnd.twig），
+   这里是配套样式。
+
+   卡片上只有一个动作：把按钮拖进启动器。所以结构极简——
+   eyebrow / 标题 / 地址 / 大按钮 / 兼容性徽章，没有别的。
+
+   第二版相对第一版的三处改动：
+     ① 地址加了标签 —— 裸 URL 用户不知道是「验证地址」还是「网页地址」
+     ② 按钮加大（padding 15→20px，字号 15→16.5px），加内高光
+     ③ 「仅支持」拆成「前缀 + 胶囊徽章」，从一句话变成一组视觉单元
+
+   作用域一律写成 body.kokuu-apple X：
+   AdminLTE 的 a { color: var(--rain) } 与
+   apple.css 的 body.kokuu-apple a { color: var(--k-rain) }
+   特异性高达 (0,1,2)，单类名选择器 (0,1,0) 会被压掉。
+   ========================================================= */
+
+body.kokuu-apple .kyCard {
+  background: var(--a-surface, #fff);
+  border: 0.5px solid var(--a-sep, rgba(60, 60, 67, .13));
+  border-radius: var(--a-radius-lg, 24px);
+  box-shadow: var(--a-shadow, 0 1px 2px rgba(0, 0, 0, .04), 0 6px 20px rgba(0, 0, 0, .05));
+  padding: 22px 24px;
+  transition: box-shadow .3s var(--a-ease, cubic-bezier(.4, 0, .2, 1));
+}
+
+body.kokuu-apple .kyCard:hover {
+  box-shadow: var(--a-shadow-hover, 0 2px 6px rgba(0, 0, 0, .06), 0 12px 32px rgba(0, 0, 0, .1));
+}
+
+/* ---- eyebrow：图标 + 小字，一眼说明这是什么 ---- */
+body.kokuu-apple .kyCard-head { margin-bottom: 10px; }
+
+body.kokuu-apple .kyCard-eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 13px;
+  font-weight: 500;
+  letter-spacing: .01em;
+  color: var(--a-text-2, #6E6E73);
+}
+
+body.kokuu-apple .kyCard-eyebrow i { color: var(--rain, #0FA3A3); }
+
+/* ---- 标题 ---- */
+body.kokuu-apple .kyCard-title {
+  margin: 0 0 14px;
+  font-size: 19px;
+  font-weight: 600;
+  line-height: 1.4;
+  letter-spacing: -.01em;
+  color: var(--a-text, #1C1C1E) !important;
+}
+
+/* ---- 地址块：标签 + 等宽 URL ----------------------------------
+   第二版加标签的原因：光一个裸 URL，用户分不清它是「验证地址」
+   还是「网页地址」，也不知道该往启动器哪个字段里填。
+   ---------------------------------------------------------- */
+body.kokuu-apple .kyCard-url {
+  padding: 11px 15px 12px;
+  margin-bottom: 14px;
+  background: var(--a-surface-2, #FBFBFD);
+  border: 0.5px solid var(--a-sep, rgba(60, 60, 67, .13));
+  border-radius: var(--a-radius-sm, 12px);
+}
+
+body.kokuu-apple .kyCard-url-label {
+  display: block;
+  margin-bottom: 3px;
+  font-size: 11.5px;
+  font-weight: 600;
+  letter-spacing: .04em;
+  color: var(--a-text-3, #A1A1A6);
+}
+
+body.kokuu-apple .kyCard-url-code {
+  display: block;
+  font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--a-text, #1C1C1E) !important;
+  background: none;
+  border: 0;
+  padding: 0;
+  word-break: break-all;
+}
+
+/* =========================================================
+   主按钮 —— 卡片上唯一的动作
+   第二版把它做得更大：padding 15→20px、字号 15→16.5px，
+   再加一道顶部内高光（inset 0 1px 0 rgba(255,255,255,.28)），
+   让它看起来像一块有厚度的实体，而不是一个扁平的色块——
+   这正是「可以被拖走」该有的视觉暗示。
+   ⚠️ color 必须 (0,2,1) —— 见文件头的特异性说明。
+   ========================================================= */
+body.kokuu-apple .kyCard-drag,
+body.kokuu-apple .kyCard-drag:hover,
+body:not(.kokuu-apple) .kyCard-drag,
+body:not(.kokuu-apple) .kyCard-drag:hover {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  width: 100%;
+  padding: 20px 24px;
+  border: 0;
+  border-radius: 15px;
+  background: linear-gradient(135deg, var(--rain, #0FA3A3), var(--lilac, #8B7FD4));
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .28),
+              0 12px 26px -14px rgba(43, 31, 82, .7);
+  color: #fff;
+  font-size: 16.5px;
+  font-weight: 600;
+  line-height: 1.3;
+  letter-spacing: .01em;
+  text-align: center;
+  cursor: grab;
+  transition: transform .2s var(--a-ease, cubic-bezier(.4, 0, .2, 1)),
+              box-shadow .2s var(--a-ease, cubic-bezier(.4, 0, .2, 1)),
+              opacity .2s var(--a-ease, cubic-bezier(.4, 0, .2, 1));
+}
+
+body.kokuu-apple .kyCard-drag:hover {
+  transform: translateY(-1px);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .28),
+              0 16px 30px -14px rgba(43, 31, 82, .75);
+}
+
+/* 拖拽中：抓手感 + 轻微缩放，给出"正在拖"的反馈 */
+body.kokuu-apple .kyCard-drag:active {
+  cursor: grabbing;
+  transform: scale(.985);
+  box-shadow: inset 0 2px 6px rgba(43, 31, 82, .22);
+}
+
+/* 插件 dnd.js 复制成功后会禁用按钮 1 秒 */
+body.kokuu-apple .kyCard-drag:disabled { opacity: .72; cursor: default; transform: none; }
+
+body.kokuu-apple .kyCard-drag i { font-size: 17px; }
+
+/* ---- 兼容性：前缀 + 胶囊徽章 ----------------------------------
+   第二版不再写成「ⓘ 仅支持 HMCL 与 PCL 启动器」一行小字。
+   那样文字是散的、没有边界，看起来像脚注。
+   现在拆成「支持」+ 两个圆角徽章，紧凑成一个视觉单元，
+   既更像一枚标签，也更容易一眼扫到。
+   ---------------------------------------------------------- */
+body.kokuu-apple .kyCard-note {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  margin: 14px 0 0;
+  font-size: 12.5px;
+  line-height: 1.5;
+}
+
+body.kokuu-apple .kyCard-note-label {
+  color: var(--a-text-3, #A1A1A6);
+  margin-right: 2px;
+}
+
+body.kokuu-apple .kyCard-chip {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 9px;
+  border-radius: 999px;
+  background: var(--a-surface-2, #FBFBFD);
+  border: 0.5px solid var(--a-sep, rgba(60, 60, 67, .13));
+  color: var(--a-text-2, #6E6E73);
+  font-size: 11.5px;
+  font-weight: 600;
+  letter-spacing: .02em;
+  white-space: nowrap;
+}
+
+/* =========================================================
+   深色模式
+   ========================================================= */
+body.kokuu-apple.dark-mode .kyCard,
+body.dark-mode .kyCard {
+  background: rgba(255, 255, 255, .06);
+  border-color: rgba(255, 255, 255, .12);
+}
+
+body.kokuu-apple.dark-mode .kyCard-url,
+body.dark-mode .kyCard-url {
+  background: rgba(255, 255, 255, .04);
+  border-color: rgba(255, 255, 255, .10);
+}
+
+body.kokuu-apple.dark-mode .kyCard-title,
+body.kokuu-apple.dark-mode .kyCard-url-code,
+body.dark-mode .kyCard-title,
+body.dark-mode .kyCard-url-code {
+  color: rgba(255, 255, 255, .92) !important;
+}
+
+body.kokuu-apple.dark-mode .kyCard-eyebrow,
+body.dark-mode .kyCard-eyebrow {
+  color: rgba(235, 235, 245, .68) !important;
+}
+
+body.kokuu-apple.dark-mode .kyCard-note-label,
+body.dark-mode .kyCard-note-label {
+  color: rgba(235, 235, 245, .48) !important;
+}
+
+/* 深色下徽章不能用白底，否则会变成两个亮块抢按钮的注意力 */
+body.kokuu-apple.dark-mode .kyCard-chip,
+body.dark-mode .kyCard-chip {
+  background: rgba(255, 255, 255, .06);
+  border-color: rgba(255, 255, 255, .12);
+  color: rgba(235, 235, 245, .62) !important;
+}
+
+/* =========================================================
+   移动端
+   ========================================================= */
+@media (max-width: 600px) {
+  body.kokuu-apple .kyCard { padding: 18px 16px; }
+  body.kokuu-apple .kyCard-title { font-size: 17px; margin-bottom: 12px; }
+  /*移动端按钮仍保持大尺寸——这是主CTA，不该在小屏缩水 */
+  body.kokuu-apple .kyCard-drag { padding: 17px 18px; font-size: 15.5px; }
+  body.kokuu-apple .kyCard-url-code { font-size: 12.5px; }
+}

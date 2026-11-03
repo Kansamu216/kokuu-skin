@@ -1,0 +1,9 @@
+# Blessing Skin 默认忽略插件目录下的一切（插件应由各自仓库分发）。
+# KokuuSkin 自研插件直接在本仓库维护，因此改为「只忽略运行时产物」。
+
+# 插件自带的 node_modules / 构建产物
+node_modules/
+dist/
+
+# 插件运行时生成
+*.log

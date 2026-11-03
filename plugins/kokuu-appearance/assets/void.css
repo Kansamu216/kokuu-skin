@@ -26,7 +26,7 @@
   --text-3:   #7C7C80;
   --sep:      rgba(84, 84, 88, 0.5);
   --ink:      #F5F5F7;
-  --rain:     #4FE3D0;
+  --rain:     var(--k-brand-rain);
   --lilac:    #A78BFA;
   --moon:     #C9BCF0;
   --shadow:   0 1px 2px rgba(0,0,0,.4), 0 10px 32px rgba(0,0,0,.45);
@@ -82,7 +82,7 @@
   background: var(--surface);
   border-color: var(--sep);
 }
-.kokuu-void .kokuu-shot-cap { background: rgba(0,0,0,.6); color: #F5F3EE; }
+.kokuu-void .kokuu-shot-cap { background: rgba(0,0,0,.6); color: var(--k-bg); }
 
 /* 卡片：纯净分层面（无玻璃无霓虹） */
 .kokuu-void .kcard {

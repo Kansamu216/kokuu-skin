@@ -16,30 +16,30 @@
   /*
    * 品牌色：引用 kokuu-home 的定义，不自己写第二份。
    *
-   * v1.2 起这里曾是 `--k-rain: #0FA3A3` 这样的**字面量副本**，
-   * 与 kokuu-home 的 `--rain: #0FA3A3` 数值相同却是两个名字。
+   * v1.2 起这里曾是 `--k-rain: var(--k-brand-rain)` 这样的**字面量副本**，
+   * 与 kokuu-home 的 `--rain: var(--k-brand-rain)` 数值相同却是两个名字。
    * 后果是：改主题色要改两处，漏一处就出现「部分元素还是旧颜色」，
    * 而且写错变量名不会报错，只是静默回退到继承色 —— 极难排查。
    *
-   * 现在用 `var(--rain, #0FA3A3)` 的形式：**优先取kokuu-home 的值，
+   * 现在用 `var(--rain, var(--k-brand-rain))` 的形式：**优先取kokuu-home 的值，
    * 取不到才用后面的字面量兜底**。这样 kokuu-home 停用时本站仍可看，
    * 而两者都在时永远以 kokuu-home 为准，不存在两份真相。
    *
    * 保留 --k-* 这个名字是为了兼容 kokuu-forum / kokuu-credit
    * （它们也在用），但它现在是**别名**而不是副本。
    */
-  --k-paper: var(--paper, #F5F3EE);
-  --k-ink:   var(--ink,   #2B1F52);
-  --k-rain:  var(--rain,  #0FA3A3);
-  --k-lilac: var(--lilac, #8B7FD4);
+  --k-paper: var(--paper, var(--k-bg));
+  --k-ink:   var(--ink,   var(--k-brand-ink));
+  --k-rain:  var(--rain,  var(--k-brand-rain));
+  --k-lilac: var(--lilac, var(--k-brand-lilac));
 
   /* Apple 扁平体系 */
-  --a-bg: #F2F2F7;              /* 苹果系统级浅灰底 */
-  --a-surface: #FFFFFF;         /* 卡片面 */
-  --a-surface-2: #FBFBFD;       /* 次级面（表头等） */
-  --a-text: #1C1C1E;            /* 主文字 */
-  --a-text-2: #6E6E73;          /* 次文字 */
-  --a-text-3: #A1A1A6;          /* 三级/占位 */
+  --a-bg: var(--k-bg);              /* 苹果系统级浅灰底 */
+  --a-surface: #fff;         /* 卡片面 */
+  --a-surface-2: var(--k-surface-2);       /* 次级面（表头等） */
+  --a-text: var(--k-text);            /* 主文字 */
+  --a-text-2: var(--k-text-2);          /* 次文字 */
+  --a-text-3: var(--k-text-3);          /* 三级/占位 */
   --a-sep: rgba(60, 60, 67, 0.13);   /* 极淡分隔线 */
   --a-sep-strong: rgba(60, 60, 67, 0.20);
   --a-radius: 18px;             /* 大圆角 */
@@ -137,21 +137,21 @@ body.kokuu-apple .dropdown-menu {
 body.kokuu-apple .dropdown-item {
   border-radius: 9px;
   padding: 8px 12px;
-  color: var(--a-text, #1C1C1E) !important;
+  color: var(--a-text, var(--k-text)) !important;
   font-size: 13px;
   transition: background-color .16s var(--a-ease, ease);
 }
 body.kokuu-apple .dropdown-item:hover,
 body.kokuu-apple .dropdown-item:focus {
   background: rgba(120, 120, 128, .1) !important;
-  color: var(--a-text, #1C1C1E) !important;
+  color: var(--a-text, var(--k-text)) !important;
 }
 body.kokuu-apple.dark-mode .dropdown-menu {
   background: rgba(44, 44, 46, .96) !important;
   border-color: rgba(255, 255, 255, .12) !important;
 }
 body.kokuu-apple.dark-mode .dropdown-item {
-  color: var(--a-text, #F2F2F7) !important;
+  color: var(--a-text, var(--k-bg)) !important;
 }
 body.kokuu-apple.dark-mode .dropdown-item:hover,
 body.kokuu-apple.dark-mode .dropdown-item:focus {
@@ -207,11 +207,11 @@ body.kokuu-apple .nav-sidebar .nav-item > .nav-link.active {
 }
 /*
  * 分组标题（「用户中心」「浏览」…）
- * ⚠️ 这里原来用 --a-text-3(#A1A1A6)，但那是 Apple 系统灰三档里的
- *    「三级/占位」色：#A1A1A6 on #FFF 只有 2.57:1，AA 正文需 4.5:1。
+ * ⚠️ 这里原来用 --a-text-3(var(--k-text-3))，但那是 Apple 系统灰三档里的
+ *    「三级/占位」色：var(--k-text-3) on #FFF 只有 2.57:1，AA 正文需 4.5:1。
  *    11.5px 的分组标题虽算「小字」而非大字，阈值不降 —— 实测浅色下
  *    侧栏那几行几乎看不见（2026-10-03 截图）。
- *    改用 --a-text-2(#6E6E73) = 5.07:1，仍明显弱于菜单项的 --a-text，
+ *    改用 --a-text-2(var(--k-text-2)) = 5.07:1，仍明显弱于菜单项的 --a-text，
  *    层级感保留，对比度达标。
  */
 body.kokuu-apple .nav-header {
@@ -375,8 +375,8 @@ body.kokuu-apple .card.card-success > .card-header {
  *
  * 背景：上面把 card-success 的 header 也改成了 --a-surface-2（近白），
  *   但内核 AdminLTE（public/app/style.*.css）给 card-success 的标题写了
- *     .card.card-success > .card-header .card-title { color: #F5F3EE !important }
- *   #F5F3EE 是**虚空深色主题的浅色标题**（配深色 header 用的）。
+ *     .card.card-success > .card-header .card-title { color: var(--k-bg) !important }
+ *   var(--k-bg) 是**虚空深色主题的浅色标题**（配深色 header 用的）。
  *   apple.css 把 header 翻成近白，却没同步翻标题色 →
  *   近白底+ 近白字，标题直接看不见。
  *
@@ -403,7 +403,7 @@ body.kokuu-apple .card.card-success > .card-header .card-title { color: var(--a-
  * 为什么只有「皮肤」那个 tab 看得见：
  *   tab 是 `.nav-tabs > .nav-item > .nav-link`。
  *   「皮肤」带 .active，命中
- *     .nav-tabs .nav-link.active { color:#495057 }（0,3,0）← 赢
+ *     .nav-tabs .nav-link.active { color:var(--k-text-2) }（0,3,0）← 赢
  *   而「披风 / 上传材质」没有 .active，只剩
  *     .card-primary:not(...) > .card-header a { color:#fff } ← 赢
  *   于是同一排 tab：激活的黑字，未激活的白字（=看不见）。
@@ -557,7 +557,7 @@ body.kokuu-apple .btn-light {
 body.kokuu-apple .btn-secondary:hover,
 body.kokuu-apple .btn-default:hover,
 body.kokuu-apple .btn.bg-olive:hover,
-body.kokuu-apple .btn-light:hover { background: #EFEFF4 !important; }
+body.kokuu-apple .btn-light:hover { background: var(--k-surface-3) !important; }
 body.kokuu-apple .btn.bg-olive.active,
 body.kokuu-apple .btn-secondary.active {
   background: var(--k-rain) !important;
@@ -596,12 +596,12 @@ body.kokuu-apple .badge.bg-primary,
 body.kokuu-apple .badge.bg-info,
 body.kokuu-apple .badge.bg-olive {
   background: rgba(15, 163, 163, 0.14) !important;
-  color: #0B7C7C !important;
+  color: color-mix(in srgb, var(--k-brand-rain) 82%, #000) !important;
 }
 body.kokuu-apple .badge.bg-indigo,
 body.kokuu-apple .badge.bg-warning {
   background: rgba(139, 127, 212, 0.16) !important;
-  color: #5B4BB0 !important;
+  color: var(--k-brand-lilac) !important;
 }
 
 /* =========================================================
@@ -722,11 +722,11 @@ body.kokuu-apple ::-webkit-scrollbar-thumb:hover { background-color: rgba(60, 60
    ========================================================= */
 body.kokuu-apple.dark-mode {
   --a-bg: #000000;
-  --a-surface: #1C1C1E;
-  --a-surface-2: #2C2C2E;
-  --a-text: #F5F5F7;
-  --a-text-2: #AEAEB2;
-  --a-text-3: #7C7C80;
+  --a-surface: var(--k-text);
+  --a-surface-2: var(--k-surface-2);
+  --a-text: var(--k-text);
+  --a-text-2: var(--k-text-2);
+  --a-text-3: var(--k-text-3);
   --a-sep: rgba(84, 84, 88, 0.5);
   --a-sep-strong: rgba(84, 84, 88, 0.7);
   --a-shadow: 0 1px 2px rgba(0,0,0,.3), 0 8px 24px rgba(0,0,0,.35);
@@ -763,7 +763,7 @@ body.kokuu-apple.dark-mode .main-header .nav-link:hover,
 body.kokuu-apple .btn.bg-olive:hover { background: rgba(255, 255, 255, 0.08) !important; }
 body.kokuu-apple.dark-mode .nav-sidebar .nav-link.active {
   background: rgba(79, 227, 208, 0.16) !important;
-  color: #4FE3D0 !important;
+  color: var(--k-brand-rain) !important;
 }
 body.kokuu-apple.dark-mode .table-hover tbody tr:hover { background: rgba(255, 255, 255, 0.05) !important; }
 body.kokuu-apple.dark-mode .card .card-body:has(.card-img-top) { background: var(--a-surface-2) !important; }
@@ -771,8 +771,8 @@ body.kokuu-apple.dark-mode .btn.bg-olive,
 body.kokuu-apple.dark-mode .btn-secondary,
 body.kokuu-apple.dark-mode .btn-default,
 body.kokuu-apple.dark-mode .btn-light { color: var(--a-text) !important; }
-body.kokuu-apple.dark-mode .badge.bg-teal { background: rgba(79, 227, 208, 0.16) !important; color: #4FE3D0 !important; }
-body.kokuu-apple.dark-mode .badge.bg-indigo { background: rgba(167, 139, 250, 0.18) !important; color: #C9B8FF !important; }
+body.kokuu-apple.dark-mode .badge.bg-teal { background: rgba(79, 227, 208, 0.16) !important; color: var(--k-brand-rain) !important; }
+body.kokuu-apple.dark-mode .badge.bg-indigo { background: rgba(167, 139, 250, 0.18) !important; color: var(--k-brand-moon) !important; }
 
 /* =========================================================
    页脚（真实选择器版）
@@ -845,7 +845,7 @@ body.hold-transition .main-footer .kokuu-footer-note {
 }
 body.hold-transition .main-footer .kokuu-footer-note b {
   font-weight: 600;
-  color: var(--a-text-2, #6E6E73);
+  color: var(--a-text-2, var(--k-text-2));
 }
 
 /* 没跑 JS 时的兜底：裸 <b> 仍要能排好 */
@@ -857,7 +857,7 @@ body.hold-transition .main-footer > b {
 body.hold-transition .main-footer {
   background: transparent;
   border-top: 1px solid rgba(60, 60, 67, 0.13);
-  color: #A1A1A6;
+  color: var(--k-text-3);
   padding: 22px 0 30px;
   margin: 0 clamp(16px, 3vw, 40px);
 

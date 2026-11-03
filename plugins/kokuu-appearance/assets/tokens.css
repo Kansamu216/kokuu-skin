@@ -216,5 +216,12 @@ body.dark-mode {
   --k-ink:   var(--k-text);
   --k-rain:  var(--k-brand-rain);
   --k-lilac: var(--k-brand-lilac);
+
+  /* theme.css 使用的文字透明度变体 */
+  --ink-70: color-mix(in srgb, var(--k-text) 70%, transparent);
+  --ink-45: color-mix(in srgb, var(--k-text) 45%, transparent);
+  --ink-12: color-mix(in srgb, var(--k-text) 12%, transparent);
+  --ink-08: color-mix(in srgb, var(--k-text) 8%, transparent);
+  --ink-04: color-mix(in srgb, var(--k-text) 4.5%, transparent);
 }
 

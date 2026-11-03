@@ -9,27 +9,30 @@
    - 月神：月/星/鸽 意象，冷紫蓝点缀
    ========================================================= */
 
+/* ⚠️ 首页不再定义独立调色板。
+   旧版这里有一套 Apple 灰黑调（#F2F2F7 / #1C1C1E），
+   与全站品牌紫调（--k-bg #F7F5F0 / --k-text #241A45）并存，
+   是首页与内页观感割裂的根源。现已全部映射到 tokens.css。 */
 :root {
-  --paper:  #F2F2F7;              /* Apple 系统浅灰底 */
-  --surface:#FFFFFF;
-  --surface-2:#FBFBFD;
-  --text:   #1C1C1E;
-  --text-2: #6E6E73;
-  --text-3: #A1A1A6;
-  --sep:    rgba(60, 60, 67, 0.12);
-  --ink:    #2B1F52;              /* 品牌墨紫 */
-  --rain:   #0FA3A3;              /* 雨青 */
-  --lilac:  #8B7FD4;              /* 亮紫 */
-  --moon:   #C9BCF0;              /* 月光 */
-  --radius: 20px;
-  --radius-lg: 28px;
-  --shadow: 0 1px 2px rgba(0,0,0,.04), 0 8px 28px rgba(43,31,82,.07);
-  --shadow-h: 0 2px 6px rgba(0,0,0,.05), 0 16px 44px rgba(43,31,82,.12);
-  --ease: cubic-bezier(.4,0,.2,1);
-  --ease-out: cubic-bezier(.16,1,.3,1);
-  --mono: ui-monospace, "SF Mono", "Cascadia Code", Menlo, Consolas, monospace;
-  --sans: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC",
-          "Hiragino Sans GB", "Microsoft YaHei", "Noto Sans SC", sans-serif;
+  --paper:     var(--k-bg);
+  --surface:   var(--k-surface);
+  --surface-2: var(--k-surface-2);
+  --text:      var(--k-text);
+  --text-2:    var(--k-text-2);
+  --text-3:    var(--k-text-3);
+  --sep:       var(--k-border);
+  --ink:       var(--k-brand-ink);
+  --rain:      var(--k-brand-rain);
+  --lilac:     var(--k-brand-lilac);
+  --moon:      var(--k-brand-moon);
+  --radius:    var(--k-r-xl);
+  --radius-lg: var(--k-r-xl);
+  --shadow:    var(--k-elev-1);
+  --shadow-h:  var(--k-elev-2);
+  --ease:      var(--k-ease);
+  --ease-out:  var(--k-ease-out);
+  --mono:      var(--k-font-mono);
+  --sans:      var(--k-font-sans);
 }
 
 body { visibility: hidden; }

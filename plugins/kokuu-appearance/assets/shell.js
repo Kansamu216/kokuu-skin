@@ -40,7 +40,7 @@
   function run() {
     var b = window.blessing || {};
     var base = (b.base_url || "").replace(/\/+$/, "");
-    var asset = base + "/plugins/kokuu-home/assets/";
+    var asset = base + "/plugins/kokuu-appearance/assets/";
     fixFavicon(base, asset + "favicon.png");
     rebrand();
 

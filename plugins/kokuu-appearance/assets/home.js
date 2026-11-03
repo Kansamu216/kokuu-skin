@@ -78,7 +78,7 @@
   function mount() {
     var b = window.blessing || {};
     var base = (b.base_url || "").replace(/\/+$/, "");
-    var asset = base + "/plugins/kokuu-home/assets/";
+    var asset = base + "/plugins/kokuu-appearance/assets/";
     var cfg = readConfig();
     var theme = currentTheme();
     // 右侧图片：仅当后台确实填了自定义图时才用单图模式；

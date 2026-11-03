@@ -1,0 +1,422 @@
+/* =========================================================
+   KokuuSkin 首页 · Apple 扁平 + 像素点缀 + 月神意象
+   由 KokuuHome 插件注入（仅首页 /）。内核 home.twig 不动。
+   夜间（.kokuu-void）样式见 void.css，两态同为 Apple 扁平语言。
+
+   设计要点：
+   - Apple 扁平：系统浅灰底、纯净白面、大圆角、细腻柔和阴影、大留白
+   - MC 像素：像素方块图标、硬边、网格纹理、8-bit 元素
+   - 月神：月/星/鸽 意象，冷紫蓝点缀
+   ========================================================= */
+
+:root {
+  --paper:  #F2F2F7;              /* Apple 系统浅灰底 */
+  --surface:#FFFFFF;
+  --surface-2:#FBFBFD;
+  --text:   #1C1C1E;
+  --text-2: #6E6E73;
+  --text-3: #A1A1A6;
+  --sep:    rgba(60, 60, 67, 0.12);
+  --ink:    #2B1F52;              /* 品牌墨紫 */
+  --rain:   #0FA3A3;              /* 雨青 */
+  --lilac:  #8B7FD4;              /* 亮紫 */
+  --moon:   #C9BCF0;              /* 月光 */
+  --radius: 20px;
+  --radius-lg: 28px;
+  --shadow: 0 1px 2px rgba(0,0,0,.04), 0 8px 28px rgba(43,31,82,.07);
+  --shadow-h: 0 2px 6px rgba(0,0,0,.05), 0 16px 44px rgba(43,31,82,.12);
+  --ease: cubic-bezier(.4,0,.2,1);
+  --ease-out: cubic-bezier(.16,1,.3,1);
+  --mono: ui-monospace, "SF Mono", "Cascadia Code", Menlo, Consolas, monospace;
+  --sans: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC",
+          "Hiragino Sans GB", "Microsoft YaHei", "Noto Sans SC", sans-serif;
+}
+
+body { visibility: hidden; }
+body.kokuu-on { visibility: visible; }
+
+.kokuu-root {
+  position: relative;
+  min-height: 100vh;
+  background: var(--paper);
+  color: var(--text);
+  font-family: var(--sans);
+  overflow-x: hidden;
+  transition: background .4s var(--ease), color .4s var(--ease);
+}
+
+/* ---------- 像素网格纹理（MC 点缀，极淡） ---------- */
+.kokuu-grid {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background-image:
+    linear-gradient(to right, rgba(43,31,82,.028) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(43,31,82,.028) 1px, transparent 1px);
+  background-size: 32px 32px;
+  -webkit-mask-image: radial-gradient(120% 80% at 50% 0%, #000 30%, transparent 78%);
+  mask-image: radial-gradient(120% 80% at 50% 0%, #000 30%, transparent 78%);
+}
+.kokuu-dust {
+  position: fixed; inset: 0; z-index: 1;
+  width: 100%; height: 100%;
+  pointer-events: none;
+}
+.kokuu-root > *:not(.kokuu-grid):not(.kokuu-dust) { position: relative; z-index: 2; }
+
+/* =========================================================
+   像素元素图标（用 CSS 方块拼出，呼应 MC）
+   ========================================================= */
+.px-dot, .px-moon, .px-sun, .px-grass, .px-water, .px-mine {
+  display: inline-block;
+  width: 10px; height: 10px;
+  vertical-align: -1px;
+  image-rendering: pixelated;
+}
+.px-dot   { background: var(--rain); box-shadow: 0 0 0 2px rgba(15,163,163,.2); }
+.px-moon  { background: var(--moon); border-radius: 50%; box-shadow: inset -3px 0 0 var(--surface); }
+.px-sun   { background: #F5B942; border-radius: 50%; }
+.px-grass { background: #7FB069; }
+.px-water { background: #5FC6D9; }
+.px-mine  { background: var(--lilac); }
+
+/* =========================================================
+   顶栏（Apple 半透明毛玻璃导航）
+   ========================================================= */
+.kokuu-topbar {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 16px;
+  max-width: 1160px;
+  margin: 0 auto;
+  padding: 18px clamp(18px, 4vw, 40px);
+  position: sticky; top: 0; z-index: 30;
+}
+/* 毛玻璃导航条：独立全宽固定层，避免随内容宽度收缩导致两侧色差 */
+.kokuu-navbar {
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  height: 62px;
+  z-index: 29;
+  background: rgba(242, 242, 247, .78);
+  backdrop-filter: saturate(180%) blur(20px);
+  -webkit-backdrop-filter: saturate(180%) blur(20px);
+  border-bottom: 1px solid var(--sep);
+  transition: background .4s var(--ease), border-color .4s var(--ease);
+  pointer-events: none;
+}
+.kokuu-topbar { position: relative; top: auto; padding-top: 74px; }
+.kokuu-brand { text-decoration: none; color: var(--text); }
+.kokuu-brand-name { font-weight: 700; font-size: 18px; letter-spacing: -.2px; }
+.kokuu-accent { color: var(--rain); }
+.kokuu-topbar-right { display: flex; align-items: center; gap: 14px; }
+.kokuu-nav { display: flex; gap: 4px; }
+.kokuu-nav a {
+  text-decoration: none;
+  color: var(--text-2);
+  font-size: 14px; font-weight: 500;
+  padding: 8px 14px; border-radius: 999px;
+  transition: background .2s var(--ease), color .2s var(--ease);
+}
+.kokuu-nav a:hover { background: rgba(0,0,0,.05); color: var(--text); }
+
+.kokuu-theme-toggle {
+  display: inline-flex; align-items: center; gap: 7px;
+  font-family: var(--sans); font-size: 13px; font-weight: 600;
+  color: var(--text-2);
+  background: var(--surface);
+  border: 1px solid var(--sep);
+  border-radius: 999px;
+  padding: 8px 15px;
+  cursor: pointer;
+  transition: all .22s var(--ease);
+}
+.kokuu-theme-toggle:hover { color: var(--text); box-shadow: var(--shadow); }
+
+/* =========================================================
+   HERO
+   ========================================================= */
+.kokuu-hero {
+  display: grid;
+  grid-template-columns: 1.08fr .92fr;
+  gap: clamp(28px, 5vw, 64px);
+  align-items: center;
+  max-width: 1160px;
+  margin: 0 auto;
+  padding: clamp(36px, 6vw, 80px) clamp(18px, 4vw, 40px) clamp(40px, 6vw, 72px);
+}
+.kokuu-eyebrow {
+  display: inline-flex; align-items: center; gap: 8px;
+  font-family: var(--mono);
+  font-size: 12px; font-weight: 700;
+  letter-spacing: 1.6px;
+  color: var(--text-2);
+  margin: 0 0 20px;
+}
+/* 像素风大标题：硬边阴影模拟像素描边 */
+.kokuu-title {
+  font-size: clamp(44px, 8vw, 86px);
+  line-height: 1;
+  margin: 0 0 18px;
+  font-weight: 800;
+  letter-spacing: -2.5px;
+  color: var(--ink);
+  text-shadow:
+     3px 0 0 var(--surface), -3px 0 0 var(--surface),
+     0 3px 0 var(--surface),  0 -3px 0 var(--surface),
+     2px 2px 0 var(--surface), -2px 2px 0 var(--surface),
+     2px -2px 0 var(--surface), -2px -2px 0 var(--surface);
+}
+.kokuu-tagline {
+  font-size: clamp(17px, 2vw, 22px);
+  font-weight: 600;
+  line-height: 1.5;
+  color: var(--rain);
+  margin: 0 0 16px;
+}
+.kokuu-sub {
+  font-size: clamp(15px, 1.5vw, 17px);
+  line-height: 1.75;
+  color: var(--text-2);
+  max-width: 34em;
+  margin: 0 0 28px;
+}
+.kokuu-cta { display: flex; flex-wrap: wrap; gap: 12px; }
+.kbtn {
+  display: inline-flex; align-items: center; gap: 8px;
+  text-decoration: none;
+  font-weight: 600; font-size: 15px;
+  padding: 13px 26px;
+  border-radius: 999px;
+  border: 1px solid transparent;
+  transition: transform .18s var(--ease), box-shadow .22s var(--ease), background .22s var(--ease);
+}
+.kbtn:active { transform: scale(.97); }
+.kbtn.primary {
+  background: var(--ink); color: #fff;
+  box-shadow: 0 4px 16px rgba(43,31,82,.22);
+}
+.kbtn.primary:hover { background: var(--rain); box-shadow: 0 8px 24px rgba(15,163,163,.28); transform: translateY(-1px); }
+.kbtn:not(.primary) {
+  background: var(--surface); color: var(--text);
+  border-color: var(--sep);
+}
+.kbtn:not(.primary):hover { background: var(--surface-2); box-shadow: var(--shadow); transform: translateY(-1px); }
+
+/* 功能小标签 */
+.kokuu-badges {
+  display: flex; flex-wrap: wrap; gap: 18px;
+  list-style: none; padding: 0; margin: 34px 0 0;
+  font-size: 13px; font-weight: 600; color: var(--text-2);
+}
+.kokuu-badges li { display: inline-flex; align-items: center; gap: 7px; }
+
+/* ---------- 右侧图片位（可自定义 / 轮播） ---------- */
+.kokuu-hero-art { display: flex; justify-content: center; }
+.kokuu-shot {
+  position: relative;
+  margin: 0;
+  width: 100%; max-width: 460px;
+  aspect-ratio: 1;
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  background: var(--surface);
+  border: 1px solid var(--sep);
+  box-shadow: var(--shadow-h);
+  transition: transform .4s var(--ease-out), box-shadow .4s var(--ease-out);
+}
+.kokuu-shot:hover { transform: translateY(-4px) scale(1.01); box-shadow: 0 4px 10px rgba(0,0,0,.06), 0 24px 60px rgba(43,31,82,.16); cursor: pointer; }
+.kokuu-shot-img {
+  position: absolute; inset: 0;
+  width: 100%; height: 100%;
+  object-fit: cover;
+  display: block;
+  image-rendering: pixelated;   /* 保持像素画的锐利，不糊 */
+  opacity: 0;
+  transform: scale(1.04);
+  transition: opacity .9s var(--ease-out), transform 6s linear;
+}
+.kokuu-shot-img.is-on { opacity: 1; transform: scale(1); }
+.kokuu-shot-single { position: relative; opacity: 1; transform: none; }
+
+.kokuu-shot-cap {
+  position: absolute; left: 14px; bottom: 14px; right: 14px;
+  display: inline-flex; align-items: center; gap: 8px;
+  font-size: 12px; font-weight: 600;
+  color: #F5F3EE;
+  background: rgba(28,22,48,.55);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border-radius: 999px;
+  padding: 7px 14px;
+  pointer-events: none;
+}
+.kokuu-shot-cap em {
+  font-style: normal;
+  font-family: var(--mono);
+  font-size: 10.5px;
+  letter-spacing: 1px;
+  opacity: .72;
+  margin-left: auto;
+}
+
+/* 圆点指示器 */
+.kokuu-dots {
+  position: absolute; left: 14px; top: 14px;
+  display: flex; gap: 6px;
+  z-index: 2;
+}
+.kokuu-dot {
+  width: 7px; height: 7px;
+  padding: 0;
+  border: none;
+  border-radius: 50%;
+  background: rgba(255,255,255,.55);
+  box-shadow: 0 1px 3px rgba(0,0,0,.3);
+  cursor: pointer;
+  transition: all .3s var(--ease);
+}
+.kokuu-dot.is-on { background: #fff; width: 18px; border-radius: 999px; }
+
+/* 底部自动切换进度条 */
+.kokuu-progress {
+  position: absolute; left: 0; right: 0; bottom: 0;
+  height: 3px;
+  z-index: 3;
+  background: rgba(255,255,255,.22);
+  opacity: 0;
+  transition: opacity .3s;
+}
+.kokuu-shot:hover .kokuu-progress { opacity: 1; }
+.kokuu-progress.is-run::after {
+  content: "";
+  display: block;
+  height: 100%;
+  background: linear-gradient(90deg, var(--rain), var(--lilac));
+  transform-origin: left center;
+  animation: kokuuSlide linear forwards;
+  animation-duration: 5.2s;
+}
+@keyframes kokuuSlide { from { transform: scaleX(0); } to { transform: scaleX(1); } }
+
+/* =========================================================
+   主体区块
+   ========================================================= */
+.kokuu-main {
+  max-width: 1160px;
+  margin: 0 auto;
+  padding: clamp(30px, 5vw, 60px) clamp(18px, 4vw, 40px) 40px;
+}
+.kokuu-block { margin-bottom: clamp(60px, 9vw, 110px); }
+.kokuu-kicker {
+  display: inline-block;
+  font-family: var(--mono);
+  font-size: 11.5px; font-weight: 700;
+  letter-spacing: 1.4px;
+  color: var(--rain);
+  background: rgba(15,163,163,.1);
+  padding: 5px 11px; border-radius: 7px;
+  margin: 0 0 12px;
+}
+.kokuu-h2 {
+  font-size: clamp(26px, 3.4vw, 38px);
+  font-weight: 700; letter-spacing: -.8px;
+  color: var(--text);
+  margin: 0 0 30px;
+}
+
+.kokuu-cards {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 18px;
+}
+.kcard {
+  background: var(--surface);
+  border: 1px solid var(--sep);
+  border-radius: var(--radius);
+  padding: 26px 24px;
+  box-shadow: var(--shadow);
+  transition: transform .3s var(--ease-out), box-shadow .3s var(--ease-out);
+}
+.kcard:hover { transform: translateY(-4px); box-shadow: var(--shadow-h); }
+.kcard-ico {
+  width: 46px; height: 46px;
+  display: grid; place-items: center;
+  border-radius: 13px;
+  background: var(--surface-2);
+  border: 1px solid var(--sep);
+  margin-bottom: 16px;
+}
+.kcard-ico .px-grass, .kcard-ico .px-water, .kcard-ico .px-mine {
+  width: 16px; height: 16px;
+}
+.kcard h3 { margin: 0 0 8px; font-size: 19px; font-weight: 700; letter-spacing: -.2px; }
+.kcard p { margin: 0; color: var(--text-2); line-height: 1.7; font-size: 14.5px; }
+.kmore {
+  display: inline-block; margin-top: 16px;
+  color: var(--rain); text-decoration: none;
+  font-weight: 600; font-size: 14px;
+}
+.kmore:hover { color: var(--ink); }
+
+/* 理念双栏 */
+.kokuu-creed {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: clamp(20px, 4vw, 48px);
+}
+.kokuu-creed-col p {
+  font-size: clamp(19px, 2.2vw, 26px);
+  font-weight: 700; line-height: 1.5;
+  margin: 0 0 14px; letter-spacing: -.4px;
+}
+.kokuu-creed-col:first-child p { color: var(--text); }
+.kokuu-creed-col:last-child p { color: var(--rain); }
+.kokuu-creed .small {
+  font-size: 15px; font-weight: 400;
+  color: var(--text-2); line-height: 1.8;
+}
+
+/* =========================================================
+   页脚
+   ========================================================= */
+.kokuu-foot {
+  max-width: 1160px;
+  margin: 0 auto;
+  padding: 36px clamp(18px, 4vw, 40px) 64px;
+  border-top: 1px solid var(--sep);
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 20px 40px;
+  align-items: center;
+}
+.foot-left { display: flex; flex-direction: column; align-items: flex-start; gap: 5px; }
+.kokuu-foot-brand { font-weight: 700; font-size: 18px; letter-spacing: -.2px; }
+.foot-left p { margin: 0; font-size: 13px; color: var(--text-2); }
+.foot-right { display: flex; flex-wrap: wrap; gap: 20px; }
+.foot-right a { color: var(--text-2); text-decoration: none; font-size: 14px; font-weight: 500; }
+.foot-right a:hover { color: var(--rain); }
+.foot-fine {
+  grid-column: 1 / -1;
+  margin: 6px 0 0; font-size: 12.5px;
+  color: var(--text-3); font-family: var(--mono);
+}
+
+/* ---------- 滚动显现 ---------- */
+.reveal { opacity: 0; transform: translateY(22px); transition: opacity .7s var(--ease-out), transform .7s var(--ease-out); }
+.reveal.in { opacity: 1; transform: none; }
+
+/* ---------- 响应式 ---------- */
+@media (max-width: 900px) {
+  .kokuu-hero { grid-template-columns: 1fr; }
+  .kokuu-hero-art { order: -1; }
+  .kokuu-cards { grid-template-columns: 1fr; }
+  .kokuu-creed { grid-template-columns: 1fr; }
+  .kokuu-foot { grid-template-columns: 1fr; }
+  .kokuu-title { letter-spacing: -1.5px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .reveal { opacity: 1; transform: none; transition: none; }
+  .kokuu-shot, .kcard, .kbtn { transition: none; }
+}

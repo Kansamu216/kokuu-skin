@@ -28,7 +28,7 @@
   }
 
   function fetchQuote() {
-    return fetch(getBase() + "/plugin/kokuu-quote/random", {
+    return fetch(getBase() + "/plugin/kokuu-appearance/quote", {
       credentials: "same-origin",
       headers: { Accept: "application/json", "X-Requested-With": "XMLHttpRequest" }
     })

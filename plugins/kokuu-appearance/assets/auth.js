@@ -10,7 +10,7 @@
   function paint() {
     var b = window.blessing || {};
     var base = (b.base_url || "").replace(/\/+$/, "");
-    var asset = base + "/plugins/kokuu-home/assets/";
+    var asset = base + "/plugins/kokuu-appearance/assets/";
     var favicon = asset + "favicon.png";
 
     try {

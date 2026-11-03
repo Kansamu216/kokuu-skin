@@ -1149,3 +1149,304 @@ body {
     scroll-behavior: auto !important;
   }
 }
+
+/* Homepage-only finish. Geometry and all interior pages remain unchanged. */
+.kokuu-root {
+  --k-bg: #f6f3ed;
+  --k-surface: #fffefb;
+  --k-surface-2: #f0ece5;
+  --k-surface-3: #e9e3da;
+  --k-text: #302d39;
+  --k-text-2: #66616c;
+  --k-text-3: #78717c;
+  --k-brand-ink: #42374f;
+  --k-brand-rain: #756044;
+  --k-brand-lilac: #91809f;
+  --k-border: rgba(72, 57, 46, 0.11);
+  --k-border-2: rgba(72, 57, 46, 0.18);
+  --k-border-strong: rgba(104, 80, 53, 0.32);
+  --home-gold: #e7cd9d;
+  --home-gold-ink: #30283b;
+  background: radial-gradient(
+      ellipse at 85% 42%,
+      rgba(217, 196, 162, 0.1),
+      transparent 54%
+    ),
+    #f6f3ed;
+}
+.kokuu-root .kokuu-brand-name {
+  font-size: 27px;
+  font-weight: 800;
+  letter-spacing: -0.035em;
+  line-height: 1;
+}
+.kokuu-root .kokuu-brand {
+  flex-shrink: 0;
+}
+.kokuu-root .kokuu-brand .kokuu-accent {
+  color: #927248;
+}
+.kokuu-root .kokuu-foot-brand {
+  font-size: 21px;
+}
+.kokuu-root .kokuu-theme-toggle {
+  background: #fffdf7;
+  color: #625b6a;
+  border-color: #d9d0c1;
+  box-shadow: 0 2px 8px rgba(65, 49, 30, 0.04);
+}
+.kokuu-root .kokuu-eyebrow,
+.kokuu-root .kokuu-kicker {
+  background: transparent;
+}
+.kokuu-root .kokuu-hero .kokuu-eyebrow {
+  color: #eee1cb;
+}
+.kokuu-root .kokuu-hero .kokuu-title {
+  color: #fffaf0;
+  text-shadow: 0 3px 24px rgba(15, 12, 22, 0.16);
+}
+.kokuu-root .kokuu-hero .kokuu-tagline {
+  color: #fff5e5;
+}
+.kokuu-root .kokuu-hero .kokuu-sub,
+.kokuu-root .kokuu-badges {
+  color: #e8dfd7;
+}
+.kokuu-root .kokuu-hero .kbtn.primary {
+  color: #30283b;
+  background: linear-gradient(145deg, #f2dfb8, #dfc08a);
+  border-color: rgba(255, 244, 214, 0.65);
+  box-shadow: 0 4px 16px rgba(15, 10, 21, 0.18);
+}
+.kokuu-root .kokuu-hero .kbtn.primary:hover {
+  color: #30283b;
+  background: linear-gradient(145deg, #faebce, #e8cd9f);
+  box-shadow: 0 7px 22px rgba(15, 10, 21, 0.22);
+}
+.kokuu-root .kokuu-hero .kbtn:not(.primary) {
+  color: #fff4e2;
+  background: rgba(41, 34, 47, 0.53);
+  border-color: rgba(246, 229, 199, 0.42);
+  backdrop-filter: blur(12px);
+  box-shadow: none;
+}
+.kokuu-root .kokuu-hero .kbtn:not(.primary):hover {
+  color: #fffaf0;
+  background: rgba(70, 56, 70, 0.73);
+}
+.kokuu-root .kokuu-shot-cap {
+  color: #f2e7d6;
+  background: rgba(30, 25, 39, 0.66);
+  border-color: rgba(236, 212, 172, 0.26);
+}
+.kokuu-root .kokuu-shot-cap em {
+  color: #d3c5b3;
+}
+.kokuu-root .kokuu-bg-progress.is-run::after {
+  background: linear-gradient(90deg, #c5ad88, #c6b6d7);
+}
+.kokuu-root .kokuu-pause {
+  color: #f3e8d8;
+  border-color: rgba(236, 212, 172, 0.35);
+  background: rgba(30, 25, 39, 0.46);
+}
+.kokuu-root .kcard,
+.kokuu-root .kokuu-featured-skin {
+  box-shadow: 0 2px 5px rgba(58, 42, 28, 0.025),
+    0 8px 24px rgba(58, 42, 28, 0.035);
+}
+.kokuu-root .kcard-ico {
+  background: #f1eae0;
+}
+.kokuu-root .kokuu-featured-art {
+  background: radial-gradient(
+    ellipse at 50% 65%,
+    rgba(187, 165, 143, 0.17),
+    transparent 72%
+  );
+}
+.kokuu-root .kokuu-step-list li > span {
+  background: #e7dfd2;
+  color: #645136;
+}
+.kokuu-root a:focus-visible,
+.kokuu-root button:focus-visible {
+  outline: 2px solid #b48b53;
+  outline-offset: 4px;
+}
+/* Night composition: blue-slate canvas, elevated plum surfaces, warm readable accents.
+   Reset old void.css declarations explicitly, rather than inverting the page. */
+.kokuu-root.kokuu-void {
+  --k-bg: #151821;
+  --k-bg-sub: #191c27;
+  --k-surface: #212530;
+  --k-surface-2: #1b1f2a;
+  --k-surface-3: #2c303d;
+  --k-text: #f0eae0;
+  --k-text-2: #c1bac6;
+  --k-text-3: #a79eaf;
+  --k-brand-ink: #d7bfdc;
+  --k-brand-rain: #d6bb8e;
+  --k-brand-lilac: #b9a5c9;
+  --k-brand-moon: #d5c8e6;
+  --k-border: rgba(222, 205, 180, 0.12);
+  --k-border-2: rgba(222, 205, 180, 0.21);
+  --k-border-strong: rgba(228, 201, 155, 0.4);
+  --k-elev-1: 0 3px 12px rgba(0, 0, 0, 0.14);
+  --k-elev-2: 0 7px 26px rgba(0, 0, 0, 0.23);
+  --k-elev-3: 0 16px 40px rgba(0, 0, 0, 0.3);
+  --paper: #151821;
+  --surface: #212530;
+  --surface-2: #2c303d;
+  --text: #f0eae0;
+  --text-2: #c1bac6;
+  --text-3: #a79eaf;
+  --sep: rgba(222, 205, 180, 0.12);
+  background: radial-gradient(
+      ellipse at 82% 48%,
+      rgba(119, 92, 133, 0.09),
+      transparent 55%
+    ),
+    linear-gradient(180deg, #171b26 0%, #141720 100%);
+  color: #f0eae0;
+  color-scheme: dark;
+}
+.kokuu-root.kokuu-void .kokuu-brand {
+  color: #f0eae0;
+}
+.kokuu-root.kokuu-void .kokuu-brand .kokuu-accent {
+  color: #d6bb8e;
+}
+.kokuu-root.kokuu-void .kokuu-nav a {
+  color: #c8c0cf;
+}
+.kokuu-root.kokuu-void .kokuu-nav a:hover {
+  color: #fff3dc;
+  background: #292d3a;
+}
+.kokuu-root.kokuu-void .kokuu-theme-toggle {
+  color: #e2d2bc;
+  background: #252a37;
+  border-color: #474350;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.03);
+}
+.kokuu-root.kokuu-void .kokuu-theme-toggle:hover {
+  color: #fff1d9;
+  background: #303341;
+}
+.kokuu-root.kokuu-void .kokuu-hero {
+  box-shadow: 0 0 0 1px rgba(226, 203, 164, 0.13),
+    0 20px 42px rgba(0, 0, 0, 0.28);
+}
+.kokuu-root.kokuu-void .kokuu-shot {
+  background: #1b1d29;
+}
+.kokuu-root.kokuu-void .kokuu-shot-img {
+  filter: saturate(0.88) brightness(0.9);
+}
+.kokuu-root.kokuu-void .kokuu-hero .kokuu-title {
+  color: #fff8ed;
+  text-shadow: 0 4px 24px rgba(7, 9, 17, 0.22);
+}
+.kokuu-root.kokuu-void .kokuu-hero .kokuu-tagline {
+  color: #f7e7ce;
+}
+.kokuu-root.kokuu-void .kokuu-hero .kokuu-sub {
+  color: #ddd5dc;
+}
+.kokuu-root.kokuu-void .kokuu-eyebrow {
+  background: transparent;
+  color: #eee0ca;
+}
+.kokuu-root.kokuu-void .kokuu-kicker {
+  color: #d6bb8e;
+  background: transparent;
+}
+.kokuu-root.kokuu-void .kokuu-featured-skin {
+  background: linear-gradient(145deg, #252a37, #20242f);
+  border-color: #363946;
+  box-shadow: 0 7px 24px rgba(0, 0, 0, 0.12),
+    inset 0 1px 0 rgba(255, 255, 255, 0.025);
+}
+.kokuu-root.kokuu-void .kokuu-featured-art {
+  background: radial-gradient(
+    ellipse at 50% 60%,
+    rgba(186, 166, 200, 0.15),
+    transparent 72%
+  );
+}
+.kokuu-root.kokuu-void .kokuu-featured-art img {
+  filter: drop-shadow(0 4px 7px rgba(0, 0, 0, 0.3));
+}
+.kokuu-root.kokuu-void .kokuu-featured-meta strong {
+  color: #eee6dd;
+}
+.kokuu-root.kokuu-void .kokuu-featured-meta span {
+  color: #b7adbf;
+}
+.kokuu-root.kokuu-void .kcard {
+  background: linear-gradient(150deg, #242834, #20242f);
+  border-color: #383946;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.13),
+    inset 0 1px 0 rgba(255, 255, 255, 0.025);
+}
+.kokuu-root.kokuu-void .kcard:hover,
+.kokuu-root.kokuu-void .kokuu-featured-skin:hover {
+  border-color: #746477;
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.22);
+}
+.kokuu-root.kokuu-void .kcard-ico {
+  background: #30303d;
+  border: 1px solid rgba(218, 197, 174, 0.12);
+}
+.kokuu-root.kokuu-void .kcard h3,
+.kokuu-root.kokuu-void .kokuu-h2 {
+  color: #f0eae0;
+}
+.kokuu-root.kokuu-void .kcard p {
+  color: #c1bac6;
+}
+.kokuu-root.kokuu-void .kmore,
+.kokuu-root.kokuu-void .kokuu-section-link {
+  color: #d6bb8e;
+}
+.kokuu-root.kokuu-void .kokuu-steps {
+  background: linear-gradient(120deg, #1d222d, #222430);
+  border-color: #3d3947;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.025);
+}
+.kokuu-root.kokuu-void .kokuu-steps-copy > p:last-child,
+.kokuu-root.kokuu-void .kokuu-step-list p {
+  color: #c1bac6;
+}
+.kokuu-root.kokuu-void .kokuu-step-list strong {
+  color: #eee5da;
+}
+.kokuu-root.kokuu-void .kokuu-step-list li > span {
+  color: #e0c89f;
+  background: #37313c;
+  border: 1px solid #544855;
+}
+.kokuu-root.kokuu-void .kokuu-foot {
+  border-color: #3b3845;
+}
+.kokuu-root.kokuu-void .kokuu-foot-brand {
+  color: #eee5da;
+}
+.kokuu-root.kokuu-void .foot-left p,
+.kokuu-root.kokuu-void .foot-right a {
+  color: #bbb0c2;
+}
+.kokuu-root.kokuu-void .foot-fine {
+  color: #a79eaf;
+  border-color: #3b3845;
+}
+@media (max-width: 640px) {
+  .kokuu-root .kokuu-brand-name {
+    font-size: 22px;
+  }
+  .kokuu-root .kokuu-brand {
+    line-height: 1;
+  }
+}

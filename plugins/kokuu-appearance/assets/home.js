@@ -21,11 +21,11 @@
     var c = window.KOKUU_CONFIG || {}
     return {
       hero_title: c.hero_title || 'KokuuSkin',
-      tagline: c.tagline || '让每一次登录，都落在正确的像素上',
+      tagline: c.tagline || '在方块世界，遇见喜欢的自己。',
       intro:
         c.intro ||
-        '皮肤站用来存放角色、分享外观。把喜欢的样子收进衣柜，随时调用。',
-      footer_note: c.footer_note || '像素有形，月光无界',
+        '挑一款喜欢的皮肤，收进你的衣柜。用 KokuuSkin 账号连接启动器，让每次冒险都有自己的模样。',
+      footer_note: c.footer_note || '你的模样，你的冒险。',
       contact_email: c.contact_email || 'hi@kokuu.org',
       // Preserve legacy single image while supporting a three-image campaign rotation.
       hero_image: c.hero_image || '',
@@ -66,6 +66,8 @@
       ? '<span class="px-sun"></span>日间'
       : '<span class="px-moon"></span>夜间'
     btn.setAttribute('title', isVoid ? '切换到浅色模式' : '切换到夜间模式')
+    btn.setAttribute('aria-label', isVoid ? '切换到浅色模式' : '切换到夜间模式')
+    btn.setAttribute('aria-pressed', String(isVoid))
   }
 
   function esc(s) {
@@ -241,7 +243,7 @@
         '      </figure>',
         '    </div>',
         '    <div class="kokuu-hero-text">',
-        '      <p class="kokuu-eyebrow"><span class="px-dot"></span>MINECRAFT SKIN STATION</p>',
+        '      <p class="kokuu-eyebrow"><span class="px-dot"></span>YOUR LOOK. YOUR ADVENTURE.</p>',
         '      <h1 class="kokuu-title" id="kokuu-hero-title">' +
           esc(cfg.hero_title) +
           '</h1>',
@@ -272,7 +274,7 @@
         '  <main class="kokuu-main" id="kokuu-main">',
 
         '    <section class="kokuu-block kokuu-featured reveal" aria-labelledby="kokuu-featured-title">',
-        '      <div class="kokuu-section-head"><div><p class="kokuu-kicker">来自皮肤库</p><h2 class="kokuu-h2" id="kokuu-featured-title">让你的角色成为主角</h2></div>',
+        '      <div class="kokuu-section-head"><div><p class="kokuu-kicker">来自皮肤库</p><h2 class="kokuu-h2" id="kokuu-featured-title">下一次冒险，从新模样开始</h2></div>',
         '      <a class="kokuu-section-link" href="' +
           base +
           '/skinlib">查看皮肤库 <span aria-hidden="true">→</span></a></div>',
@@ -303,8 +305,8 @@
 
         '    <section class="kokuu-block reveal" aria-labelledby="kokuu-services-title">',
         '      <div class="kokuu-section-head">',
-        '        <div><p class="kokuu-kicker">你的 Minecraft 身份</p>',
-        '        <h2 class="kokuu-h2" id="kokuu-services-title">把喜欢的外观，带进游戏</h2></div>',
+        '        <div><p class="kokuu-kicker">属于你的 Minecraft</p>',
+        '        <h2 class="kokuu-h2" id="kokuu-services-title">从发现到出发，都在这里</h2></div>',
         '        <a class="kokuu-section-link" href="' +
           base +
           '/skinlib">浏览全部皮肤 <span aria-hidden="true">→</span></a>',
@@ -314,21 +316,21 @@
         '          <span class="kcard-index">01</span>',
         '          <div class="kcard-ico"><span class="px-grass"></span></div>',
         '          <h3>发现皮肤</h3>',
-        '          <p>浏览角色外观，预览细节，找到适合你的 Minecraft 形象。</p>',
+        '          <p>换个角度看看细节，找到想带进游戏的那一款。</p>',
         '          <span class="kmore">打开皮肤库 <span aria-hidden="true">↗</span></span>',
         '        </a>',
         '        <a class="kcard" href="' + base + '/skinlib/upload">',
         '          <span class="kcard-index">02</span>',
         '          <div class="kcard-ico"><span class="px-mine"></span></div>',
         '          <h3>上传作品</h3>',
-        '          <p>上传自己的皮肤，与工作室成员和朋友分享创作。</p>',
+        '          <p>把自己的创作放上来，让更多人遇见你的作品。</p>',
         '          <span class="kmore">上传皮肤 <span aria-hidden="true">↗</span></span>',
         '        </a>',
         '        <a class="kcard" href="' + base + '/auth/login">',
         '          <span class="kcard-index">03</span>',
         '          <div class="kcard-ico"><span class="px-water"></span></div>',
         '          <h3>连接启动器</h3>',
-        '          <p>使用 KokuuSkin 账号配置 Yggdrasil 验证，在启动器中使用你的角色。</p>',
+        '          <p>在支持 Yggdrasil 的启动器中添加账号，带着自己的角色出发。</p>',
         '          <span class="kmore">查看登录方式 <span aria-hidden="true">↗</span></span>',
         '        </a>',
         '      </div>',
@@ -337,13 +339,13 @@
         '    <section class="kokuu-steps reveal" aria-labelledby="kokuu-steps-title">',
         '      <div class="kokuu-steps-copy">',
         '        <p class="kokuu-kicker">从皮肤到游戏</p>',
-        '        <h2 class="kokuu-h2" id="kokuu-steps-title">三步，准备好你的角色</h2>',
-        '        <p>选择外观、保存到衣柜，再用同一个账号登录支持 Yggdrasil 的启动器。</p>',
+        '        <h2 class="kokuu-h2" id="kokuu-steps-title">喜欢的模样，随时带上</h2>',
+        '        <p>从收藏一款皮肤，到用它开始冒险，只需完成这三步。</p>',
         '      </div>',
         '      <ol class="kokuu-step-list">',
-        '        <li><span>1</span><div><strong>挑选外观</strong><p>从皮肤库预览并选择角色皮肤。</p></div></li>',
-        '        <li><span>2</span><div><strong>保存到衣柜</strong><p>登录后管理皮肤，随时切换使用。</p></div></li>',
-        '        <li><span>3</span><div><strong>连接启动器</strong><p>配置验证地址，使用 KokuuSkin 账号登录。</p></div></li>',
+        '        <li><span>1</span><div><strong>挑选外观</strong><p>看看正面与背面，选出最喜欢的一款。</p></div></li>',
+        '        <li><span>2</span><div><strong>保存到衣柜</strong><p>将喜欢的皮肤收好，想换的时候就换。</p></div></li>',
+        '        <li><span>3</span><div><strong>连接启动器</strong><p>添加验证地址与账号，让角色在游戏里亮相。</p></div></li>',
         '      </ol>',
         '    </section>',
 

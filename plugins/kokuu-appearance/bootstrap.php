@@ -47,13 +47,13 @@ if (! function_exists('kokuu_appearance_config')) {
     {
         $defaults = [
             'hero_title'    => 'KokuuSkin',
-            'tagline'       => '让每一次登录，都落在正确的像素上',
-            'intro'         => '皮肤站用来存放角色、分享外观。把喜欢的样子收进衣柜，随时调用。',
+            'tagline'       => '在方块世界，遇见喜欢的自己。',
+            'intro'         => '挑一款喜欢的皮肤，收进你的衣柜。用 KokuuSkin 账号连接启动器，让每次冒险都有自己的模样。',
             'hero_image'    => '', // Legacy field retained for backward compatibility.
             'hero_background'   => '',
             'hero_background_2' => '',
             'hero_background_3' => '',
-            'footer_note'       => '像素有形，月光无界',
+            'footer_note'       => '你的模样，你的冒险。',
             'contact_email' => 'hi@kokuu.org',
         ];
 

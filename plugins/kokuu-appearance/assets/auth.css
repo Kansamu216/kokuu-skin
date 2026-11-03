@@ -1,30 +1,30 @@
 /* =========================================================
-   KOKUU 鉴权页主题（登录 / 注册 / 找回密码 / 重置）
+   KokuuSkin 鉴权页 v3.0（登录 / 注册 / 找回密码 / 重置）
+   =========================================================
    保留内核表单字段与提交逻辑，仅做视觉重皮肤。
-   由 KokuuHome 插件注入到 /auth/* 页面。
+
+   相对旧版的改进：
+   1. 移除重复的 :root 调色板，全部消费 tokens.css 的 --k-* 令牌
+   2. 卡片改用玻璃拟态 + 品牌渐变描边（现代感）
+   3. 入场动画：卡片上浮淡入 + 表单字段 stagger
+   4. 输入框聚焦：品牌色光圈 + 微上浮
+   5. 按钮：渐变底 + 悬停光晕
+   6. 背景：品牌色柔和径向渐变（替代纯纸色）
    ========================================================= */
 
-:root {
-  --paper:   #F5F3EE;
-  --ink:     #2B1F52;
-  --rain:    #0FA3A3;
-  --lilac:   #8B7FD4;
-  --ink-70:  rgba(43, 31, 82, 0.70);
-  --ink-45:  rgba(43, 31, 82, 0.45);
-  --ink-12:  rgba(43, 31, 82, 0.12);
-  --ink-08:  rgba(43, 31, 82, 0.08);
-  --sans: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC",
-          "Hiragino Sans GB", "Microsoft YaHei", "Noto Sans SC", sans-serif;
-}
-
-/* 纸底 + 字体 */
+/* ---------- 页面底 ---------- */
 body.login-page {
-  background: var(--paper) !important;
-  font-family: var(--sans);
+  font-family: var(--k-font-sans);
   min-height: 100vh;
+  background:
+    radial-gradient(120% 90% at 15% 0%, color-mix(in srgb, var(--k-brand-rain) 9%, transparent) 0%, transparent 55%),
+    radial-gradient(110% 80% at 85% 100%, color-mix(in srgb, var(--k-brand-lilac) 11%, transparent) 0%, transparent 55%),
+    var(--k-bg) !important;
+  background-attachment: fixed;
+  transition: background var(--k-dur-slow) var(--k-ease);
 }
 
-/* 雨幕 / 纸纹（由 auth.js 动态插入，这里定位） */
+/* ---------- 装饰层 ---------- */
 .kokuu-auth-rain {
   position: fixed;
   inset: 0;
@@ -32,109 +32,191 @@ body.login-page {
   height: 100%;
   z-index: 0;
   pointer-events: none;
-  opacity: 0.5;
+  opacity: .45;
 }
 .kokuu-auth-noise {
   position: fixed;
   inset: 0;
   z-index: 1;
   pointer-events: none;
-  opacity: 0.05;
+  opacity: .045;
   mix-blend-mode: multiply;
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
 }
 
-/* 登录卡片：抬到雨幕之上 */
+/* ---------- 登录卡片容器 ---------- */
 .login-box {
   position: relative;
   z-index: 2;
-  width: 420px;
+  width: 430px;
   max-width: 92vw;
   margin-top: 7vh;
+  animation: kAuthIn var(--k-dur-slow) var(--k-ease-out);
 }
 
-/* 品牌行 */
-.login-logo { margin-bottom: 22px; }
+/* 只写 from，避免残留 transform 造成层叠上下文 */
+@keyframes kAuthIn {
+  from { opacity: 0; translate: 0 18px; }
+}
+
+/* ---------- 品牌行 ---------- */
+.login-logo { margin-bottom: var(--k-s-5); }
 .login-logo a {
-  color: var(--ink);
-  font-weight: 800;
-  font-size: 22px;
   display: inline-flex;
   align-items: center;
-  gap: 10px;
+  gap: var(--k-s-3);
+  font-size: 22px;
+  font-weight: var(--k-fw-black);
+  letter-spacing: -.02em;
+  color: var(--k-text);
   text-decoration: none;
 }
-.login-logo a img { width: 34px; height: 34px; image-rendering: pixelated; }
-.kokuu-accent { color: var(--rain); }
+.login-logo a img {
+  width: 34px;
+  height: 34px;
+  image-rendering: pixelated;
+  border-radius: var(--k-r-xs);
+}
+.kokuu-accent { color: var(--k-brand-rain); }
 
-/* 卡片本体 */
+/* ---------- 卡片本体：玻璃拟态 ---------- */
 .card {
-  background: #ffffff;
-  border: 1px solid var(--ink-12);
-  border-radius: 20px;
-  box-shadow: 0 30px 64px -30px rgba(43, 31, 82, 0.55);
+  background: color-mix(in srgb, var(--k-surface) 92%, transparent);
+  border: 1px solid var(--k-border-2);
+  border-radius: var(--k-r-xl);
+  box-shadow:
+    var(--k-elev-3),
+    inset 0 1px 0 color-mix(in srgb, #fff 60%, transparent);
+  backdrop-filter: saturate(180%) blur(20px);
+  -webkit-backdrop-filter: saturate(180%) blur(20px);
   overflow: hidden;
 }
-.login-card-body { padding: 38px 34px; background: #fff; }
+
+.login-card-body {
+  padding: var(--k-s-8) var(--k-s-7);
+  background: transparent;
+}
 
 .login-box-msg,
 .register-box-msg {
-  color: var(--ink-70);
-  font-size: 14.5px;
-  margin-bottom: 22px;
+  margin-bottom: var(--k-s-5);
+  font-size: var(--k-fs-md);
+  line-height: var(--k-lh-base);
+  color: var(--k-text-2);
 }
 
-/* 表单 */
+/* ---------- 表单 ---------- */
 .form-control {
-  border-radius: 12px;
-  border: 1.5px solid var(--ink-12);
-  padding: 12px 14px;
   height: auto;
-  font-size: 15px;
+  padding: 12px 14px;
+  font-size: var(--k-fs-md);
+  color: var(--k-text);
+  background: var(--k-surface-2);
+  border: 1.5px solid var(--k-border);
+  border-radius: var(--k-r-md);
+  transition:
+    border-color var(--k-dur-fast) var(--k-ease),
+    background var(--k-dur-fast) var(--k-ease),
+    box-shadow var(--k-dur-fast) var(--k-ease),
+    translate var(--k-dur-fast) var(--k-ease);
 }
 .form-control:focus {
-  border-color: var(--rain);
-  box-shadow: 0 0 0 0.2rem rgba(15, 163, 163, 0.18);
+  background: var(--k-surface);
+  border-color: var(--k-brand-rain);
+  box-shadow: var(--k-elev-glow);
+  translate: 0 -1px;
 }
-.input-group-text {
-  background: var(--ink-08);
-  border-color: var(--ink-12);
-  border-radius: 12px 0 0 12px;
-  color: var(--ink-70);
-}
-.input-group .form-control { border-radius: 0 12px 12px 0; }
-.mb-3 { margin-bottom: 18px !important; }
 
-/* 主按钮：墨紫 / 悬停雨青，胶囊形 */
+.input-group-text {
+  color: var(--k-text-2);
+  background: var(--k-surface-3);
+  border-color: var(--k-border);
+  border-radius: var(--k-r-md) 0 0 var(--k-r-md);
+}
+.input-group .form-control { border-radius: 0 var(--k-r-md) var(--k-r-md) 0; }
+.mb-3 { margin-bottom: var(--k-s-4) !important; }
+
+/* 字段依次入场 */
+.login-card-body .form-group,
+.login-card-body .mb-3,
+.login-card-body > div {
+  animation: kAuthField var(--k-dur-slow) var(--k-ease-out) both;
+}
+.login-card-body .form-group:nth-child(1),
+.login-card-body .mb-3:nth-child(1) { animation-delay: .04s; }
+.login-card-body .form-group:nth-child(2),
+.login-card-body .mb-3:nth-child(2) { animation-delay: .09s; }
+.login-card-body .form-group:nth-child(3),
+.login-card-body .mb-3:nth-child(3) { animation-delay: .14s; }
+.login-card-body .form-group:nth-child(n+4),
+.login-card-body .mb-3:nth-child(n+4) { animation-delay: .19s; }
+
+@keyframes kAuthField {
+  from { opacity: 0; translate: 0 8px; }
+}
+
+/* ---------- 主按钮 ---------- */
 .btn-primary {
-  background: var(--ink);
-  border-color: var(--ink);
-  color: #fff;
-  border-radius: 999px;
-  padding: 12px 18px;
-  font-weight: 700;
   width: 100%;
-  transition: transform 0.18s, background 0.18s, box-shadow 0.18s;
+  padding: 13px 20px;
+  font-weight: var(--k-fw-bold);
+  color: #fff;
+  background: linear-gradient(
+    135deg,
+    var(--k-brand-ink) 0%,
+    color-mix(in srgb, var(--k-brand-ink) 72%, var(--k-brand-lilac)) 100%
+  );
+  border: none;
+  border-radius: var(--k-r-pill);
+  box-shadow: var(--k-elev-2);
+  transition:
+    box-shadow var(--k-dur-base) var(--k-ease),
+    translate var(--k-dur-base) var(--k-ease),
+    filter var(--k-dur-base) var(--k-ease);
 }
 .btn-primary:hover,
 .btn-primary:focus {
-  background: var(--rain);
-  border-color: var(--rain);
-  transform: translateY(-2px);
-  box-shadow: 0 14px 28px -14px rgba(15, 163, 163, 0.7);
   color: #fff;
+  filter: brightness(1.06) saturate(1.05);
+  translate: 0 -2px;
+  box-shadow: var(--k-elev-3), 0 12px 30px -12px color-mix(in srgb, var(--k-brand-rain) 70%, transparent);
 }
+.btn-primary:active { translate: 0 0; scale: .99; }
 
-/* 链接 */
+/* ---------- 链接 ---------- */
 .login-card-body a,
 .login-box a:not(.login-logo a) {
-  color: var(--rain);
+  font-size: var(--k-fs-sm);
+  font-weight: var(--k-fw-medium);
+  color: var(--k-brand-rain);
   text-decoration: none;
-  font-weight: 600;
-  font-size: 14px;
+  transition: color var(--k-dur-fast) var(--k-ease);
 }
-.login-card-body a:hover { color: var(--ink); }
+.login-card-body a:hover { color: var(--k-text); }
 
-/* 底部版权行（部分鉴权页带） */
+/* ---------- 辅助文字 ---------- */
 .login-box .small,
-.login-card-body .small { color: var(--ink-45); }
+.login-card-body .small { color: var(--k-text-3); }
+
+/* ---------- 深色态 ---------- */
+body.dark-mode.login-page {
+  background:
+    radial-gradient(120% 90% at 15% 0%, color-mix(in srgb, var(--k-brand-rain) 14%, transparent) 0%, transparent 55%),
+    radial-gradient(110% 80% at 85% 100%, color-mix(in srgb, var(--k-brand-lilac) 16%, transparent) 0%, transparent 55%),
+    var(--k-bg) !important;
+}
+
+/* ---------- 无障碍 ---------- */
+@media (prefers-reduced-motion: reduce) {
+  .login-box, .login-card-body > div, .login-card-body .form-group, .login-card-body .mb-3 {
+    animation: none !important;
+  }
+  .form-control:focus, .btn-primary:hover { translate: none; }
+}
+
+/* ---------- 窄屏 ---------- */
+@media (max-width: 480px) {
+  .login-box { margin-top: 4vh; }
+  .login-card-body { padding: var(--k-s-6) var(--k-s-5); }
+}
+

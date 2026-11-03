@@ -65,3 +65,4 @@ diagnose/
 .vscode/
 Thumbs.db
 *.swp
+.github/workflows/

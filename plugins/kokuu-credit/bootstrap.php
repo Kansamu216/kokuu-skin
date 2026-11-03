@@ -288,6 +288,38 @@ if (! function_exists('kokuu_credit_stats')) {
     }
 }
 
+if (! function_exists('kokuu_credit_source_labels')) {
+    /**
+     * 积分来源 → 中文标签的**唯一**映射表。
+     *
+     * ⚠️ 这是权威定义，其他地方一律调本函数，不要再抄一份数组。
+     *    历史教训：曾经有三份副本，`manual` 在一处写「手动调整」、
+     *    另两处写「管理员手动」，同一笔流水在仪表盘和流水页显示不同文案。
+     */
+    function kokuu_credit_source_labels(): array
+    {
+        return [
+            'thread' => '发起主题',
+            'reply'  => '回复帖子',
+            'liked'  => '帖子被赞',
+            'sign'   => '每日签到',
+            'manual' => '管理员手动',
+            'lottery' => '抽奖',
+            'legacy' => '历史补录',
+        ];
+    }
+}
+
+if (! function_exists('kokuu_credit_source_label')) {
+    /**
+     * 单个来源 → 中文标签。统一走复数版映射表，避免多处副本漂移。
+     */
+    function kokuu_credit_source_label(string $source): string
+    {
+        return kokuu_credit_source_labels()[$source] ?? $source;
+    }
+}
+
 if (! function_exists('kokuu_credit_dashboard_data')) {
     /**
      * 仪表盘「积分」+「社区互联」两个容器所需的全部数据。

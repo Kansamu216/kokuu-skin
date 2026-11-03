@@ -21,8 +21,12 @@
 /* =========================================================
    0. 页面基础
    ========================================================= */
-body { visibility: hidden; }
-body.kokuu-on { visibility: visible; }
+body {
+  visibility: hidden;
+}
+body.kokuu-on {
+  visibility: visible;
+}
 
 .kokuu-root {
   position: relative;
@@ -31,8 +35,7 @@ body.kokuu-on { visibility: visible; }
   color: var(--k-text);
   font-family: var(--k-font-sans);
   overflow-x: hidden;
-  transition:
-    background var(--k-dur-slow) var(--k-ease),
+  transition: background var(--k-dur-slow) var(--k-ease),
     color var(--k-dur-slow) var(--k-ease);
 }
 
@@ -42,13 +45,20 @@ body.kokuu-on { visibility: visible; }
   inset: 0;
   z-index: 0;
   pointer-events: none;
-  background-image:
-    linear-gradient(to right, var(--k-border) 1px, transparent 1px),
+  background-image: linear-gradient(
+      to right,
+      var(--k-border) 1px,
+      transparent 1px
+    ),
     linear-gradient(to bottom, var(--k-border) 1px, transparent 1px);
   background-size: 32px 32px;
-  -webkit-mask-image: radial-gradient(120% 80% at 50% 0%, #000 28%, transparent 76%);
+  -webkit-mask-image: radial-gradient(
+    120% 80% at 50% 0%,
+    #000 28%,
+    transparent 76%
+  );
   mask-image: radial-gradient(120% 80% at 50% 0%, #000 28%, transparent 76%);
-  opacity: .55;
+  opacity: 0.55;
 }
 
 .kokuu-dust {
@@ -68,7 +78,12 @@ body.kokuu-on { visibility: visible; }
 /* =========================================================
    1. 像素元素图标（CSS 方块拼出，呼应 MC）
    ========================================================= */
-.px-dot, .px-moon, .px-sun, .px-grass, .px-water, .px-mine {
+.px-dot,
+.px-moon,
+.px-sun,
+.px-grass,
+.px-water,
+.px-mine {
   display: inline-block;
   width: 10px;
   height: 10px;
@@ -76,12 +91,28 @@ body.kokuu-on { visibility: visible; }
   image-rendering: pixelated;
   flex: none;
 }
-.px-dot   { background: var(--k-brand-rain); box-shadow: 0 0 0 2px color-mix(in srgb, var(--k-brand-rain) 22%, transparent); }
-.px-moon  { background: var(--k-brand-moon); border-radius: 50%; box-shadow: inset -3px 0 0 var(--k-surface); }
-.px-sun   { background: #F5B942; border-radius: 50%; }
-.px-grass { background: #7FB069; }
-.px-water { background: #5B9BD5; }
-.px-mine  { background: var(--k-brand-lilac); }
+.px-dot {
+  background: var(--k-brand-rain);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--k-brand-rain) 22%, transparent);
+}
+.px-moon {
+  background: var(--k-brand-moon);
+  border-radius: 50%;
+  box-shadow: inset -3px 0 0 var(--k-surface);
+}
+.px-sun {
+  background: #f5b942;
+  border-radius: 50%;
+}
+.px-grass {
+  background: #7fb069;
+}
+.px-water {
+  background: #5b9bd5;
+}
+.px-mine {
+  background: var(--k-brand-lilac);
+}
 
 /* =========================================================
    2. 顶栏
@@ -111,11 +142,15 @@ body.kokuu-on { visibility: visible; }
   text-decoration: none;
   font-size: var(--k-fs-lg);
   font-weight: var(--k-fw-black);
-  letter-spacing: -.01em;
+  letter-spacing: -0.01em;
   color: var(--k-text);
 }
-.kokuu-brand:hover { color: var(--k-text); }
-.kokuu-accent { color: var(--k-brand-rain); }
+.kokuu-brand:hover {
+  color: var(--k-text);
+}
+.kokuu-accent {
+  color: var(--k-brand-rain);
+}
 
 .kokuu-topbar-right {
   display: flex;
@@ -135,8 +170,7 @@ body.kokuu-on { visibility: visible; }
   font-weight: var(--k-fw-medium);
   color: var(--k-text-2);
   text-decoration: none;
-  transition:
-    color var(--k-dur-fast) var(--k-ease),
+  transition: color var(--k-dur-fast) var(--k-ease),
     background var(--k-dur-fast) var(--k-ease);
 }
 .kokuu-nav a:hover {
@@ -148,20 +182,32 @@ body.kokuu-on { visibility: visible; }
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 34px;
+  gap: 6px;
+  /* ⚠️ 原来写死 width:34px; height:34px，但按钮内容是「图标 + 夜间」
+     两个汉字，34px 宽的圆里放不下 → 文字被挤成竖排折断。
+     改为自适应宽度 + 左右内边距，高度保持 34px。 */
+  width: auto;
+  min-width: 34px;
   height: 34px;
-  padding: 0;
-  font-size: 15px;
+  padding: 0 12px;
+  white-space: nowrap;
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 1;
   color: var(--k-text-2);
   background: var(--k-surface);
   border: 1px solid var(--k-border-2);
   border-radius: var(--k-r-pill);
   cursor: pointer;
-  transition:
-    color var(--k-dur-fast) var(--k-ease),
+  transition: color var(--k-dur-fast) var(--k-ease),
     border-color var(--k-dur-fast) var(--k-ease),
     rotate var(--k-dur-base) var(--k-ease);
 }
+.kokuu-theme-toggle .px-moon,
+.kokuu-theme-toggle .px-sun {
+  flex: none;
+}
+
 .kokuu-theme-toggle:hover {
   color: var(--k-text);
   border-color: var(--k-border-strong);
@@ -181,7 +227,9 @@ body.kokuu-on { visibility: visible; }
   padding: var(--k-s-9) var(--k-s-5) var(--k-s-8);
 }
 
-.kokuu-hero-text { max-width: 520px; }
+.kokuu-hero-text {
+  max-width: 520px;
+}
 
 .kokuu-eyebrow {
   display: inline-flex;
@@ -190,7 +238,7 @@ body.kokuu-on { visibility: visible; }
   margin: 0 0 var(--k-s-4);
   font-size: var(--k-fs-xs);
   font-weight: var(--k-fw-bold);
-  letter-spacing: .14em;
+  letter-spacing: 0.14em;
   text-transform: uppercase;
   color: var(--k-brand-rain);
 }
@@ -200,7 +248,7 @@ body.kokuu-on { visibility: visible; }
   font-size: clamp(34px, 5.2vw, 58px);
   font-weight: var(--k-fw-black);
   line-height: 1.06;
-  letter-spacing: -.03em;
+  letter-spacing: -0.03em;
   color: var(--k-text);
 }
 
@@ -242,8 +290,7 @@ body.kokuu-on { visibility: visible; }
   border-radius: var(--k-r-pill);
   text-decoration: none;
   white-space: nowrap;
-  transition:
-    background var(--k-dur-fast) var(--k-ease),
+  transition: background var(--k-dur-fast) var(--k-ease),
     border-color var(--k-dur-fast) var(--k-ease),
     box-shadow var(--k-dur-base) var(--k-ease),
     translate var(--k-dur-base) var(--k-ease);
@@ -254,7 +301,10 @@ body.kokuu-on { visibility: visible; }
   translate: 0 -2px;
   color: var(--k-text);
 }
-.kbtn:active { translate: 0 0; scale: .985; }
+.kbtn:active {
+  translate: 0 0;
+  scale: 0.985;
+}
 
 .kbtn.primary {
   color: #fff;
@@ -302,7 +352,8 @@ body.kokuu-on { visibility: visible; }
   border: 1px solid var(--k-border);
   box-shadow: var(--k-elev-3);
   cursor: pointer;
-  transition: box-shadow var(--k-dur-base) var(--k-ease), translate var(--k-dur-base) var(--k-ease);
+  transition: box-shadow var(--k-dur-base) var(--k-ease),
+    translate var(--k-dur-base) var(--k-ease);
 }
 .kokuu-shot:hover {
   box-shadow: var(--k-elev-3), 0 0 0 1px var(--k-border-2);
@@ -317,8 +368,7 @@ body.kokuu-on { visibility: visible; }
   object-fit: cover;
   opacity: 0;
   scale: 1.04;
-  transition:
-    opacity var(--k-dur-slow) var(--k-ease),
+  transition: opacity var(--k-dur-slow) var(--k-ease),
     scale 6s var(--k-ease-out);
   image-rendering: pixelated;
 }
@@ -338,16 +388,16 @@ body.kokuu-on { visibility: visible; }
   font-size: var(--k-fs-xs);
   font-weight: var(--k-fw-medium);
   color: #fff;
-  background: rgba(11, 7, 22, .58);
+  background: rgba(11, 7, 22, 0.58);
   backdrop-filter: blur(12px);
   border-radius: var(--k-r-pill);
-  border: 1px solid rgba(255, 255, 255, .16);
+  border: 1px solid rgba(255, 255, 255, 0.16);
 }
 .kokuu-shot-cap em {
   font-style: normal;
-  opacity: .72;
+  opacity: 0.72;
   padding-left: var(--k-s-2);
-  border-left: 1px solid rgba(255, 255, 255, .24);
+  border-left: 1px solid rgba(255, 255, 255, 0.24);
 }
 
 .kokuu-dots {
@@ -363,10 +413,9 @@ body.kokuu-on { visibility: visible; }
   padding: 0;
   border: none;
   border-radius: 50%;
-  background: rgba(255, 255, 255, .45);
+  background: rgba(255, 255, 255, 0.45);
   cursor: pointer;
-  transition:
-    background var(--k-dur-fast) var(--k-ease),
+  transition: background var(--k-dur-fast) var(--k-ease),
     width var(--k-dur-base) var(--k-ease);
 }
 .kokuu-dot.is-on {
@@ -382,7 +431,7 @@ body.kokuu-on { visibility: visible; }
   height: 2px;
   width: 0;
   background: linear-gradient(90deg, var(--k-brand-rain), var(--k-brand-lilac));
-  opacity: .9;
+  opacity: 0.9;
 }
 
 /* =========================================================
@@ -402,7 +451,7 @@ body.kokuu-on { visibility: visible; }
   margin: 0 0 var(--k-s-2);
   font-size: var(--k-fs-xs);
   font-weight: var(--k-fw-bold);
-  letter-spacing: .14em;
+  letter-spacing: 0.14em;
   text-transform: uppercase;
   color: var(--k-brand-rain);
 }
@@ -411,7 +460,7 @@ body.kokuu-on { visibility: visible; }
   margin: 0 0 var(--k-s-6);
   font-size: clamp(24px, 3vw, 32px);
   font-weight: var(--k-fw-black);
-  letter-spacing: -.02em;
+  letter-spacing: -0.02em;
   color: var(--k-text);
 }
 
@@ -431,8 +480,7 @@ body.kokuu-on { visibility: visible; }
   border: 1px solid var(--k-border);
   border-radius: var(--k-r-lg);
   box-shadow: var(--k-elev-1);
-  transition:
-    box-shadow var(--k-dur-base) var(--k-ease),
+  transition: box-shadow var(--k-dur-base) var(--k-ease),
     translate var(--k-dur-base) var(--k-ease),
     border-color var(--k-dur-base) var(--k-ease);
 }
@@ -481,9 +529,12 @@ body.kokuu-on { visibility: visible; }
   font-weight: var(--k-fw-bold);
   color: var(--k-brand-rain);
   text-decoration: none;
-  transition: gap var(--k-dur-fast) var(--k-ease), color var(--k-dur-fast) var(--k-ease);
+  transition: gap var(--k-dur-fast) var(--k-ease),
+    color var(--k-dur-fast) var(--k-ease);
 }
-.kmore:hover { color: color-mix(in srgb, var(--k-brand-rain) 78%, #000); }
+.kmore:hover {
+  color: color-mix(in srgb, var(--k-brand-rain) 78%, #000);
+}
 
 /* 理念双栏 */
 .kokuu-creed {
@@ -548,7 +599,9 @@ body.kokuu-on { visibility: visible; }
   text-decoration: none;
   transition: color var(--k-dur-fast) var(--k-ease);
 }
-.foot-right a:hover { color: var(--k-brand-rain); }
+.foot-right a:hover {
+  color: var(--k-brand-rain);
+}
 
 .foot-fine {
   grid-column: 1 / -1;
@@ -568,26 +621,55 @@ body.kokuu-on { visibility: visible; }
     gap: var(--k-s-7);
     padding-top: var(--k-s-7);
   }
-  .kokuu-hero-text { max-width: none; }
-  .kokuu-hero-art { order: -1; }
-  .kokuu-cards { grid-template-columns: 1fr; }
-  .kokuu-creed { grid-template-columns: 1fr; }
+  .kokuu-hero-text {
+    max-width: none;
+  }
+  .kokuu-hero-art {
+    order: -1;
+  }
+  .kokuu-cards {
+    grid-template-columns: 1fr;
+  }
+  .kokuu-creed {
+    grid-template-columns: 1fr;
+  }
 }
 
 @media (max-width: 640px) {
-  .kokuu-topbar { padding: 0 var(--k-s-4); }
-  .kokuu-nav { display: none; }
-  .kokuu-hero, .kokuu-main, .kokuu-foot { padding-left: var(--k-s-4); padding-right: var(--k-s-4); }
-  .kokuu-foot { grid-template-columns: 1fr; }
-  .kokuu-title { font-size: 32px; }
-  .kcard { padding: var(--k-s-5); }
+  .kokuu-topbar {
+    padding: 0 var(--k-s-4);
+  }
+  .kokuu-nav {
+    display: none;
+  }
+  .kokuu-hero,
+  .kokuu-main,
+  .kokuu-foot {
+    padding-left: var(--k-s-4);
+    padding-right: var(--k-s-4);
+  }
+  .kokuu-foot {
+    grid-template-columns: 1fr;
+  }
+  .kokuu-title {
+    font-size: 32px;
+  }
+  .kcard {
+    padding: var(--k-s-5);
+  }
 }
 
 /* =========================================================
    7. 降低动效偏好
    ========================================================= */
 @media (prefers-reduced-motion: reduce) {
-  .kokuu-shot-img { transition: opacity .01ms; scale: 1; }
-  .kcard:hover, .kokuu-shot:hover, .kbtn:hover { translate: none; }
+  .kokuu-shot-img {
+    transition: opacity 0.01ms;
+    scale: 1;
+  }
+  .kcard:hover,
+  .kokuu-shot:hover,
+  .kbtn:hover {
+    translate: none;
+  }
 }
-

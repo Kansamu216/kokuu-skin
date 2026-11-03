@@ -1,54 +1,44 @@
-/* MC 风格抽卡 v3 (kokuu-lottery)
+/* 祈愿页 v4 (kokuu-lottery)
  *
- * 2026-11-03 重写。单抽/十连、逐张翻牌、场景轮播。
+ * 2026-11-03 第三次重做 —— 场景交叉轮播 + 精致揭晓动画
  *
  * ══════════════════════════════════════════════════════════════════
  * 沿用硬事实（线上踩过，别改回去）
  * ══════════════════════════════════════════════════════════════════
- * 1. CSRF 提交时实时读 cookie，不缓存（session 会轮换，否则 419）
- * 2. cookie 值只 decodeURIComponent，不剥 CookieValuePrefix
+ * 1. CSRF 提交时实时读 cookie，不缓存（session 轮换会 419）
+ * 2. cookie 只 decodeURIComponent，不剥 CookieValuePrefix
  * 3. 判据「非 419」，不是「等于 200」
- * 4. disabled 按钮 click 被浏览器静默忽略 → early return
+ * 4. disabled 按钮 click 被静默忽略 → early return
  * 5. 奖品 label 管理员可填，innerHTML 前必须转义
- * 6. 动画层 fixed inset:0 会吃掉整页点击 → 必须准时收层 + 跳过按钮
- * 7. 抽卡接口返回 {ok, msg, label, amount, spendable, draws, assets, results}
+ * 6. 动画层 fixed inset:0 吃整页点击 → 准时收层 + 跳过按钮
+ * 7. 接口返回 {ok, msg, label, amount, spendable, assets, results}
  */
 ;(function () {
   'use strict'
 
-  var root = document.getElementById('mc-lot')
-  if (!root) {
+  var page = document.getElementById('ly-page')
+  if (!page) {
     return
   }
 
-  var btn1 = document.getElementById('mc-draw1')
-  var btn10 = document.getElementById('mc-draw10')
-  var result = document.getElementById('mc-result')
-  var hint = document.getElementById('mc-hint')
-  var sceneEl = document.getElementById('mc-scene')
+  var btn1 = document.getElementById('ly-draw1')
+  var btn10 = document.getElementById('ly-draw10')
+  var result = document.getElementById('ly-result')
+  var hint = document.getElementById('ly-hint')
 
-  var anim = document.getElementById('mc-anim')
-  var cardsBox = document.getElementById('mc-cards')
-  var skipBtn = document.getElementById('mc-skip')
+  var anim = document.getElementById('ly-anim')
+  var cardsBox = document.getElementById('ly-cards')
+  var skipBtn = document.getElementById('ly-skip')
 
-  var elGold = document.getElementById('mc-gold')
-  var elDiamond = document.getElementById('mc-diamond')
-  var elEmerald = document.getElementById('mc-emerald')
+  var elGold = document.getElementById('ly-gold')
+  var elDiamond = document.getElementById('ly-diamond')
+  var elEmerald = document.getElementById('ly-emerald')
 
-  var drawUrl = root.getAttribute('data-url') || '/plugin/kokuu-lottery/draw'
+  var dotsBox = document.getElementById('ly-dots')
+  var scenes = document.querySelectorAll('.ly-pool-scene')
 
-  /* MC 场景图（复用外观插件的 6 张真实 MC 截图） */
-  var SCENES = [
-    '/plugins/kokuu-appearance/assets/scenes/01-mineshaft.png',
-    '/plugins/kokuu-appearance/assets/scenes/02-nether.png',
-    '/plugins/kokuu-appearance/assets/scenes/03-snow.png',
-    '/plugins/kokuu-appearance/assets/scenes/04-jungle.png',
-    '/plugins/kokuu-appearance/assets/scenes/05-end.png',
-    '/plugins/kokuu-appearance/assets/scenes/06-village.png',
-  ]
-
-  var sceneIdx = 0
-  var sceneTimer = null
+  var drawUrl = page.getAttribute('data-url') || '/plugin/kokuu-lottery/draw'
+  var cost = parseInt(page.getAttribute('data-cost') || '100', 10) || 100
 
   function esc(s) {
     return String(s === null || s === undefined ? '' : s)
@@ -64,35 +54,66 @@
     return m ? decodeURIComponent(m[1]) : ''
   }
 
-  /* ---------- 场景轮播 ---------- */
-  function showScene(i) {
-    if (!sceneEl) {
+  /* =========================================================
+     场景交叉轮播
+     ========================================================= */
+  var sceneIdx = 0
+  var sceneTimer = null
+
+  function buildDots() {
+    if (!dotsBox) {
       return
     }
-    sceneEl.style.backgroundImage = 'url("' + SCENES[i % SCENES.length] + '")'
+    dotsBox.innerHTML = ''
+    for (var i = 0; i < scenes.length; i++) {
+      var d = document.createElement('i')
+      d.setAttribute('data-i', i)
+      dotsBox.appendChild(d)
+    }
+    paintDots(0)
+  }
+
+  function paintDots(i) {
+    if (!dotsBox) {
+      return
+    }
+    var kids = dotsBox.children
+    for (var k = 0; k < kids.length; k++) {
+      kids[k].classList.toggle('is-active', k === i)
+    }
+  }
+
+  function showScene(i) {
+    for (var k = 0; k < scenes.length; k++) {
+      scenes[k].classList.toggle('is-active', k === i)
+    }
+    paintDots(i)
   }
 
   function startScenes() {
-    if (!sceneEl || SCENES.length < 2) {
+    if (scenes.length === 0) {
       return
     }
+    buildDots()
     showScene(0)
-    sceneTimer = window.setInterval(function () {
-      sceneIdx = (sceneIdx + 1) % SCENES.length
-      showScene(sceneIdx)
-    }, 6000)
 
-    // 系统偏好减少动效 → 不轮播，固定一张
+    // 减少动效 → 只显示第一张，不轮播
     var mq = window.matchMedia
       ? window.matchMedia('(prefers-reduced-motion: reduce)')
       : null
-    if (mq && mq.matches && sceneTimer) {
-      window.clearInterval(sceneTimer)
-      sceneTimer = null
+    if (mq && mq.matches) {
+      return
     }
+
+    sceneTimer = window.setInterval(function () {
+      sceneIdx = (sceneIdx + 1) % scenes.length
+      showScene(sceneIdx)
+    }, 7000)
   }
 
-  /* ---------- 资产回填 ---------- */
+  /* =========================================================
+     资产回填
+     ========================================================= */
   function applyAssets(assets, spendable) {
     if (spendable !== undefined && spendable !== null && elGold) {
       elGold.textContent = spendable
@@ -112,43 +133,16 @@
       return
     }
     result.hidden = false
-    result.className = 'mc-result' + (warn ? ' is-warn' : '')
+    result.className = 'ly-result' + (warn ? ' is-warn' : '')
     result.innerHTML = html
   }
 
-  /* ---------- 翻牌动画 ----------
-   *
-   * 参照原神：卡片逐张浮现，金卡有额外光效。
-   * 时长与 CSS .mc-card animation 对齐（.38s + stagger）。
-   */
-  var CARD_BASE_MS = 380 // 与 CSS mc-card-in 时长一致
-  var CARD_STAGGER_MS = 90 // 逐张延迟
-
-  function iconClass(asset) {
-    if (asset === 'diamond') {
-      return 'mc-card-ico--diamond'
-    }
-    if (asset === 'emerald') {
-      return 'mc-card-ico--emerald'
-    }
-    return 'mc-card-ico--gold'
-  }
-
-  function buildCard(r) {
-    var div = document.createElement('div')
-    div.className = 'mc-card mc-card--' + (r.rarity || 'blue')
-    div.innerHTML =
-      '<div class="mc-card-ico ' +
-      iconClass(r.asset) +
-      '"></div>' +
-      '<div class="mc-card-amt">×' +
-      esc(r.amount) +
-      '</div>' +
-      '<div class="mc-card-name">' +
-      esc(r.label) +
-      '</div>'
-    return div
-  }
+  /* =========================================================
+     揭晓动画
+     ========================================================= */
+  var CARD_STAGGER = 85 // 逐张延迟
+  var FLIP_START = 560 // 光爆后开始翻牌
+  var CARD_DUR = 420 // 单卡动画时长（与 CSS 一致）
 
   var animTimers = []
 
@@ -172,9 +166,34 @@
     }
   }
 
-  /* 播放抽卡动画：results 为后端返回的数组 */
+  function iconStyle(asset) {
+    var f =
+      asset === 'diamond'
+        ? '11-item-diamond.png'
+        : asset === 'emerald'
+        ? '12-item-emerald.png'
+        : '10-item-gold.png'
+    return "background-image:url('/plugins/kokuu-lottery/assets/img/" + f + "')"
+  }
+
+  function buildCard(r) {
+    var div = document.createElement('div')
+    div.className = 'ly-card ly-card--' + (r.rarity || 'blue')
+    div.innerHTML =
+      '<div class="ly-card-ico" style="' +
+      iconStyle(r.asset) +
+      '"></div>' +
+      '<div class="ly-card-amt">×' +
+      esc(r.amount) +
+      '</div>' +
+      '<div class="ly-card-name">' +
+      esc(r.label) +
+      '</div>'
+    return div
+  }
+
   function playDraw(results) {
-    if (!anim || !cardsBox) {
+    if (!anim || !cardsBox || !results.length) {
       return
     }
 
@@ -194,33 +213,39 @@
     void anim.offsetWidth
     anim.classList.add('is-on')
 
-    // 暗场 + 闪光后开始翻牌（.34s 闪光起点）
-    var flipStart = 620
-
     results.forEach(function (r, i) {
       var t = window.setTimeout(function () {
-        var card = buildCard(r)
-        card.style.animationDelay = '0s'
-        cardsBox.appendChild(card)
-      }, flipStart + i * CARD_STAGGER_MS)
+        cardsBox.appendChild(buildCard(r))
+      }, FLIP_START + i * CARD_STAGGER)
       animTimers.push(t)
     })
 
-    var totalMs =
-      flipStart + results.length * CARD_STAGGER_MS + CARD_BASE_MS + 400
-    var closeT = window.setTimeout(closeAnim, totalMs)
-    animTimers.push(closeT)
+    var total = FLIP_START + results.length * CARD_STAGGER + CARD_DUR + 900
+    animTimers.push(window.setTimeout(closeAnim, total))
 
-    // 跳过按钮：立即收层
     if (skipBtn) {
-      skipBtn.onclick = function () {
-        closeAnim()
-      }
+      skipBtn.onclick = closeAnim
     }
   }
 
-  /* ---------- 抽卡请求 ---------- */
+  /* =========================================================
+     抽卡请求
+     ========================================================= */
   var busy = false
+
+  function refreshButtons() {
+    var gold = parseInt((elGold && elGold.textContent) || '0', 10) || 0
+    if (btn1) {
+      btn1.disabled = gold < cost
+    }
+    if (btn10) {
+      btn10.disabled = gold < cost * 10
+    }
+    if (hint) {
+      hint.textContent =
+        gold < cost ? '金粒不足，无法祈愿' : '每抽消耗 ' + cost + ' 金粒'
+    }
+  }
 
   function doDraw(times) {
     if (busy) {
@@ -264,7 +289,6 @@
 
         if (j.ok === true) {
           var results = j.results || []
-          // 结果摘要
           var golds = results.filter(function (x) {
             return x.rarity === 'gold'
           }).length
@@ -277,18 +301,21 @@
             var r0 = results[0] || {}
             summary = '获得 <b>' + esc(r0.label || '奖励') + '</b>'
           } else {
-            summary = '十连完成：'
+            summary = '十连完成'
+            var parts = []
             if (golds) {
-              summary += ' <b style="color:#B9821A">' + golds + ' 传说</b>'
+              parts.push(golds + ' 传说')
             }
             if (purples) {
-              summary += ' <b style="color:#7C3AED">' + purples + ' 稀有</b>'
+              parts.push(purples + ' 稀有')
             }
-            if (!golds && !purples) {
-              summary += ' 全部普通'
+            if (parts.length) {
+              summary += '：' + parts.join(' · ')
+            } else {
+              summary += '：全部普通'
             }
           }
-          say(summary + ' · 消耗 ' + times * 100 + ' 金粒', false)
+          say(summary, false)
 
           applyAssets(j.assets, j.spendable)
           playDraw(results)
@@ -302,25 +329,8 @@
       })
       .then(function () {
         busy = false
-        // 按当前金粒恢复按钮可用性
         refreshButtons()
       })
-  }
-
-  /* 根据当前显示的金粒数恢复按钮状态 */
-  function refreshButtons() {
-    var gold = parseInt((elGold && elGold.textContent) || '0', 10) || 0
-    var cost = parseInt(root.getAttribute('data-cost') || '100', 10) || 100
-    if (btn1) {
-      btn1.disabled = gold < cost
-    }
-    if (btn10) {
-      btn10.disabled = gold < cost * 10
-    }
-    if (hint) {
-      hint.textContent =
-        gold < cost ? '金粒不足，无法祈愿' : '每次祈愿消耗 ' + cost + ' 金粒'
-    }
   }
 
   if (btn1) {
@@ -334,10 +344,9 @@
     })
   }
 
-  /* ---------- 初始化 ---------- */
+  /* 初始化 */
   startScenes()
 
-  /* 页面卸载时清理定时器 */
   window.addEventListener('beforeunload', function () {
     if (sceneTimer) {
       window.clearInterval(sceneTimer)

@@ -1,27 +1,25 @@
 {#
-  MC 风格抽卡页 —— plugin/kokuu-lottery
+  祈愿 —— plugin/kokuu-lottery
 
   ══════════════════════════════════════════════════════════════════
-  2026-11-03 v3 重做（用户要求）
+  2026-11-03 v4（第三次重做，用户明确纠正方向）
   ══════════════════════════════════════════════════════════════════
-  用户原话：「我想做成米哈游二次元游戏抽卡那种界面」「因为我们是 mc，
-  可以改成 mc 风格的立绘和背景」
+  用户原话：「虽然是 mc，但是太像素化了，与本站风格完全不搭，
+  我要的是图片 mc，这个整体风格肯定还是偏向站点的原神的」
 
-  设计参照：原神祈愿界面
-    · 顶部：金粒 / 钻石 / 绿宝石 货币栏
-    · 中部：大卡池立绘（MC 场景图 + 方块装饰）
-    · 底部：祈愿1次 / 祈愿10次 两个按钮
-    · 抽卡动画：立绘拉开 → 光爆 → 逐张翻牌揭晓
+  → 关键理解修正：
+     · 「图片 MC」= 用真实 MC 场景截图做背景，不要程序生成的像素块
+     · 「偏向站点的原神」= 精致、克制、大留白、细腻阴影（Apple 扁平），
+       不是粗描边、硬阴影、像素网格那套复古游戏 UI
 
-  MC 化处理（不是照抄原神）：
-    · 背景用真实 MC 场景图（矿洞/下界/末地/雪原/森林/村庄）
-    · 边框、按钮、卡片一律硬边方块，2px 描边（MC GUI 质感）
-    · 字体用等宽/像素风字重
-    · 品质用 MC 物品配色：金粒=金、钻石=青、绿宝石=绿
-    · 装饰元素是像素方块而非星芒
-
-  ⚠️ twigbridge 限制：无 max/min 过滤器；只有 3 个 block；
-     不要写 <h2>（base 已用 title 渲染 h1）
+  v3 的错误：把「MC 风格」理解成了「复古像素风 GUI」
+  v4 的正确方向：
+     · 背景：真实 MC 场景图（复用 appearance 的 6 张 512×512）
+     · 质感：完全复用站点 tokens.css（品牌紫 / 青 / 淡紫、大圆角、
+       柔和阴影、大留白）—— 与原神祈愿界面同源的精致感
+     · 层次：图片做底 + 玻璃拟态面板 + 细腻光晕
+     · 只保留「MC」在内核：场景图本身、物品图标用 MC 素材
+  ══════════════════════════════════════════════════════════════════
 #}
 
 {% extends 'user.base.twig' %}
@@ -31,168 +29,172 @@
 {% block content %}
 {% set d = lottery %}
 
-<div class="mc-lot" id="mc-lot" data-url="{{ d.drawUrl }}">
+<div class="ly-page" id="ly-page" data-url="{{ d.drawUrl }}" data-cost="{{ d.cost }}">
 
-  {# ============ 顶部货币栏 ============ #}
-  <div class="mc-bar">
-    <div class="mc-bar-left">
-      <span class="mc-bar-title">祈愿</span>
+  {# ============ 顶部资源条（玻璃拟态）============ #}
+  <div class="ly-res">
+    <div class="ly-res-item">
+      <span class="ly-res-ico ly-res-ico--gold"></span>
+      <div class="ly-res-body">
+        <span class="ly-res-num" id="ly-gold">{{ d.spendable }}</span>
+        <span class="ly-res-label">金粒</span>
+      </div>
     </div>
-    <div class="mc-bar-right">
-      <span class="mc-cur" title="金粒">
-        <i class="mc-ico mc-ico--gold"></i>
-        <b id="mc-gold">{{ d.spendable }}</b>
-      </span>
-      <span class="mc-cur" title="钻石">
-        <i class="mc-ico mc-ico--diamond"></i>
-        <b id="mc-diamond">{{ d.diamond }}</b>
-      </span>
-      <span class="mc-cur" title="绿宝石">
-        <i class="mc-ico mc-ico--emerald"></i>
-        <b id="mc-emerald">{{ d.emerald }}</b>
-      </span>
+    <div class="ly-res-div"></div>
+    <div class="ly-res-item">
+      <span class="ly-res-ico ly-res-ico--diamond"></span>
+      <div class="ly-res-body">
+        <span class="ly-res-num" id="ly-diamond">{{ d.diamond }}</span>
+        <span class="ly-res-label">钻石</span>
+      </div>
+    </div>
+    <div class="ly-res-div"></div>
+    <div class="ly-res-item">
+      <span class="ly-res-ico ly-res-ico--emerald"></span>
+      <div class="ly-res-body">
+        <span class="ly-res-num" id="ly-emerald">{{ d.emerald }}</span>
+        <span class="ly-res-label">绿宝石</span>
+      </div>
     </div>
   </div>
 
   {# ============ 卡池主视觉 ============ #}
-  <div class="mc-pool" id="mc-pool">
-    <div class="mc-pool-scene" id="mc-scene"></div>
-    <div class="mc-pool-shade"></div>
+  <div class="ly-pool" id="ly-pool">
+    {# 真实 MC 场景轮播（多层交叉淡入） #}
+    <div class="ly-pool-scenes" id="ly-scenes">
+      <div class="ly-pool-scene" data-i="0"></div>
+      <div class="ly-pool-scene" data-i="1"></div>
+      <div class="ly-pool-scene" data-i="2"></div>
+      <div class="ly-pool-scene" data-i="3"></div>
+      <div class="ly-pool-scene" data-i="4"></div>
+      <div class="ly-pool-scene" data-i="5"></div>
+    </div>
+    <div class="ly-pool-veil"></div>
 
-    <div class="mc-pool-inner">
-      <div class="mc-pool-tag">限定祈愿</div>
-      <h1 class="mc-pool-name">像素秘藏</h1>
-      <p class="mc-pool-desc">
-        消耗金粒祈愿，可得金粒、钻石与绿宝石
-      </p>
+    <div class="ly-pool-content">
+      <div class="ly-pool-badge">限时祈愿</div>
+      <h2 class="ly-pool-title">像素秘藏</h2>
+      <p class="ly-pool-desc">以金粒祈愿，得钻石与绿宝石</p>
 
-      {# 保底进度 ============ #}
-      <div class="mc-pity">
-        <div class="mc-pity-item">
-          <span class="mc-pity-label">距稀有保底</span>
-          <div class="mc-pity-bar">
-            <div class="mc-pity-fill mc-pity-fill--purple"
-                 style="width: {{ d.pityPurple > 0 ? (d.sincePurple / d.pityPurple * 100) : 0 }}%"></div>
-          </div>
-          <span class="mc-pity-num">{{ d.pityPurple - d.sincePurple }} 抽</span>
-        </div>
-        <div class="mc-pity-item">
-          <span class="mc-pity-label">距传说保底</span>
-          <div class="mc-pity-bar">
-            <div class="mc-pity-fill mc-pity-fill--gold"
-                 style="width: {{ d.pityGold > 0 ? (d.sinceGold / d.pityGold * 100) : 0 }}%"></div>
-          </div>
-          <span class="mc-pity-num">{{ d.pityGold - d.sinceGold }} 抽</span>
-        </div>
-      </div>
+      <div class="ly-pool-dots" id="ly-dots" aria-hidden="true"></div>
     </div>
 
-    {# 三个品质的示例方块 + 标签 ============ #}
-    <div class="mc-pool-rarities">
-      <div class="mc-rarity mc-rarity--gold">
-        <i class="mc-ico mc-ico--emerald"></i>
-        <span>绿宝石</span>
-      </div>
-      <div class="mc-rarity mc-rarity--purple">
-        <i class="mc-ico mc-ico--diamond"></i>
-        <span>钻石</span>
-      </div>
-      <div class="mc-rarity mc-rarity--blue">
-        <i class="mc-ico mc-ico--gold"></i>
-        <span>金粒</span>
-      </div>
+    {# 品质展示（右下角，玻璃胶囊） #}
+    <div class="ly-pool-grades">
+      <span class="ly-grade ly-grade--gold">
+        <i class="ly-grade-ico ly-res-ico--emerald"></i>绿宝石
+      </span>
+      <span class="ly-grade ly-grade--purple">
+        <i class="ly-grade-ico ly-res-ico--diamond"></i>钻石
+      </span>
+      <span class="ly-grade ly-grade--blue">
+        <i class="ly-grade-ico ly-res-ico--gold"></i>金粒
+      </span>
     </div>
   </div>
 
-  {# ============ 底部操作区 ============ #}
-  <div class="mc-actions">
-    <button type="button" class="mc-btn mc-btn--one" id="mc-draw1"
+  {# ============ 保底进度（独立卡片，清晰易读）============ #}
+  <div class="ly-pity">
+    <div class="ly-pity-row">
+      <span class="ly-pity-name">稀有保底</span>
+      <div class="ly-pity-track">
+        <div class="ly-pity-fill ly-pity-fill--purple"
+             style="width: {{ d.pityPurple > 0 ? (d.sincePurple / d.pityPurple * 100) : 0 }}%"></div>
+      </div>
+      <span class="ly-pity-left">{{ d.pityPurple - d.sincePurple }} 抽</span>
+    </div>
+    <div class="ly-pity-row">
+      <span class="ly-pity-name">传说保底</span>
+      <div class="ly-pity-track">
+        <div class="ly-pity-fill ly-pity-fill--gold"
+             style="width: {{ d.pityGold > 0 ? (d.sinceGold / d.pityGold * 100) : 0 }}%"></div>
+      </div>
+      <span class="ly-pity-left">{{ d.pityGold - d.sinceGold }} 抽</span>
+    </div>
+  </div>
+
+  {# ============ 操作按钮 ============ #}
+  <div class="ly-actions">
+    <button type="button" class="ly-btn ly-btn--one" id="ly-draw1"
             {% if not d.canDraw %}disabled{% endif %}>
-      <span class="mc-btn-main">祈愿 1 次</span>
-      <span class="mc-btn-cost">
-        <i class="mc-ico mc-ico--gold"></i>{{ d.cost }}
+      <span class="ly-btn-label">祈愿 1 次</span>
+      <span class="ly-btn-price">
+        <i class="ly-btn-ico ly-res-ico--gold"></i>{{ d.cost }}
       </span>
     </button>
-
-    <button type="button" class="mc-btn mc-btn--ten" id="mc-draw10"
+    <button type="button" class="ly-btn ly-btn--ten" id="ly-draw10"
             {% if not d.canTen %}disabled{% endif %}>
-      <span class="mc-btn-main">祈愿 10 次</span>
-      <span class="mc-btn-cost">
-        <i class="mc-ico mc-ico--gold"></i>{{ d.cost * 10 }}
+      <span class="ly-btn-label">祈愿 10 次</span>
+      <span class="ly-btn-price">
+        <i class="ly-btn-ico ly-res-ico--gold"></i>{{ d.cost * 10 }}
       </span>
     </button>
   </div>
 
-  <p class="mc-hint" id="mc-hint">
+  <p class="ly-hint" id="ly-hint">
     {% if not d.canDraw %}
       金粒不足，无法祈愿
     {% else %}
-      每 {{ d.pityPurple }} 抽必得稀有，每 {{ d.pityGold }} 抽必得传说
+      每 {{ d.pityPurple }} 抽必得稀有 · 每 {{ d.pityGold }} 抽必得传说
     {% endif %}
   </p>
 
-  {# ============ 结果区（单抽/十连共用）============ #}
-  <div class="mc-result" id="mc-result" role="status" aria-live="polite" hidden></div>
+  <div class="ly-result" id="ly-result" role="status" aria-live="polite" hidden></div>
 
   {# ============ 最近祈愿 ============ #}
-  <section class="mc-history">
-    <header class="mc-history-head">
-      <span>最近祈愿</span>
+  <section class="ly-history">
+    <header class="ly-history-head">
+      <span class="ly-history-title">最近祈愿</span>
       {% if myDraws is not empty %}
-        <span class="mc-history-count">共 {{ myDraws|length }} 条</span>
+        <span class="ly-history-sub">共 {{ myDraws|length }} 条</span>
       {% endif %}
     </header>
     {% if myDraws is not empty %}
-      <ul class="mc-history-list">
+      <ul class="ly-history-list">
         {% for r in myDraws|slice(0, 12) %}
-          <li class="mc-history-item mc-history-item--{{ r.rarity }}">
-            <span class="mc-history-dot"></span>
-            <span class="mc-history-label">{{ r.prize_label }}</span>
-            <span class="mc-history-time">{{ r.created_at|slice(5, 11) }}</span>
+          <li class="ly-history-item">
+            <span class="ly-history-dot ly-history-dot--{{ r.rarity }}"></span>
+            <span class="ly-history-name">{{ r.prize_label }}</span>
+            <span class="ly-history-time">{{ r.created_at|slice(5, 11) }}</span>
           </li>
         {% endfor %}
       </ul>
     {% else %}
-      <div class="mc-history-empty">还没有祈愿记录</div>
+      <div class="ly-history-empty">还没有祈愿记录</div>
     {% endif %}
   </section>
 </div>
 {% endblock %}
 
 {% block before_foot %}
-<link rel="stylesheet" href="{{ url('/plugins/kokuu-lottery/assets/lottery.css') }}?v=3.0.0">
+<link rel="stylesheet" href="{{ url('/plugins/kokuu-lottery/assets/lottery.css') }}?v=4.0.1">
 
 {#
   ══════════════════════════════════════════════════════════════════
-  🎬 抽卡动画层
+  🎬 祈愿动画层（原神式：暗场 → 光爆 → 逐张揭晓）
   ══════════════════════════════════════════════════════════════════
-  原神式流程：
-    1. 全屏暗场 + 卡池立绘放大
-    2. 光爆（白色闪屏 + 光条炸开）
-    3. 逐张翻牌：单抽翻 1 张，十连逐张翻 10 张
-    4. 金/紫卡有专属光效
-  ⚠️ 总时长必须与 lottery.js 的 ANIM 常量对齐
-  ⚠️ 默认 hidden，只有 .is-on 才显示，否则永久挡住点击
+  质感与站点一致：柔和光晕、大圆角卡片、细腻阴影，
+  不用硬描边/像素网格。
+  ⚠️ 默认 hidden，仅 .is-on 显示，否则永久挡住点击
+  ⚠️ 总时长与 lottery.js 常量对齐
   ══════════════════════════════════════════════════════════════════
 #}
-<div class="mc-anim" id="mc-anim" hidden aria-hidden="true">
-  <div class="mc-anim-dark"></div>
-  <div class="mc-anim-flash"></div>
-  <div class="mc-anim-rays">
-    <i></i><i></i><i></i><i></i><i></i><i></i>
-  </div>
+<div class="ly-anim" id="ly-anim" hidden aria-hidden="true">
+  <div class="ly-anim-veil"></div>
+  <div class="ly-anim-glow"></div>
+  <div class="ly-anim-ring"></div>
 
-  <div class="mc-cards" id="mc-cards"></div>
+  <div class="ly-cards" id="ly-cards"></div>
 
-  <button type="button" class="mc-anim-skip" id="mc-skip">跳 过</button>
+  <button type="button" class="ly-skip" id="ly-skip">跳过</button>
 </div>
 
 <script>
-  window.MC_CSRF = (function () {
+  window.LY_CSRF = (function () {
     var m = document.cookie.match(/(?:^|;\s*)XSRF-TOKEN=([^;]+)/);
     return m ? decodeURIComponent(m[1]) : '';
   })();
 </script>
-<script src="{{ url('/plugins/kokuu-lottery/assets/lottery.js') }}?v=3.0.0"></script>
+<script src="{{ url('/plugins/kokuu-lottery/assets/lottery.js') }}?v=4.0.1"></script>
 {% endblock %}
 

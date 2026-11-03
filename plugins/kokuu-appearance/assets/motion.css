@@ -1,0 +1,396 @@
+/* =========================================================
+   KokuuSkin Motion  v3.0  —— 现代动效系统（与外壳覆盖层合并）
+   =========================================================
+   本文件合并了原 kokuu-ui/motion.css 的「外壳动画」职责
+   与新版「UI Kit 组件动效」。
+
+   使用现代 CSS 技术，全部渐进增强：
+   · @property        类型化自定义属性，可动画
+   · :has()           父选择器，无 JS 联动状态
+   · 容器查询          组件按容器宽度响应
+   · scroll-driven    animation-timeline: view()
+   · @starting-style  进场过渡（无需 JS class 切换）
+   · dialog/popover   原生弹层
+   · view-transition  页面切换动画
+
+   ⚠️⚠️⚠️ 关键约束：禁止 animation-fill-mode: both/forwards
+   ---------------------------------------------------------
+   2026-10-03 线上事故（原 kokuu-ui/motion.css 记录）：
+   `both` 会让元素在动画结束后保留最后一帧的计算样式。
+   即使最后一帧写 `transform: none`，computed 值仍是
+   `matrix(1,0,0,1,0,0)` —— 只要 computed transform 不是字面量 none，
+   就会创建新的「层叠上下文」。
+
+   后果：.content-wrapper / .row 各自成了层叠上下文，
+   弹窗是它们后代，z-index 只能内部比较；而 Bootstrap 的
+   .modal-backdrop 挂在 <body> 上属外层上下文
+   → backdrop 实际盖在 modal 上面，点按钮全无反应，
+     诊断时看 z-index 数字完全正常，极易误判。
+
+   ✅ 正确写法：keyframes 只写 from，不写 to，且不带 fill-mode。
+      动画播完元素自动回到「无动画」状态，computed transform 真是 none。
+   ========================================================= */
+
+/* =========================================================
+   零、类型化属性
+   ========================================================= */
+@property --k-glow-angle {
+  syntax: '<angle>';
+  initial-value: 0deg;
+  inherits: false;
+}
+@property --k-progress {
+  syntax: '<number>';
+  initial-value: 0;
+  inherits: false;
+}
+
+/* =========================================================
+   一、关键帧库
+   ========================================================= */
+
+/* 淡入上浮（只写 from —— 见文件头约束） */
+@keyframes kFadeUp {
+  from { opacity: 0; translate: 0 12px; }
+}
+
+/* 淡入缩放 */
+@keyframes kFadeScale {
+  from { opacity: 0; scale: .96; }
+}
+
+/* 侧滑 */
+@keyframes kSlideRight {
+  from { opacity: 0; translate: -16px 0; }
+}
+
+/* 呼吸光晕 */
+@keyframes kBreathe {
+  0%, 100% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--k-accent, #0FA3A3) 40%, transparent); }
+  50%      { box-shadow: 0 0 0 8px transparent; }
+}
+
+/* 骨架屏微光 */
+@keyframes kShimmer {
+  from { background-position: -200% 0; }
+  to   { background-position: 200% 0; }
+}
+
+/* 旋转 */
+@keyframes kSpin {
+  to { rotate: 360deg; }
+}
+
+/* 数字弹跳 */
+@keyframes kCountPop {
+  0%   { scale: 1; }
+  40%  { scale: 1.12; }
+  100% { scale: 1; }
+}
+
+/* 渐变流光 */
+@keyframes kGradientFlow {
+  from { --k-glow-angle: 0deg; }
+  to   { --k-glow-angle: 360deg; }
+}
+
+/* 滚动进度（被 scroll-timeline 驱动） */
+@keyframes kScrollGrow {
+  from { --k-progress: 0; }
+  to   { --k-progress: 1; }
+}
+
+/* =========================================================
+   二、外壳动画（原 kokuu-ui/motion.css 职责，保留）
+   ========================================================= */
+
+/* 页面进场 */
+body.kokuu-apple .content-wrapper {
+  animation: kFadeUp .5s cubic-bezier(.16, 1, .3, 1);
+}
+body.kokuu-apple .content-header {
+  animation: kFadeUp .55s cubic-bezier(.16, 1, .3, 1) .04s;
+}
+
+/* 卡片 stagger 入场（由 rebuild.js 加 .kokuu-in 与 --kokuu-in-delay） */
+body.kokuu-apple .kokuu-in {
+  animation: kFadeUp .6s cubic-bezier(.16, 1, .3, 1);
+  animation-delay: var(--kokuu-in-delay, 0s);
+}
+
+/* 侧栏链接 */
+body.kokuu-apple .nav-sidebar .nav-link {
+  transition:
+    background-color var(--k-dur-base, .25s) var(--k-ease, ease),
+    color var(--k-dur-base, .25s) var(--k-ease, ease),
+    padding-left var(--k-dur-base, .25s) var(--k-ease, ease);
+}
+
+/* 表格行悬停 */
+body.kokuu-apple .table-hover tbody tr {
+  transition: background-color var(--k-dur-fast, .15s) var(--k-ease, ease);
+}
+
+/* 按钮 */
+body.kokuu-apple .btn {
+  transition:
+    background-color var(--k-dur-fast, .15s) var(--k-ease, ease),
+    border-color var(--k-dur-fast, .15s) var(--k-ease, ease),
+    box-shadow var(--k-dur-fast, .15s) var(--k-ease, ease),
+    scale var(--k-dur-fast, .15s) var(--k-ease, ease);
+}
+body.kokuu-apple .btn:active { scale: .97; }
+
+/* 模态（dialog 用原生，此处覆盖 Bootstrap modal） */
+@keyframes kModalIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+@keyframes kModalDialogIn {
+  from { opacity: 0; transform: translateY(18px) scale(.98); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+body.kokuu-apple .modal.fade .modal-dialog {
+  animation: kModalDialogIn .32s cubic-bezier(.16, 1, .3, 1);
+}
+
+/* Toast */
+@keyframes kToastIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+body.kokuu-apple .toast { animation: kToastIn .3s cubic-bezier(.16, 1, .3, 1); }
+
+/* =========================================================
+   三、UI Kit 组件动效
+   ========================================================= */
+
+/* 入场工具类（只写 from，无 fill-mode） */
+.k-animate-up    { animation: kFadeUp var(--k-dur-slow, .38s) var(--k-ease-out, ease); }
+.k-animate-scale { animation: kFadeScale var(--k-dur-base, .25s) var(--k-ease-out, ease); }
+.k-animate-slide { animation: kSlideRight var(--k-dur-slow, .38s) var(--k-ease-out, ease); }
+
+/* 交错入场 */
+.k-stagger > * { animation: kFadeUp var(--k-dur-slow, .38s) var(--k-ease-out, ease); }
+.k-stagger > *:nth-child(1) { animation-delay: .03s; }
+.k-stagger > *:nth-child(2) { animation-delay: .07s; }
+.k-stagger > *:nth-child(3) { animation-delay: .11s; }
+.k-stagger > *:nth-child(4) { animation-delay: .15s; }
+.k-stagger > *:nth-child(5) { animation-delay: .19s; }
+.k-stagger > *:nth-child(6) { animation-delay: .23s; }
+.k-stagger > *:nth-child(7) { animation-delay: .27s; }
+.k-stagger > *:nth-child(8) { animation-delay: .31s; }
+.k-stagger > *:nth-child(n+9) { animation-delay: .35s; }
+
+/* 卡片交互 */
+.k-card {
+  transition:
+    box-shadow var(--k-dur-base, .25s) var(--k-ease, ease),
+    translate var(--k-dur-base, .25s) var(--k-ease, ease),
+    border-color var(--k-dur-base, .25s) var(--k-ease, ease);
+}
+.k-card--hover:hover,
+a.k-card:hover { translate: 0 -3px; }
+.k-card--hover:active,
+a.k-card:active { translate: 0 -1px; transition-duration: var(--k-dur-fast, .15s); }
+.k-card--hover:focus-visible,
+a.k-card:focus-visible {
+  outline: none;
+  box-shadow: var(--k-elev-glow, 0 0 0 3px rgba(15, 163, 163, .18));
+}
+
+/* 按钮按压 */
+.k-btn { transition-property: background, border-color, box-shadow, scale; }
+.k-btn:active { scale: .97; }
+
+/* 徽章呼吸 */
+.k-badge--live { animation: kBreathe 2.4s ease-in-out infinite; }
+
+/* 数字弹跳 */
+.k-stat__value.k-bump { animation: kCountPop var(--k-dur-base, .25s) var(--k-ease-out, ease); }
+
+/* 骨架屏 */
+.k-skeleton {
+  background: linear-gradient(
+    90deg,
+    var(--k-surface-3, #F3F1EC) 25%,
+    var(--k-surface-2, #FAF9F6) 37%,
+    var(--k-surface-3, #F3F1EC) 63%
+  );
+  background-size: 200% 100%;
+  animation: kShimmer 1.4s ease-in-out infinite;
+  border-radius: var(--k-r-sm, 10px);
+  color: transparent;
+}
+
+/* 加载指示 */
+.k-spinner {
+  display: inline-block;
+  width: 1em; height: 1em;
+  border: 2px solid color-mix(in srgb, currentColor 25%, transparent);
+  border-top-color: currentColor;
+  border-radius: 50%;
+  animation: kSpin .7s linear infinite;
+}
+
+/* 链接下划线滑入 */
+.k-link { position: relative; color: var(--k-accent, #0FA3A3); text-decoration: none; }
+.k-link::after {
+  content: '';
+  position: absolute;
+  left: 0; right: 0; bottom: -2px;
+  height: 1.5px;
+  background: currentColor;
+  scale: 0 1;
+  transform-origin: 0 50%;
+  transition: scale var(--k-dur-base, .25s) var(--k-ease-out, ease);
+}
+.k-link:hover::after { scale: 1 1; }
+
+/* 渐变边框流光 */
+.k-glow-border {
+  position: relative;
+  border-radius: var(--k-r-lg, 16px);
+  background:
+    linear-gradient(var(--k-surface, #fff), var(--k-surface, #fff)) padding-box,
+    conic-gradient(
+      from var(--k-glow-angle),
+      var(--k-accent, #0FA3A3),
+      var(--k-accent-2, #8B7FD4),
+      var(--k-brand-moon, #C9BCF0),
+      var(--k-accent, #0FA3A3)
+    ) border-box;
+  border: 1.5px solid transparent;
+  animation: kGradientFlow 6s linear infinite;
+}
+
+/* =========================================================
+   四、滚动驱动动画（渐进增强）
+   ========================================================= */
+@supports (animation-timeline: view()) {
+  .k-reveal {
+    animation: kFadeUp linear;
+    animation-timeline: view();
+    animation-range: entry 0% entry 60%;
+  }
+  .k-scroll-progress {
+    position: fixed;
+    inset: 0 0 auto 0;
+    height: 3px;
+    background: linear-gradient(90deg, var(--k-accent, #0FA3A3), var(--k-accent-2, #8B7FD4));
+    transform-origin: 0 50%;
+    scale: var(--k-progress, 0) 1;
+    animation: kScrollGrow linear;
+    animation-timeline: scroll(root);
+    z-index: var(--k-z-toast, 3000);
+  }
+}
+
+/* =========================================================
+   五、:has() 联动（无 JS）
+   ========================================================= */
+.k-card:has(.k-selected) {
+  border-color: var(--k-accent, #0FA3A3);
+  box-shadow: var(--k-elev-glow, 0 0 0 3px rgba(15, 163, 163, .18));
+}
+.k-field:has(.k-input:user-invalid) .k-field__label { color: var(--k-danger, #C4344E); }
+.k-list:has(.k-card) .k-empty { display: none; }
+
+/* =========================================================
+   六、容器查询
+   ========================================================= */
+.k-card { container-type: inline-size; container-name: card; }
+
+@container card (max-width: 420px) {
+  .k-card__head { flex-direction: column; align-items: flex-start; gap: var(--k-s-2, 8px); }
+  .k-card__body { padding: var(--k-s-4, 16px); }
+}
+@container card (min-width: 720px) {
+  .k-card__body { padding: var(--k-s-6, 24px); }
+}
+
+.k-table-wrap {
+  container-type: inline-size;
+  overflow-x: auto;
+  scrollbar-width: thin;
+  scrollbar-color: var(--k-border-2, rgba(43,31,82,.16)) transparent;
+}
+.k-table-wrap::-webkit-scrollbar { height: 8px; }
+.k-table-wrap::-webkit-scrollbar-thumb {
+  background: var(--k-border-2, rgba(43,31,82,.16));
+  border-radius: 4px;
+}
+
+/* =========================================================
+   七、原生弹层（渐进增强）
+   ========================================================= */
+dialog.k-dialog {
+  border: none;
+  border-radius: var(--k-r-xl, 22px);
+  padding: 0;
+  background: var(--k-surface, #fff);
+  color: var(--k-text, #241A45);
+  box-shadow: var(--k-elev-3, 0 20px 48px rgba(36,26,69,.12));
+  max-width: min(560px, 92vw);
+  max-height: 88vh;
+  overflow: auto;
+
+  opacity: 0;
+  translate: 0 12px;
+  scale: .97;
+  transition:
+    opacity var(--k-dur-base, .25s) var(--k-ease-out, ease),
+    translate var(--k-dur-base, .25s) var(--k-ease-out, ease),
+    scale var(--k-dur-base, .25s) var(--k-ease-out, ease),
+    overlay var(--k-dur-base, .25s) allow-discrete,
+    display var(--k-dur-base, .25s) allow-discrete;
+}
+dialog.k-dialog[open] { opacity: 1; translate: 0 0; scale: 1; }
+
+@starting-style {
+  dialog.k-dialog[open] { opacity: 0; translate: 0 12px; scale: .97; }
+}
+
+dialog.k-dialog::backdrop {
+  background: var(--k-overlay, rgba(43, 31, 82, .38));
+  backdrop-filter: blur(4px);
+  opacity: 0;
+  transition: opacity var(--k-dur-base, .25s) var(--k-ease, ease),
+              display var(--k-dur-base, .25s) allow-discrete;
+}
+dialog.k-dialog[open]::backdrop { opacity: 1; }
+@starting-style { dialog.k-dialog[open]::backdrop { opacity: 0; } }
+
+/* 【已移除】.k-popover 的 translate 过渡与 @starting-style
+   原因：popover 常作为下拉/提示浮层，残留非 none 的 transform
+   同样会创建层叠上下文。若后续需要，改用纯 opacity 过渡。 */
+
+/* =========================================================
+   八、视图切换动画
+   ========================================================= */
+@view-transition { navigation: auto; }
+
+::view-transition-old(root) { animation: kVtOut var(--k-dur-base, .25s) var(--k-ease, ease); }
+::view-transition-new(root) { animation: kVtIn var(--k-dur-base, .25s) var(--k-ease-out, ease); }
+@keyframes kVtOut { to { opacity: 0; } }
+@keyframes kVtIn  { from { opacity: 0; } }
+
+/* =========================================================
+   九、无障碍
+   ========================================================= */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: .01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: .01ms !important;
+    scroll-behavior: auto !important;
+    animation-timeline: auto !important;
+  }
+  .k-reveal, .k-stagger > * { opacity: 1 !important; translate: none !important; }
+  .k-scroll-progress { display: none; }
+}
+
+@media (prefers-contrast: more) {
+  .k-card, .k-btn { border-color: var(--k-border-strong, rgba(43,31,82,.26)); }
+}
+

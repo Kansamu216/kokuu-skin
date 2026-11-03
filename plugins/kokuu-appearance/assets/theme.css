@@ -1,0 +1,728 @@
+/* =========================================================
+   KOKUU 全站后台主题（深度精修版）
+   把 Blessing Skin 的 AdminLTE 外壳（用户中心 / 皮肤库 / 后台）
+   以及 React SPA 内容区（皮肤卡片、衣柜、表格、分页、Modal 等）
+   统一重皮肤为 KOKUU 视觉语言。
+
+   说明：React 组件大量使用 @emotion/styled（CSS-in-JS），样式编译成
+   随机 hash class 在运行时注入 <head> 末尾。为稳定覆盖这些组件级样式，
+   本文件统一使用「父级/通用类 + !important」策略。
+
+   仅做视觉统一，不改动 React 内容区逻辑与内核源码。
+   由 KokuuHome 插件注入到所有页面（request()->is('*')）。
+   ========================================================= */
+
+/* =========================================================
+   ⚠️ 设计令牌已统一迁移至 tokens.css（v2.0）
+   本文件不再定义任何令牌，只做 AdminLTE 外壳的规则覆盖。
+   旧命名 --paper/--ink/--rain 等由 tokens.css 的兼容别名层提供。
+   ========================================================= */
+
+/* KokuuSkin 双色字标（纯文字品牌，无 logo 图片） */
+.kokuu-accent { color: var(--rain); }
+
+/* ---------- 字体 ---------- */
+body, .wrapper, .content-wrapper, .main-header, .main-sidebar, .main-footer {
+  font-family: var(--sans);
+}
+
+/* ---------- 顶栏导航（皮肤库 / 后台） ---------- */
+.main-header,
+.main-header.navbar {
+  background: var(--ink) !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.10) !important;
+}
+.main-header .navbar-brand,
+.main-header .nav-link,
+.main-header .navbar-nav > li > a,
+.main-header .navbar-nav > .nav-item > .nav-link {
+  color: #F5F3EE !important;
+}
+.main-header .navbar-brand { font-weight: 800; letter-spacing: 0.3px; }
+.main-header .nav-link {
+  border-radius: 8px !important;
+  padding: 0.45rem 0.7rem !important;
+}
+.main-header .nav-link:hover,
+.main-header .navbar-nav > li > a:hover,
+.main-header .navbar-nav > .nav-item > .nav-link:hover {
+  background: rgba(255, 255, 255, 0.12) !important;
+  color: #ffffff !important;
+}
+.main-header .nav-item.active > .nav-link,
+.main-header .navbar-nav > .active > a {
+  color: var(--rain) !important;
+}
+.main-header .dropdown-menu {
+  border-radius: 12px;
+  border: 1px solid var(--ink-12);
+  box-shadow: 0 20px 44px -26px rgba(43, 31, 82, 0.6);
+  overflow: hidden;
+}
+
+/* ---------- 侧边栏（用户中心 / 后台） ---------- */
+.main-sidebar,
+.sidebar,
+.sidebar-dark-primary,
+.sidebar-no-expand {
+  background: linear-gradient(180deg, #2B1F52 0%, #1c1638 100%) !important;
+}
+.brand-link {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.12) !important;
+  color: #F5F3EE !important;
+  padding: 0.9rem 1rem !important;
+  font-weight: 800;
+  letter-spacing: 0.3px;
+}
+.sidebar a,
+.nav-sidebar .nav-link,
+.nav-sidebar .nav-item > .nav-link,
+.user-panel .info a {
+  color: rgba(245, 243, 238, 0.82) !important;
+}
+.nav-sidebar .nav-link {
+  border-radius: 10px !important;
+  margin: 2px 8px !important;
+  padding: 0.55rem 0.8rem !important;
+}
+.nav-sidebar .nav-item { margin-bottom: 2px; }
+.nav-sidebar .nav-link:hover,
+.nav-sidebar .nav-item > .nav-link:hover,
+.sidebar a:hover {
+  background: rgba(255, 255, 255, 0.08) !important;
+  color: #ffffff !important;
+}
+.nav-sidebar .nav-link.active,
+.nav-sidebar .nav-item.menu-open > .nav-link,
+.nav-sidebar .nav-item > .nav-link.active {
+  background: var(--rain) !important;
+  color: #ffffff !important;
+}
+.user-panel {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08) !important;
+}
+.user-panel .info a { font-weight: 600; }
+
+/* ---------- 内容区纸底 ---------- */
+.content-wrapper,
+.wrapper {
+  background: var(--paper);
+}
+.main-footer {
+  background: #ffffff;
+  border-top: 1px solid var(--ink-12) !important;
+  color: var(--ink-45);
+}
+
+/* ---------- 区块标题 ---------- */
+.content-header h1,
+section.content h1 {
+  color: var(--ink) !important;
+  font-weight: 800 !important;
+  font-size: 1.7rem !important;
+  letter-spacing: -0.01em;
+}
+
+/* =========================================================
+   卡片（核心：覆盖 emotion 生成的皮肤/衣柜卡片样式）
+   ========================================================= */
+.card {
+  background: #ffffff !important;
+  border: 1px solid var(--ink-12) !important;
+  border-radius: var(--radius-card) !important;
+  box-shadow: var(--shadow-card) !important;
+  overflow: hidden;
+}
+/* emotion 的 Item Card 设了 .card-body{background:#eff1f0}，统一改为 KOKUU 纸白 */
+.card .card-body {
+  background: var(--paper-2) !important;
+}
+.card .card-header {
+  background: #ffffff !important;
+  border-bottom: 1px solid var(--ink-12) !important;
+  padding: 0.85rem 1.15rem !important;
+}
+.card .card-footer {
+  background: transparent !important;
+  border-top: 1px solid var(--ink-08) !important;
+  padding: 0.75rem 1rem !important;
+}
+.card-title {
+  color: var(--ink) !important;
+  font-weight: 800 !important;
+  font-size: 1.05rem !important;
+}
+
+/* 语义色卡片头部（card-primary / card-warning / card-info）统一墨紫渐变 */
+.card.card-primary > .card-header,
+.card.card-info > .card-header,
+.card.card-warning > .card-header,
+.card.card-success > .card-header {
+  background: linear-gradient(90deg, var(--ink) 0%, #3B2B6B 100%) !important;
+  border-bottom: none !important;
+  color: #F5F3EE !important;
+}
+.card.card-primary > .card-header .card-title,
+.card.card-info > .card-header .card-title,
+.card.card-warning > .card-header .card-title,
+.card.card-success > .card-header .card-title {
+  color: #F5F3EE !important;
+}
+
+/* 皮肤预览图：完整显示（不清空角色），统一高度与圆角 */
+.card .card-img-top {
+  height: 210px !important;
+  width: 100% !important;
+  object-fit: contain !important;
+  padding: 10px !important;
+  background: transparent !important;
+}
+
+/* 网格卡片 hover 反馈（皮肤库列表 / 衣柜）
+ *
+ * ⚠️⚠️ 这里**不能用 transform: translateY 做抬升** —— 衣柜卡片实测踩中：
+ * - `transform ≠ none` 会创建层叠上下文；
+ * - 衣柜卡片右下角的齿轮菜单就挂在卡片里，hover 卡片点齿轮那一刻，
+ *   卡片成为层叠上下文，菜单的 z-index 只能在卡片内部比较，
+ *   加上外层容器 overflow:hidden 的裁切，菜单项（重命名/移除/查看/头像）
+ *   全部点不到；
+ * - 而且这条带 !important，优先级极高，别的文件（apple.css/motion.css）
+ *   想覆盖都盖不掉，只能从这里根除；
+ * - 这个坑只在 hover 时出现，静态截图 / 不 hover 的检查都抓不到。
+ * 结论：hover 反馈只用阴影，绝不用 transform。 */
+.d-flex.flex-wrap > .card,
+.d-flex.flex-wrap > a > .card {
+  transition: box-shadow 0.28s ease !important;
+}
+.d-flex.flex-wrap > .card:hover,
+.d-flex.flex-wrap > a > .card:hover {
+  box-shadow: var(--shadow-hover) !important;
+}
+.card:hover {
+  box-shadow: var(--shadow-hover) !important;
+}
+
+/* ---------- 徽章 ---------- */
+.badge {
+  border-radius: 999px !important;
+  padding: 0.38em 0.72em !important;
+  font-weight: 600 !important;
+  font-size: 78% !important;
+  letter-spacing: 0.02em;
+}
+.badge.bg-teal,
+.badge.bg-primary,
+.badge.bg-info {
+  background: var(--rain) !important;
+  color: #ffffff !important;
+}
+.badge.bg-indigo {
+  background: var(--lilac) !important;
+  color: #ffffff !important;
+}
+.badge.bg-olive,
+.badge.bg-success {
+  background: var(--rain) !important;
+  color: #ffffff !important;
+}
+.badge.bg-warning {
+  background: var(--lilac) !important;
+  color: #ffffff !important;
+}
+
+/* ---------- 按钮 ---------- */
+.btn {
+  border-radius: var(--radius-btn) !important;
+  font-weight: 600 !important;
+  letter-spacing: 0.01em;
+}
+.btn-primary,
+.btn-info {
+  background: var(--rain) !important;
+  border-color: var(--rain) !important;
+  color: #ffffff !important;
+}
+.btn-primary:hover,
+.btn-info:hover,
+.btn-primary:focus,
+.btn-info:focus {
+  background: var(--ink) !important;
+  border-color: var(--ink) !important;
+  color: #ffffff !important;
+}
+.btn-success {
+  background: var(--rain) !important;
+  border-color: var(--rain) !important;
+  color: #ffffff !important;
+}
+.btn-secondary {
+  background: var(--ink-08) !important;
+  border-color: transparent !important;
+  color: var(--ink) !important;
+}
+.btn-secondary.active,
+.btn-secondary:focus,
+.btn-secondary:hover {
+  background: var(--ink) !important;
+  color: #ffffff !important;
+}
+/* 皮肤库排序按钮（Button.tsx 生成 bg-olive） */
+.btn.bg-olive {
+  background: var(--ink-08) !important;
+  color: var(--ink) !important;
+  border: 1px solid var(--ink-12) !important;
+}
+.btn.bg-olive.active,
+.btn.bg-olive:hover {
+  background: var(--rain) !important;
+  color: #ffffff !important;
+  border-color: var(--rain) !important;
+}
+.btn-warning {
+  background: var(--lilac) !important;
+  border-color: var(--lilac) !important;
+  color: #ffffff !important;
+}
+.btn-warning:hover {
+  background: var(--ink) !important;
+  border-color: var(--ink) !important;
+}
+.btn-danger { border-radius: var(--radius-btn) !important; }
+.btn-default {
+  background: #ffffff !important;
+  border: 1px solid var(--ink-12) !important;
+  color: var(--ink) !important;
+}
+.btn-default:hover {
+  background: var(--ink-08) !important;
+  color: var(--ink) !important;
+}
+.btn-outline-primary,
+.btn-outline-info,
+.btn-outline-success {
+  color: var(--rain) !important;
+  border-color: var(--rain) !important;
+}
+.btn-outline-primary:hover,
+.btn-outline-info:hover,
+.btn-outline-success:hover {
+  background: var(--rain) !important;
+  color: #ffffff !important;
+}
+.btn-outline-secondary {
+  border-color: var(--ink-12) !important;
+  color: var(--ink) !important;
+}
+.btn-group .btn { margin-left: -1px; }
+
+/* ---------- 表单控件 ---------- */
+.form-control,
+.input-group .form-control {
+  border-radius: var(--radius-btn) !important;
+  border: 1.5px solid var(--ink-12) !important;
+}
+.form-control:focus {
+  border-color: var(--rain) !important;
+  box-shadow: 0 0 0 0.2rem rgba(15, 163, 163, 0.18) !important;
+}
+.form-control::placeholder { color: var(--ink-45); }
+.input-group-prepend .btn,
+.input-group-append .btn {
+  border-radius: var(--radius-btn) !important;
+  background: var(--ink-08) !important;
+  border-color: var(--ink-12) !important;
+  color: var(--ink) !important;
+}
+.input-group-text {
+  background: var(--ink-08) !important;
+  border-color: var(--ink-12) !important;
+}
+label {
+  color: var(--ink-70);
+  font-weight: 600;
+}
+
+/* ---------- 表格（后台列表） ---------- */
+.table-responsive { border-radius: 12px; }
+.table thead th {
+  background: var(--ink-04) !important;
+  color: var(--ink) !important;
+  font-weight: 700 !important;
+  border-bottom: 2px solid var(--ink-12) !important;
+  padding: 0.8rem !important;
+  letter-spacing: 0.02em;
+}
+.table td {
+  padding: 0.85rem 0.8rem !important;
+  vertical-align: middle !important;
+  border-top: 1px solid var(--ink-08) !important;
+}
+.table td, .table th { border-color: var(--ink-08) !important; }
+.table-striped tbody tr:nth-of-type(odd) { background: #FBFAF7 !important; }
+.table-hover tbody tr:hover { background: var(--ink-08) !important; }
+
+/* ---------- 分页器 ---------- */
+.pagination { gap: 4px; padding-top: 0.25rem; }
+.pagination .page-link {
+  border: none !important;
+  border-radius: 10px !important;
+  color: var(--ink) !important;
+  background: var(--ink-04) !important;
+  padding: 0.45rem 0.8rem !important;
+  margin: 0 2px !important;
+  font-weight: 600;
+}
+.pagination .page-item.active .page-link {
+  background: var(--ink) !important;
+  color: #ffffff !important;
+}
+.pagination .page-link:hover {
+  background: var(--rain) !important;
+  color: #ffffff !important;
+}
+.pagination .page-item.disabled .page-link { opacity: 0.45; }
+
+/* ---------- 弹窗 Modal ---------- */
+.modal-content {
+  border-radius: 18px !important;
+  border: none !important;
+  box-shadow: 0 30px 70px -30px rgba(43, 31, 82, 0.6) !important;
+  overflow: hidden;
+}
+.modal-header {
+  border-bottom: 1px solid var(--ink-12) !important;
+  padding: 1rem 1.25rem !important;
+}
+.modal-title {
+  color: var(--ink) !important;
+  font-weight: 800 !important;
+}
+.modal-body {
+  padding: 1.1rem 1.25rem !important;
+  color: var(--ink-70);
+}
+.modal-footer {
+  border-top: 1px solid var(--ink-12) !important;
+  padding: 0.85rem 1.25rem !important;
+}
+
+/* ---------- Toast 提示 ---------- */
+.toast {
+  border-radius: 14px !important;
+  border: none !important;
+  box-shadow: 0 20px 44px -22px rgba(43, 31, 82, 0.5) !important;
+  overflow: hidden;
+}
+.toast-header {
+  background: var(--ink) !important;
+  color: #F5F3EE !important;
+  border-bottom: none !important;
+}
+.toast-body {
+  background: #ffffff;
+  color: var(--ink);
+}
+
+/* ---------- 加载遮罩 / 空状态 ---------- */
+.overlay,
+.card > .overlay {
+  background: rgba(245, 243, 238, 0.72) !important;
+  border-radius: var(--radius-card) !important;
+}
+.fa-spinner,
+.spinner-border {
+  color: var(--rain) !important;
+}
+.text-center.m-5,
+.card-body.text-center {
+  color: var(--ink-45) !important;
+}
+
+/* ---------- 滚动条 ---------- */
+::-webkit-scrollbar { width: 10px; height: 10px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb {
+  background: rgba(43, 31, 82, 0.22);
+  border-radius: 999px;
+  border: 2px solid var(--paper);
+}
+::-webkit-scrollbar-thumb:hover { background: rgba(43, 31, 82, 0.38); }
+
+/* ---------- 链接 ---------- */
+a { color: var(--rain); }
+a:hover { color: var(--ink); }
+.text-primary { color: var(--ink) !important; }
+.text-info { color: var(--rain) !important; }
+
+
+/* =========================================================
+   深色模式：完整的「虚空」主题定义在 void.css（body.dark-mode），
+   本文件不再定义深色规则，统一由 void.css 接管，避免冲突。
+   ========================================================= */
+
+/* =========================================================
+   移动端适配（≤ 992px）
+
+   ------------------------------------------------------------
+   【根因】用户反馈「顶部那排按钮在手机上变成竖的」，这不是错觉，
+   是Bootstrap 4 grid 与 AdminLTE 断点配置冲突导致的**必然**结果。
+
+   内核 header.twig 写的是：
+       <nav class="main-header navbar navbar-expand navbar-cyan navbar-dark">
+   注意 `navbar-expand` **后面没有断点后缀**（不是 -sm/-md/-lg/-xl）。
+
+   于是在压缩后的 app.css 里同时命中两条规则：
+
+     .navbar-expand .navbar-collapse {
+       display: flex !important;      ← ① 永远展开，忽略断点
+       flex-basis: auto;
+     }
+
+     @media (min-width: 992px) {
+       .navbar-expand .navbar-nav {
+         flex-direction: row;         ← ② 只在 ≥992px 才横排
+       }
+     }
+
+   ①让容器永远横排显示，② 却在窄屏把 flex-direction 打回 Bootstrap 默认的
+   `column`。两条规则一叠加 → **≤992px 时 navbar-nav 就是竖的**。
+
+   另外内核**没有渲染 navbar-toggler**（实测 skinlib 页
+   `has navbar-toggler? False`），所以即使 collapse 被折叠也没有按钮能展开它。
+   这是内核模板的设计，我们不改内核，改用 CSS 补齐。
+
+   【方案】
+   窄屏下把顶栏主导航改成横排。实测（ops/lab.js，390px 视口 + 线上真实
+   DOM + 线上真实 app.css）基线状态为：
+
+       Skin Library  y=8
+       Closet        y=48     ← mainNavIsRow: false，确认竖排
+
+   改成横排后主导航独占一行（可横向滑动），品牌与右侧功能区留在第一行。
+   这样主导航不再是竖排，也不会把右侧功能区挤没。
+
+   ⚠️ 选择器作用域：**不要用 body.kokuu-apple**。
+   实测线上 /skinlib 与 /admin 的 body class 分别是
+       hold-transition layout-top-nav
+       hold-transition sidebar-mini
+   `kokuu-apple` 这个类**在整个项目里从未被任何 PHP 添加过**，
+   只在 CSS 里出现过（kokuu-ui/apple.css、motion.css 也一样是死代码）。
+   上一轮所有规则都挂在 `body.kokuu-apple.*` 下 → 一条都没匹配上，
+   这就是用户反馈「首页那排按钮还是原样没有变」的直接原因。
+   ========================================================= */
+@media (max-width: 991.98px) {
+  /* ---- 通用：所有 navbar-nav 强制横排 ----
+   * 这一条直接对症下药，覆盖 app.css 里缺失的窄屏方向声明。
+   * 桌面端（≥992px）本就是 row，此处无副作用。
+   */
+  .main-header.navbar .navbar-nav,
+  .main-header.navbar .nav.navbar-nav {
+    flex-direction: row !important;
+    flex-wrap: nowrap;
+    align-items: center;
+  }
+  /* dropdown 浮层必须相对定位到父级，否则窄屏会被 overflow 裁掉 */
+  .main-header.navbar .navbar-nav .dropdown-menu {
+    position: absolute;
+  }
+
+  /* =========================================================
+     一、顶栏导航版布局（/skinlib 等 layout-top-nav 页面）
+     结构：.navbar-header(品牌) > .navbar-collapse(主导航) + .navbar-custom-menu(右侧)
+     这里必须**两层化**，否则三者挤在一行必然溢出。
+       第一行：品牌 + 右侧功能区
+       第二行：.navbar-collapse 占满整行，横排 + 可横向滑动
+     ========================================================= */
+  body.layout-top-nav .main-header.navbar > .container {
+    flex-wrap: wrap;
+    align-items: center;
+    row-gap: 0;
+  }
+
+  /* 主导航：独占第二行，横排 + 可滑动 */
+  body.layout-top-nav .main-header.navbar .navbar-collapse {
+    /* 覆盖 .navbar-expand .navbar-collapse 的 flex-basis:auto，
+       改为 100% 强制换行到第二行 */
+    flex: 0 0 100%;
+    order: 3;
+    width: 100%;
+    padding: 0;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+  body.layout-top-nav .main-header.navbar .navbar-collapse::-webkit-scrollbar {
+    display: none;
+  }
+  body.layout-top-nav .main-header.navbar .navbar-collapse .navbar-nav {
+    flex-wrap: nowrap;
+    min-width: max-content;
+  }
+  body.layout-top-nav .main-header.navbar .navbar-collapse .nav-link {
+    padding: 0.5rem 0.85rem !important;
+    font-size: 14px;
+    white-space: nowrap;
+    /* 加大点击区：手机上低于 36px 很难点准 */
+    min-height: 40px;
+    display: flex;
+    align-items: center;
+    border-radius: 8px !important;
+  }
+
+  /* 右侧功能区（上传 / 通知 / 语言 / 用户）：第一行靠右 */
+  body.layout-top-nav .main-header.navbar .navbar-custom-menu {
+    margin-left: auto;
+    order: 2;
+  }
+  body.layout-top-nav .main-header.navbar .navbar-custom-menu > .navbar-nav {
+    flex-wrap: nowrap;
+  }
+
+  /* 品牌区：第一行左侧 */
+  body.layout-top-nav .main-header.navbar .navbar-header {
+    order: 1;
+    flex: 0 0 auto;
+    margin-right: auto;
+  }
+  body.layout-top-nav .main-header.navbar .navbar-brand {
+    font-size: 16px;
+    padding: 0;
+    margin-right: 0;
+  }
+
+  /* =========================================================
+     二、侧栏版布局（/user、/admin 等 sidebar-mini 页面）
+     结构：<ul.navbar-nav>（汉堡） + <ul.navbar-nav.ml-auto>（右侧功能）
+     内容不多，横向排开即可，不需要两层化。
+     ========================================================= */
+  body.sidebar-mini .main-header.navbar {
+    flex-wrap: nowrap;
+    min-height: 52px;
+  }
+  body.sidebar-mini .main-header.navbar > .navbar-nav {
+    flex: 0 0 auto;
+  }
+  body.sidebar-mini .main-header.navbar > .navbar-nav.ml-auto {
+    margin-left: auto !important;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+  body.sidebar-mini .main-header.navbar > .navbar-nav.ml-auto::-webkit-scrollbar {
+    display: none;
+  }
+
+  /* =========================================================
+     三、点击区与图标尺寸（两种布局共用）
+     ========================================================= */
+  .main-header.navbar .nav-link {
+    white-space: nowrap;
+    border-radius: 8px !important;
+    /* 统一行高，避免文字项与纯图标项高度不一 */
+    min-height: 38px;
+  }
+  .main-header.navbar .nav-link > .fas,
+  .main-header.navbar .nav-link > .far {
+    font-size: 15px;
+  }
+  .main-header .user-menu .nav-link {
+    padding: 0.3rem 0.45rem !important;
+  }
+  .main-header .user-menu .bs-avatar {
+    width: 30px !important;
+    height: 30px !important;
+  }
+}
+
+/* =========================================================
+   超窄屏（≤ 420px）：进一步瘦身
+   ========================================================= */
+@media (max-width: 420px) {
+  /* 顶栏纵向留白压缩，把高度让给内容。
+     移动端浏览器地址栏会吃掉一大块可视高度，
+     顶栏每省 1px 都是实打实的可视面积。 */
+  .main-header.navbar {
+    min-height: 46px;
+  }
+  .main-header.navbar .nav-link {
+    padding: 0.45rem 0.5rem !important;
+    font-size: 13px;
+  }
+  .main-header.navbar .nav-link > .fas,
+  .main-header.navbar .nav-link > .far {
+    font-size: 14px;
+  }
+
+  /* 皮肤库第二行导航再收窄一点，让「Skin Library」不被截太狠 */
+  body.layout-top-nav .main-header.navbar .navbar-collapse .nav-link {
+    padding: 0.45rem 0.6rem !important;
+    font-size: 13px;
+  }
+
+  /* 内容区左右留白收窄，卡片能占更多宽度 */
+  .content-wrapper,
+  .main-content,
+  .content {
+    padding-left: 10px !important;
+    padding-right: 10px !important;
+  }
+
+  /* 顶栏下方若有面包屑，移动端空间金贵，隐藏它 */
+  .content-header .breadcrumb {
+    display: none;
+  }
+}
+
+/* =========================================================
+   移动端侧边栏
+   =========================================================
+   ⚠️ 这里**故意不做任何 width / max-width 改动**。
+
+   曾试过给 .main-sidebar 加 width:86vw 做「抽屉式限宽」，结果线上直接崩了：
+   用户反馈「左边多出一个空的栏」。
+
+   根因：AdminLTE 的 sidebar-mini 布局在移动端**不靠 width 折叠侧边栏**，
+   而是靠 margin-left 把整条侧边栏挪到屏幕外：
+
+       @media (max-width: 991.98px) {
+         .sidebar-mini .main-sidebar { margin-left: -250px; }
+         .sidebar-mini.sidebar-open .main-sidebar { margin-left: 0; }
+       }
+
+   我只改了 width 没碰 margin，于是：
+     - 原状态 margin-left:-250px → 侧边栏在屏幕外（看不到，正常）
+     - 但 width 被我改成 86vw 后，元素实际占据的位置变了，
+       再叠加 AdminLTE 对 .sidebar-mini 有 min-width/max-width 的处理，
+       最终留下一条贴在左边、内容空白的宽栏。
+
+   教训：**折叠/抽屉的开关是 margin，不是 width。**
+   要改侧边栏宽度就必须同时接管 margin 状态机，
+   属于要重写 AdminLTE 响应式逻辑的高风险改动 —— 收益不抵风险，不做。
+
+   内核侧边栏的移动端行为（汉堡按钮开关）保持 AdminLTE 原生，不碰。
+
+   ⚠️ 断点用 991.98px 而不是 992px：
+   app.css 里有 `@media (min-width: 992px)`，如果这里写 `max-width: 992px`，
+   两边会在**恰好 992px** 这个点同时命中，规则叠加顺序不确定，
+   会出现「偶发布局错乱且无法复现」。991.98 与 app.css 的
+   `@media (max-width: 991.98px)` 保持一致，断点边界才干净。
+   ========================================================= */
+@media (max-width: 991.98px) {
+  /*
+   * 侧边栏导航项加大点击区：手机上手指粗，
+   * AdminLTE 默认的 .55rem 上下内边距（约 17px 高）偏小，实测易误触相邻项。
+   *
+   * ⚠️ 只改内边距与字号，**不碰任何布局属性**
+   * （width / max-width / margin / transform / display）。
+   * 上面已说明：那条侧边栏的折叠状态机是 margin 驱动的，
+   * 碰它就会出「空的侧栏」。
+   */
+  .nav-sidebar .nav-link {
+    padding: 0.7rem 0.9rem !important;
+    font-size: 15px;
+  }
+  /* 移动端不需要树的缩进层级感（侧边栏本身就窄） */
+  .nav-sidebar .nav-child-indent .nav-link {
+    padding-left: 1.4rem !important;
+  }
+}

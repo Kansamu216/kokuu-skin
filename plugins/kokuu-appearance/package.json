@@ -1,6 +1,6 @@
 {
   "name": "kokuu-appearance",
-  "version": "2.0.3",
+  "version": "2.1.0",
   "title": "KokuuSkin 外观",
   "description": "KokuuSkin 全站外观：Apple 扁平设计系统、首页落地页、鉴权页重皮肤、后台外壳重建、提瓦特一言、深浅双主题。同时提供 UI Kit 契约（CSS 变量 + k- 前缀类名），供其他插件选用样式而不产生依赖。由原 kokuu-home / kokuu-ui / kokuu-quote 合并而成。",
   "author": "KokuuStudio",

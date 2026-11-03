@@ -11,93 +11,154 @@
    - 文案与右侧图片由 window.KOKUU_CONFIG 驱动（后台表单可改）
    - 支持浅色 / 虚空两态，两态都是 Apple 扁平语言
    ========================================================= */
-(function () {
-  "use strict";
+;(function () {
+  'use strict'
 
-  var THEME_KEY = "kokuu_theme"; // "void" | "paper"
+  var THEME_KEY = 'kokuu_theme' // "void" | "paper"
 
   // 读取后台配置，带默认值
   function readConfig() {
-    var c = window.KOKUU_CONFIG || {};
+    var c = window.KOKUU_CONFIG || {}
     return {
-      hero_title: c.hero_title || "KokuuSkin",
-      tagline: c.tagline || "让每一次登录，都落在正确的像素上",
-      intro: c.intro
-        || "皮肤站用来存放角色、分享外观。把喜欢的样子收进衣柜，随时调用。",
-      footer_note: c.footer_note || "像素有形，月光无界",
-      contact_email: c.contact_email || "hi@kokuu.org",
-      // 右侧图片：可自定义；空则用内置像素插画
-      hero_image: c.hero_image || ""
-    };
+      hero_title: c.hero_title || 'KokuuSkin',
+      tagline: c.tagline || '让每一次登录，都落在正确的像素上',
+      intro:
+        c.intro ||
+        '皮肤站用来存放角色、分享外观。把喜欢的样子收进衣柜，随时调用。',
+      footer_note: c.footer_note || '像素有形，月光无界',
+      contact_email: c.contact_email || 'hi@kokuu.org',
+      // Preserve legacy single image while supporting a three-image campaign rotation.
+      hero_image: c.hero_image || '',
+      hero_background: c.hero_background || '',
+      hero_background_2: c.hero_background_2 || '',
+      hero_background_3: c.hero_background_3 || '',
+    }
   }
 
   function currentTheme() {
     try {
-      var saved = localStorage.getItem(THEME_KEY);
-      if (saved === "void" || saved === "paper") return saved;
-    } catch (e) { /* 忽略 */ }
-    return "paper";
+      var saved = localStorage.getItem(THEME_KEY)
+      if (saved === 'void' || saved === 'paper') return saved
+    } catch (e) {
+      /* 忽略 */
+    }
+    return 'paper'
   }
 
   function applyTheme(theme) {
-    var root = document.querySelector(".kokuu-root");
-    if (root) { root.classList.toggle("kokuu-void", theme === "void"); }
-    try { localStorage.setItem(THEME_KEY, theme); } catch (e) { /* 忽略 */ }
-    updateToggleLabel(theme);
+    var root = document.querySelector('.kokuu-root')
+    if (root) {
+      root.classList.toggle('kokuu-void', theme === 'void')
+    }
+    try {
+      localStorage.setItem(THEME_KEY, theme)
+    } catch (e) {
+      /* 忽略 */
+    }
+    updateToggleLabel(theme)
   }
 
   function updateToggleLabel(theme) {
-    var btn = document.getElementById("kokuu-theme-toggle");
-    if (!btn) return;
-    var isVoid = theme === "void";
+    var btn = document.getElementById('kokuu-theme-toggle')
+    if (!btn) return
+    var isVoid = theme === 'void'
     btn.innerHTML = isVoid
       ? '<span class="px-sun"></span>日间'
-      : '<span class="px-moon"></span>夜间';
-    btn.setAttribute("title", isVoid ? "切换到浅色模式" : "切换到夜间模式");
+      : '<span class="px-moon"></span>夜间'
+    btn.setAttribute('title', isVoid ? '切换到浅色模式' : '切换到夜间模式')
   }
 
   function esc(s) {
-    return String(s == null ? "" : s)
-      .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")
-      .replace(/"/g, "&quot;").replace(/'/g, "&#39;");
+    return String(s == null ? '' : s)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#39;')
   }
 
   // 内置 MC 像素场景（可被设置页 hero_image 覆盖为单张自定义图）
   var SCENES = [
-    { file: "scenes/01-mineshaft.png", name: "矿洞深处",   tag: "CAVE" },
-    { file: "scenes/02-nether.png",    name: "下界熔岩",   tag: "NETHER" },
-    { file: "scenes/03-snow.png",      name: "雪原清晨",   tag: "SNOW" },
-    { file: "scenes/04-jungle.png",    name: "丛林神庙",   tag: "JUNGLE" },
-    { file: "scenes/05-end.png",       name: "末地黑曜石", tag: "THE END" },
-    { file: "scenes/06-village.png",   name: "村庄日暮",   tag: "VILLAGE" }
-  ];
-  var SLIDE_MS = 5200;
-  var slideIdx = 0;
-  var slideTimer = null;
+    { file: 'scenes/01-mineshaft.png', name: '矿洞深处', tag: 'CAVE' },
+    { file: 'scenes/02-nether.png', name: '下界熔岩', tag: 'NETHER' },
+    { file: 'scenes/03-snow.png', name: '雪原清晨', tag: 'SNOW' },
+    { file: 'scenes/04-jungle.png', name: '丛林神庙', tag: 'JUNGLE' },
+    { file: 'scenes/05-end.png', name: '末地黑曜石', tag: 'THE END' },
+    { file: 'scenes/06-village.png', name: '村庄日暮', tag: 'VILLAGE' },
+  ]
+
+  // Same art direction across the rotating campaign set. The first is the
+  // user-provided image; slots 2/3 remain easy to replace with generated art.
+  var HERO_SLIDES = [
+    {
+      file: 'hero-fantasy-mc.webp',
+      name: '暮光村庄',
+      tag: 'TWILIGHT',
+      align: 'left',
+    },
+    {
+      file: 'hero-fantasy-mc-2.webp',
+      name: '雪原旅途',
+      tag: 'DAWN',
+      align: 'left-upper',
+    },
+    {
+      file: 'hero-fantasy-mc-3.webp',
+      name: '林间秘境',
+      tag: 'JUNGLE',
+      align: 'right',
+    },
+  ]
+
+  // Real public skin-library entries make the product purpose visible.
+  // IDs and names are sourced from the public library; artwork is requested
+  // from the site's own preview endpoint and is not copied into this repo.
+  var FEATURED_SKINS = Array.isArray((window.KOKUU_CONFIG || {}).featured_skins)
+    ? window.KOKUU_CONFIG.featured_skins
+        .filter(function (skin) {
+          return Number.isSafeInteger(Number(skin.id)) && Number(skin.id) > 0
+        })
+        .slice(0, 3)
+    : []
+  var SLIDE_MS = 5200
+  var slideTimer = null
 
   function mount() {
-    var b = window.blessing || {};
-    var base = (b.base_url || "").replace(/\/+$/, "");
-    var asset = base + "/plugins/kokuu-appearance/assets/";
-    var cfg = readConfig();
-    var theme = currentTheme();
-    // 右侧图片：仅当后台确实填了自定义图时才用单图模式；
-    // 未填（空字符串）→ useCustom=false → 走内置 MC 场景轮播。
-    // 切勿在此给 heroImg 兜底成内置插画，否则下方 heroImg ? ... : SCENES
-    // 永远为真，轮播的 6 张图/圆点/进度条都不会被渲染。
-    var useCustom = !!cfg.hero_image;
-    var heroImg = useCustom
-      ? (/^https?:\/\//i.test(cfg.hero_image) ? cfg.hero_image : base + "/" + cfg.hero_image.replace(/^\/+/, ""))
-      : "";
+    var b = window.blessing || {}
+    var base = (b.base_url || '').replace(/\/+$/, '')
+    var asset = base + '/plugins/kokuu-appearance/assets/'
+    var cfg = readConfig()
+    var theme = currentTheme()
+    // A custom background never disables the real-skin foreground carousel.
+    // Legacy hero_image remains supported as the old single-image mode.
+    var legacySingleImage = !!cfg.hero_image && !cfg.hero_background
+    var heroSlides = [
+      cfg.hero_background || asset + HERO_SLIDES[0].file,
+      cfg.hero_background_2 || asset + HERO_SLIDES[1].file,
+      cfg.hero_background_3 || asset + HERO_SLIDES[2].file,
+    ].map(function (src) {
+      return /^https?:\/\//i.test(src)
+        ? src
+        : base + '/' + src.replace(/^\/+/, '')
+    })
+    var heroImg = legacySingleImage
+      ? /^https?:\/\//i.test(cfg.hero_image)
+        ? cfg.hero_image
+        : base + '/' + cfg.hero_image.replace(/^\/+/, '')
+      : ''
 
     try {
       var fi = document.querySelector(
-        'link[rel="icon"], link[rel="shortcut icon"], link[rel="apple-touch-icon"]'
-      );
-      if (fi) { fi.href = asset + "favicon.png"; }
+        'link[rel="icon"], link[rel="shortcut icon"], link[rel="apple-touch-icon"]',
+      )
+      if (fi) {
+        fi.href = asset + 'favicon.png'
+      }
 
       var html = [
-        '<div class="kokuu-root' + (theme === "void" ? " kokuu-void" : "") + '">',
+        '<div class="kokuu-root' +
+          (theme === 'void' ? ' kokuu-void' : '') +
+          '">',
         '  <div class="kokuu-grid" aria-hidden="true"></div>',
         '  <div class="kokuu-dust" id="kokuu-dust"></div>',
         '  <div class="kokuu-navbar" aria-hidden="true"></div>',
@@ -118,92 +179,172 @@
         '  </header>',
 
         /* ---------- HERO ---------- */
-        '  <section class="kokuu-hero">',
-        '    <div class="kokuu-hero-text">',
-        '      <p class="kokuu-eyebrow"><span class="px-dot"></span>SKIN STATION</p>',
-        '      <h1 class="kokuu-title" id="kokuu-hero-title">' + esc(cfg.hero_title) + '</h1>',
-        '      <p class="kokuu-tagline" id="kokuu-hero-tagline">' + esc(cfg.tagline) + '</p>',
-        '      <p class="kokuu-sub" id="kokuu-hero-intro">' + esc(cfg.intro) + '</p>',
-        '      <div class="kokuu-cta" id="kokuu-cta">',
-        '        <a class="kbtn primary" href="' + base + '/skinlib">浏览皮肤库</a>',
-        '        <a class="kbtn" href="' + base + '/auth/register">创建账户</a>',
-        '      </div>',
-        '      <ul class="kokuu-badges">',
-        '        <li><span class="px-grass"></span>皮肤库</li>',
-        '        <li><span class="px-water"></span>登录验证</li>',
-        '        <li><span class="px-moon"></span>像素工坊</li>',
-        '      </ul>',
-        '    </div>',
-        /* 右侧：可自定义图片位 / 内置 MC 场景轮播 */
+        '  <section class="kokuu-hero kokuu-align-' +
+          HERO_SLIDES[0].align +
+          '" id="kokuu-hero" aria-labelledby="kokuu-hero-title">',
         '    <div class="kokuu-hero-art">',
         '      <figure class="kokuu-shot" id="kokuu-shot">',
-        useCustom
-          ? '        <img src="' + esc(heroImg) + '" alt="首页配图" class="kokuu-shot-img kokuu-shot-single">'
-          : SCENES.map(function (s, i) {
-              return '        <img src="' + esc(asset + s.file) + '" alt="' + esc(s.name) +
-                     '" class="kokuu-shot-img' + (i === 0 ? " is-on" : "") + '" data-i="' + i + '">';
-            }).join("\n"),
+        legacySingleImage
+          ? '        <img src="' +
+            esc(heroImg) +
+            '" alt="KokuuSkin Minecraft 场景" class="kokuu-shot-img kokuu-shot-single">'
+          : heroSlides
+              .map(function (src, i) {
+                return (
+                  '        <img src="' +
+                  esc(src) +
+                  '" alt="Minecraft fantasy world, ' +
+                  esc(HERO_SLIDES[i].name) +
+                  '" class="kokuu-shot-img kokuu-hero-bg' +
+                  (i === 0 ? ' is-on' : '') +
+                  '" data-i="' +
+                  i +
+                  '"' +
+                  (i === 0 ? ' fetchpriority="high"' : ' loading="lazy"') +
+                  '>'
+                )
+              })
+              .join('\n'),
+
         '        <div class="kokuu-shot-cap" id="kokuu-shot-cap">' +
-          (useCustom
-            ? '<span class="px-moon"></span>自定义图片'
-            : '<span class="px-grass"></span><span id="kokuu-cap-name">' + esc(SCENES[0].name) +
-              '</span><em id="kokuu-cap-tag">' + esc(SCENES[0].tag) + '</em>') +
-        '        </div>',
-        useCustom ? '' :
-        '        <div class="kokuu-dots" id="kokuu-dots">' +
-          SCENES.map(function (s, i) {
-            return '<button type="button" class="kokuu-dot' + (i === 0 ? " is-on" : "") +
-                   '" data-i="' + i + '" aria-label="' + esc(s.name) + '"></button>';
-          }).join("") +
-        '        </div>',
-        '        <div class="kokuu-progress" id="kokuu-progress"></div>',
+          (legacySingleImage
+            ? '<span class="px-moon"></span>探索 KokuuSkin'
+            : '<span class="px-grass"></span><span id="kokuu-cap-name">' +
+              esc(HERO_SLIDES[0].name) +
+              '</span><em id="kokuu-cap-tag">' +
+              esc(HERO_SLIDES[0].tag) +
+              '</em>') +
+          '        </div>',
+        legacySingleImage
+          ? ''
+          : '        <div class="kokuu-bg-dots" id="kokuu-bg-dots" role="group" aria-label="选择首页场景">' +
+            HERO_SLIDES.map(function (s, i) {
+              return (
+                '<button type="button" class="kokuu-bg-dot' +
+                (i === 0 ? ' is-on' : '') +
+                '" data-i="' +
+                i +
+                '" aria-label="显示' +
+                esc(s.name) +
+                '场景" aria-pressed="' +
+                (i === 0 ? 'true' : 'false') +
+                '"></button>'
+              )
+            }).join('') +
+            '        </div>',
+        legacySingleImage
+          ? ''
+          : '        <div class="kokuu-bg-progress" id="kokuu-bg-progress" aria-hidden="true"></div>',
+        legacySingleImage
+          ? ''
+          : '<button type="button" class="kokuu-pause" id="kokuu-pause" aria-pressed="false">暂停</button>',
         '      </figure>',
         '    </div>',
+        '    <div class="kokuu-hero-text">',
+        '      <p class="kokuu-eyebrow"><span class="px-dot"></span>MINECRAFT SKIN STATION</p>',
+        '      <h1 class="kokuu-title" id="kokuu-hero-title">' +
+          esc(cfg.hero_title) +
+          '</h1>',
+        '      <p class="kokuu-tagline" id="kokuu-hero-tagline">' +
+          esc(cfg.tagline) +
+          '</p>',
+        '      <p class="kokuu-sub" id="kokuu-hero-intro">' +
+          esc(cfg.intro) +
+          '</p>',
+        '      <div class="kokuu-cta" id="kokuu-cta">',
+        '        <a class="kbtn primary" href="' +
+          base +
+          '/skinlib"><span>探索皮肤库</span><span aria-hidden="true">→</span></a>',
+        '        <a class="kbtn" href="' +
+          base +
+          '/auth/register">创建账户</a>',
+        '      </div>',
+        '      <ul class="kokuu-badges" aria-label="站点服务">',
+        '        <li><span class="px-grass"></span>角色与皮肤</li>',
+        '        <li><span class="px-water"></span>Yggdrasil 验证</li>',
+        '        <li><span class="px-moon"></span>个人衣柜</li>',
+        '      </ul>',
+        '    </div>',
+        '    <a class="kokuu-scroll" href="#kokuu-main" aria-label="继续浏览"><span></span></a>',
         '  </section>',
 
         /* ---------- 主体 ---------- */
-        '  <main class="kokuu-main">',
+        '  <main class="kokuu-main" id="kokuu-main">',
 
-        '    <section class="kokuu-block reveal">',
-        '      <p class="kokuu-kicker">01 / 功能</p>',
-        '      <h2 class="kokuu-h2">我们提供什么</h2>',
-        '      <div class="kokuu-cards">',
-        '        <article class="kcard">',
-        '          <div class="kcard-ico"><span class="px-grass"></span></div>',
-        '          <h3>皮肤库</h3>',
-        '          <p>收录角色与外观，支持预览、下载与一键换肤。把喜欢的样子存进衣柜。</p>',
-        '          <a class="kmore" href="' + base + '/skinlib">前往 →</a>',
-        '        </article>',
-        '        <article class="kcard">',
-        '          <div class="kcard-ico"><span class="px-water"></span></div>',
-        '          <h3>登录验证</h3>',
-        '          <p>基于 Yggdrasil 的账号验证，让启动器直接认得这台服务器。一套账号，畅玩全模组。</p>',
-        '          <a class="kmore" href="' + base + '/auth/login">前往 →</a>',
-        '        </article>',
-        '        <article class="kcard">',
-        '          <div class="kcard-ico"><span class="px-mine"></span></div>',
-        '          <h3>上传换肤</h3>',
-        '          <p>自己做的材质也能上传分享。工作室成员与朋友都能把作品挂上来。</p>',
-        '          <a class="kmore" href="' + base + '/skinlib/upload">前往 →</a>',
-        '        </article>',
+        '    <section class="kokuu-block kokuu-featured reveal" aria-labelledby="kokuu-featured-title">',
+        '      <div class="kokuu-section-head"><div><p class="kokuu-kicker">来自皮肤库</p><h2 class="kokuu-h2" id="kokuu-featured-title">让你的角色成为主角</h2></div>',
+        '      <a class="kokuu-section-link" href="' +
+          base +
+          '/skinlib">查看皮肤库 <span aria-hidden="true">→</span></a></div>',
+        '      <div class="kokuu-featured-grid">',
+        FEATURED_SKINS.slice(0, 3)
+          .map(function (skin) {
+            return (
+              '<a class="kokuu-featured-skin" href="' +
+              base +
+              '/skinlib/show/' +
+              skin.id +
+              '"><span class="kokuu-featured-art"><img loading="lazy" src="' +
+              base +
+              '/preview/' +
+              skin.id +
+              '?height=260&amp;png" alt="Minecraft ' +
+              esc(skin.name) +
+              ' 皮肤"></span><span class="kokuu-featured-meta"><strong>' +
+              esc(skin.name) +
+              '</strong><span>' +
+              esc(skin.model) +
+              ' · 皮肤预览</span></span></a>'
+            )
+          })
+          .join(''),
         '      </div>',
         '    </section>',
 
-        '    <section class="kokuu-block reveal">',
-        '      <p class="kokuu-kicker">02 / 理念</p>',
-        '      <h2 class="kokuu-h2">我们怎么做</h2>',
-        '      <div class="kokuu-creed">',
-        '        <div class="kokuu-creed-col">',
-        '          <p>先把事做对，再把事做好。</p>',
-        '          <p class="small">偏好稳定可维护的方案：先评估、再落地，不为一时方便埋坑。',
-        '          皮肤站、启动器与服务端，都按能长期跑下去的方式搭建。</p>',
-        '        </div>',
-        '        <div class="kokuu-creed-col">',
-        '          <p>慢一点，但更稳一点。</p>',
-        '          <p class="small">把基础打牢，剩下的让它自然生长。',
-        '          更在乎你进来时它还在、还好用。</p>',
-        '        </div>',
+        '    <section class="kokuu-block reveal" aria-labelledby="kokuu-services-title">',
+        '      <div class="kokuu-section-head">',
+        '        <div><p class="kokuu-kicker">你的 Minecraft 身份</p>',
+        '        <h2 class="kokuu-h2" id="kokuu-services-title">把喜欢的外观，带进游戏</h2></div>',
+        '        <a class="kokuu-section-link" href="' +
+          base +
+          '/skinlib">浏览全部皮肤 <span aria-hidden="true">→</span></a>',
         '      </div>',
+        '      <div class="kokuu-cards">',
+        '        <a class="kcard" href="' + base + '/skinlib">',
+        '          <span class="kcard-index">01</span>',
+        '          <div class="kcard-ico"><span class="px-grass"></span></div>',
+        '          <h3>发现皮肤</h3>',
+        '          <p>浏览角色外观，预览细节，找到适合你的 Minecraft 形象。</p>',
+        '          <span class="kmore">打开皮肤库 <span aria-hidden="true">↗</span></span>',
+        '        </a>',
+        '        <a class="kcard" href="' + base + '/skinlib/upload">',
+        '          <span class="kcard-index">02</span>',
+        '          <div class="kcard-ico"><span class="px-mine"></span></div>',
+        '          <h3>上传作品</h3>',
+        '          <p>上传自己的皮肤，与工作室成员和朋友分享创作。</p>',
+        '          <span class="kmore">上传皮肤 <span aria-hidden="true">↗</span></span>',
+        '        </a>',
+        '        <a class="kcard" href="' + base + '/auth/login">',
+        '          <span class="kcard-index">03</span>',
+        '          <div class="kcard-ico"><span class="px-water"></span></div>',
+        '          <h3>连接启动器</h3>',
+        '          <p>使用 KokuuSkin 账号配置 Yggdrasil 验证，在启动器中使用你的角色。</p>',
+        '          <span class="kmore">查看登录方式 <span aria-hidden="true">↗</span></span>',
+        '        </a>',
+        '      </div>',
+        '    </section>',
+
+        '    <section class="kokuu-steps reveal" aria-labelledby="kokuu-steps-title">',
+        '      <div class="kokuu-steps-copy">',
+        '        <p class="kokuu-kicker">从皮肤到游戏</p>',
+        '        <h2 class="kokuu-h2" id="kokuu-steps-title">三步，准备好你的角色</h2>',
+        '        <p>选择外观、保存到衣柜，再用同一个账号登录支持 Yggdrasil 的启动器。</p>',
+        '      </div>',
+        '      <ol class="kokuu-step-list">',
+        '        <li><span>1</span><div><strong>挑选外观</strong><p>从皮肤库预览并选择角色皮肤。</p></div></li>',
+        '        <li><span>2</span><div><strong>保存到衣柜</strong><p>登录后管理皮肤，随时切换使用。</p></div></li>',
+        '        <li><span>3</span><div><strong>连接启动器</strong><p>配置验证地址，使用 KokuuSkin 账号登录。</p></div></li>',
+        '      </ol>',
         '    </section>',
 
         '  </main>',
@@ -223,194 +364,240 @@
         '    <p class="foot-fine">© 2026 KokuuSkin · Powered by Blessing Skin</p>',
         '  </footer>',
 
-        '</div>'
-      ].join("\n");
+        '</div>',
+      ].join('\n')
 
-      document.body.innerHTML = html;
-      document.body.classList.add("kokuu-on");
-      document.title = cfg.hero_title + " · 皮肤站";
+      document.body.innerHTML = html
+      document.body.classList.add('kokuu-on')
+      document.title = cfg.hero_title + ' · 皮肤站'
 
-      initDust();
-      initReveal();
-      initCarousel();
+      var featured = document.querySelector('.kokuu-featured')
+      if (featured && !FEATURED_SKINS.length) {
+        featured.remove()
+      }
+      initReveal()
+      initHeroCarousel()
 
-      var toggle = document.getElementById("kokuu-theme-toggle");
+      var toggle = document.getElementById('kokuu-theme-toggle')
       if (toggle) {
-        updateToggleLabel(theme);
-        toggle.addEventListener("click", function () {
-          applyTheme(currentTheme() === "void" ? "paper" : "void");
-        });
+        updateToggleLabel(theme)
+        toggle.addEventListener('click', function () {
+          applyTheme(currentTheme() === 'void' ? 'paper' : 'void')
+        })
       }
 
-      detectLogin(base);
+      document
+        .querySelectorAll('.kokuu-hero-bg, .kokuu-shot-single')
+        .forEach(function (img) {
+          img.addEventListener('error', function () {
+            if (img.dataset.fallback) {
+              return
+            }
+            img.dataset.fallback = 'true'
+            img.src = asset + HERO_SLIDES[0].file
+          })
+        })
+      detectLogin(base)
     } catch (e) {
-      document.body.style.visibility = "visible";
-      if (window.console) { console.error("[KokuuHome]", e); }
+      document.body.style.visibility = 'visible'
+      if (window.console) {
+        console.error('[KokuuHome]', e)
+      }
     }
   }
 
-  /* 像素星尘（浅色淡墨 / 夜间星点） */
-  function initDust() {
-    var c = document.getElementById("kokuu-dust");
-    if (!c || !c.getContext) { return; }
-    var ctx = c.getContext("2d");
-    var dpr = window.devicePixelRatio || 1;
-    var W = 0, H = 0, dots = [];
-
-    function resize() {
-      W = c.width = Math.floor(window.innerWidth * dpr);
-      H = c.height = Math.floor(window.innerHeight * dpr);
-      c.style.width = window.innerWidth + "px";
-      c.style.height = window.innerHeight + "px";
-      dots = [];
-      // 像素方块（呼应 MC），不用圆点
-      var n = Math.floor(window.innerWidth / (window.innerWidth < 800 ? 18 : 26));
-      for (var i = 0; i < n; i++) {
-        dots.push({
-          x: Math.floor(Math.random() * W),
-          y: Math.floor(Math.random() * H),
-          s: (Math.random() < 0.8 ? 2 : 3) * dpr,
-          v: (Math.random() * 0.22 + 0.05) * dpr,
-          a: Math.random() * 0.5 + 0.2
-        });
-      }
+  /* Hero backgrounds rotate independently from the foreground skin picker. */
+  function initHeroCarousel() {
+    var dots = document.getElementById('kokuu-bg-dots')
+    var hero = document.getElementById('kokuu-hero')
+    var images = document.querySelectorAll('.kokuu-shot-img.kokuu-hero-bg')
+    var capName = document.getElementById('kokuu-cap-name')
+    var capTag = document.getElementById('kokuu-cap-tag')
+    var bar = document.getElementById('kokuu-bg-progress')
+    if (!hero || !dots || images.length !== HERO_SLIDES.length) {
+      return
     }
-    resize();
-    window.addEventListener("resize", resize);
-
-    function frame() {
-      if (!c.isConnected) { return; }
-      var isVoid = !!document.querySelector(".kokuu-root.kokuu-void");
-      ctx.clearRect(0, 0, W, H);
-      for (var i = 0; i < dots.length; i++) {
-        var p = dots[i];
-        p.y -= p.v;
-        if (p.y < -4 * dpr) { p.y = H; p.x = Math.floor(Math.random() * W); }
-        ctx.fillStyle = isVoid
-          ? "rgba(200,210,255," + (p.a * 0.5) + ")"
-          : "rgba(43,31,82," + (p.a * 0.10) + ")";
-        ctx.fillRect(p.x, p.y, p.s, p.s); // 硬边方块 = 像素感
-      }
-      window.requestAnimationFrame(frame);
-    }
-    window.requestAnimationFrame(frame);
-  }
-
-  /* 右侧图片轮播：自动切换 + 圆点指示 + 悬停暂停 */
-  function initCarousel() {
-    var dots = document.getElementById("kokuu-dots");
-    if (!dots) { return; }                          // 自定义单图模式无轮播
-    var imgs = document.querySelectorAll("#kokuu-shot .kokuu-shot-img");
-    if (imgs.length < 2) { return; }
-    var capName = document.getElementById("kokuu-cap-name");
-    var capTag = document.getElementById("kokuu-cap-tag");
-    var shot = document.getElementById("kokuu-shot");
-    var bar = document.getElementById("kokuu-progress");
+    var index = 0
+    var paused = false
 
     function show(i) {
-      slideIdx = (i + imgs.length) % imgs.length;
-      for (var k = 0; k < imgs.length; k++) {
-        imgs[k].classList.toggle("is-on", k === slideIdx);
-      }
+      index = (i + images.length) % images.length
+      images.forEach(function (img, n) {
+        img.classList.toggle('is-on', n === index)
+      })
       for (var d = 0; d < dots.children.length; d++) {
-        dots.children[d].classList.toggle("is-on", d === slideIdx);
+        var active = d === index
+        dots.children[d].classList.toggle('is-on', active)
+        dots.children[d].setAttribute('aria-pressed', active ? 'true' : 'false')
       }
-      if (capName) { capName.textContent = SCENES[slideIdx].name; }
-      if (capTag) { capTag.textContent = SCENES[slideIdx].tag; }
-      // 重启底部进度条动画，让自动切换可见
+      hero.classList.remove(
+        'kokuu-align-left',
+        'kokuu-align-left-upper',
+        'kokuu-align-left-lower',
+        'kokuu-align-right',
+      )
+      hero.classList.add('kokuu-align-' + HERO_SLIDES[index].align)
+      if (capName) {
+        capName.textContent = HERO_SLIDES[index].name
+      }
+      if (capTag) {
+        capTag.textContent = HERO_SLIDES[index].tag
+      }
       if (bar) {
-        bar.classList.remove("is-run");
-        void bar.offsetWidth;
-        bar.classList.add("is-run");
+        bar.classList.remove('is-run')
+        void bar.offsetWidth
+        bar.classList.add('is-run')
       }
-    }
-
-    function next() { show(slideIdx + 1); }
-    function start() {
-      stop();
-      slideTimer = window.setInterval(function () {
-        if (!document.body.contains(shot)) { stop(); return; }
-        next();
-      }, SLIDE_MS);
     }
     function stop() {
-      if (slideTimer) { window.clearInterval(slideTimer); slideTimer = null; }
+      if (slideTimer) {
+        window.clearInterval(slideTimer)
+        slideTimer = null
+      }
+      if (bar) {
+        bar.classList.remove('is-run')
+      }
     }
-
-    // 圆点点击
+    function start() {
+      stop()
+      if (paused || document.hidden) {
+        return
+      }
+      if (
+        window.matchMedia &&
+        window.matchMedia('(prefers-reduced-motion: reduce)').matches
+      ) {
+        return
+      }
+      slideTimer = window.setInterval(function () {
+        if (!document.body.contains(hero)) {
+          stop()
+          return
+        }
+        show(index + 1)
+      }, SLIDE_MS)
+    }
     for (var d = 0; d < dots.children.length; d++) {
-      (function (idx) {
-        dots.children[idx].addEventListener("click", function (ev) {
-          ev.stopPropagation();
-          show(idx);
-          start();                                  // 重置计时
-        });
-      })(d);
+      ;(function (n) {
+        dots.children[n].addEventListener('click', function () {
+          show(n)
+          start()
+        })
+      })(d)
     }
-    // 点击图片切换下一张
-    shot.addEventListener("click", function (ev) {
-      if (ev.target.closest(".kokuu-dots")) { return; }
-      next();
-      start();
-    });
-    // 页面隐藏时暂停，省电（不因悬停暂停，避免"看起来不轮播"）
-    document.addEventListener("visibilitychange", function () {
-      if (document.hidden) { stop(); } else { start(); }
-    });
-
-    show(0);
-    start();
+    document.addEventListener('visibilitychange', function () {
+      if (document.hidden) {
+        stop()
+      } else {
+        start()
+      }
+    })
+    var pause = document.getElementById('kokuu-pause')
+    if (pause) {
+      pause.addEventListener('click', function () {
+        paused = !paused
+        pause.textContent = paused ? '播放' : '暂停'
+        pause.setAttribute('aria-pressed', String(paused))
+        if (paused) {
+          stop()
+        } else {
+          start()
+        }
+      })
+    }
+    var motionPreference = window.matchMedia('(prefers-reduced-motion: reduce)')
+    motionPreference.addEventListener('change', function () {
+      motionPreference.matches ? stop() : start()
+    })
+    show(0)
+    start()
   }
 
   function initReveal() {
-    var els = document.querySelectorAll(".reveal");
-    if (!("IntersectionObserver" in window)) {
-      els.forEach(function (e) { e.classList.add("in"); });
-      return;
+    var els = document.querySelectorAll('.reveal')
+    if (
+      !('IntersectionObserver' in window) ||
+      window.matchMedia('(prefers-reduced-motion: reduce)').matches
+    ) {
+      els.forEach(function (e) {
+        e.classList.add('in')
+      })
+      return
     }
-    var io = new IntersectionObserver(function (entries) {
-      entries.forEach(function (en) {
-        if (en.isIntersecting) { en.target.classList.add("in"); io.unobserve(en.target); }
-      });
-    }, { threshold: 0.12 });
-    els.forEach(function (e) { io.observe(e); });
+    var io = new IntersectionObserver(
+      function (entries) {
+        entries.forEach(function (en) {
+          if (en.isIntersecting) {
+            en.target.classList.add('in')
+            io.unobserve(en.target)
+          }
+        })
+      },
+      { threshold: 0.12 },
+    )
+    els.forEach(function (e) {
+      io.observe(e)
+    })
   }
 
   function detectLogin(base) {
     try {
-      fetch(base + "/user", {
-        credentials: "same-origin",
-        redirect: "manual",
-        headers: { "X-Requested-With": "XMLHttpRequest" }
-      }).then(function (r) { applyAuthState(r.status === 200, base); })
-        .catch(function () {});
+      fetch(base + '/user', {
+        credentials: 'same-origin',
+        redirect: 'manual',
+        headers: { 'X-Requested-With': 'XMLHttpRequest' },
+      })
+        .then(function (r) {
+          applyAuthState(r.status === 200, base)
+        })
+        .catch(function () {})
     } catch (e) {}
   }
 
   function applyAuthState(loggedIn, base) {
-    var nav = document.getElementById("kokuu-nav");
+    var nav = document.getElementById('kokuu-nav')
     if (nav) {
       nav.innerHTML = loggedIn
-        ? '<a href="' + base + '/skinlib">皮肤库</a>' +
-          '<a href="' + base + '/user">用户中心</a>' +
-          '<a href="' + base + '/user/closet">我的衣柜</a>'
-        : '<a href="' + base + '/skinlib">皮肤库</a>' +
-          '<a href="' + base + '/auth/login">登录</a>' +
-          '<a href="' + base + '/auth/register">注册</a>';
+        ? '<a href="' +
+          base +
+          '/skinlib">皮肤库</a>' +
+          '<a href="' +
+          base +
+          '/user">用户中心</a>' +
+          '<a href="' +
+          base +
+          '/user/closet">我的衣柜</a>'
+        : '<a href="' +
+          base +
+          '/skinlib">皮肤库</a>' +
+          '<a href="' +
+          base +
+          '/auth/login">登录</a>' +
+          '<a href="' +
+          base +
+          '/auth/register">注册</a>'
     }
-    var cta = document.getElementById("kokuu-cta");
+    var cta = document.getElementById('kokuu-cta')
     if (cta) {
       cta.innerHTML = loggedIn
-        ? '<a class="kbtn primary" href="' + base + '/user">进入用户中心</a>' +
-          '<a class="kbtn" href="' + base + '/user/closet">我的衣柜</a>'
-        : '<a class="kbtn primary" href="' + base + '/skinlib">浏览皮肤库</a>' +
-          '<a class="kbtn" href="' + base + '/auth/register">创建账户</a>';
+        ? '<a class="kbtn primary" href="' +
+          base +
+          '/user">进入用户中心</a>' +
+          '<a class="kbtn" href="' +
+          base +
+          '/user/closet">我的衣柜</a>'
+        : '<a class="kbtn primary" href="' +
+          base +
+          '/skinlib">浏览皮肤库</a>' +
+          '<a class="kbtn" href="' +
+          base +
+          '/auth/register">创建账户</a>'
     }
   }
 
-  if (document.readyState === "loading") {
-    document.addEventListener("DOMContentLoaded", mount);
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', mount)
   } else {
-    mount();
+    mount()
   }
-})();
+})()

@@ -49,8 +49,11 @@ if (! function_exists('kokuu_appearance_config')) {
             'hero_title'    => 'KokuuSkin',
             'tagline'       => '让每一次登录，都落在正确的像素上',
             'intro'         => '皮肤站用来存放角色、分享外观。把喜欢的样子收进衣柜，随时调用。',
-            'hero_image'    => '',
-            'footer_note'   => '像素有形，月光无界',
+            'hero_image'    => '', // Legacy field retained for backward compatibility.
+            'hero_background'   => '',
+            'hero_background_2' => '',
+            'hero_background_3' => '',
+            'footer_note'       => '像素有形，月光无界',
             'contact_email' => 'hi@kokuu.org',
         ];
 
@@ -261,7 +264,14 @@ return function ($plugin) {
      */
     Event::listen(RenderingHeader::class, function ($event) {
         $config = kokuu_appearance_config();
-        $json = json_encode($config, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+        if (request()->path() === '/') {
+            $config['featured_skins'] = \App\Models\Texture::query()
+                ->where('public', true)->whereIn('type', ['steve', 'alex'])
+                ->orderByDesc('upload_at')->limit(3)->get(['tid', 'name', 'type'])
+                ->map(fn ($texture) => ['id' => $texture->tid, 'name' => $texture->name,
+                    'model' => $texture->type === 'alex' ? 'Alex' : 'Steve'])->all();
+        }
+        $json = json_encode($config, JSON_UNESCAPED_UNICODE | JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT);
         $event->addContent('<script>window.KOKUU_CONFIG = '.$json.';</script>');
     });
 
@@ -373,6 +383,9 @@ return function ($plugin) {
                 'tagline'       => (string) $request->input('tagline', ''),
                 'intro'         => (string) $request->input('intro', ''),
                 'hero_image'    => (string) $request->input('hero_image', ''),
+                'hero_background' => (string) $request->input('hero_background', ''),
+                'hero_background_2' => (string) $request->input('hero_background_2', ''),
+                'hero_background_3' => (string) $request->input('hero_background_3', ''),
                 'footer_note'   => (string) $request->input('footer_note', ''),
                 'contact_email' => (string) $request->input('contact_email', ''),
             ]);

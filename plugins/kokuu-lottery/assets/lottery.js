@@ -235,7 +235,7 @@
           return
         }
 
-        if (j.code === 0) {
+        if (j.ok === true) {
           say(
             '获得 <span class="kg-result-name">' +
               escapeHtml(j.label || '奖品') +
@@ -256,9 +256,9 @@
         }
 
         /* 业务失败（422 = 已穿过 CSRF，功能本身是通的） */
-        say(escapeHtml(j.message || '祈愿失败'), 'warn')
+        say(escapeHtml(j.msg || '祈愿失败'), 'warn')
         refreshWallet(j.spendable, j.draws)
-        if (/不足|没有/.test(j.message || '')) {
+        if (/不足|没有/.test(j.msg || '')) {
           setBtn('次数与积分均不足', true)
         } else {
           cooldown(j.cooldown !== undefined ? j.cooldown : 3, '祈 愿 一 次')

@@ -200,6 +200,9 @@ return function ($plugin) {
 
     // 5. 一言功能样式
     Hook::addStyleFileToPage($plugin->assets('quote.css'), ['*']);
+    // ⚠️ 一言的脚本必须单独注入：合并三个插件时漏掉了这一行，
+    //    导致顶栏一言完全不显示（用户反馈「提瓦特一言不见了」）。
+    Hook::addScriptFileToPage($plugin->assets('quote.js'), ['*']);
 
     // 6. 提瓦特元素装饰（仅内容页，排除首页——首页是 MC 像素风格）
     Hook::addStyleFileToPage(
@@ -309,7 +312,6 @@ return function ($plugin) {
      * 移除项：
      *   general.my-reports  站点不开放举报，点了是空列表
      *   general.developer   面向站长的 OAuth2 应用管理，普通用户不需要
-     *   论坛积分流水        路由要求 ADMIN，菜单却对所有用户可见 → 按权限过滤
      *
      * 保留：仪表盘 / 我的衣柜 / 角色管理 / 个人资料 —— 普通用户真在用。
      * ⚠️ 删的是**菜单项**不是路由，直接输 URL 仍可访问。
@@ -338,11 +340,6 @@ return function ($plugin) {
             $title = (string) \Illuminate\Support\Arr::get($item, 'title', '');
 
             if (in_array($title, $hide, true)) {
-                continue;
-            }
-
-            // 积分流水：仅管理员可见（路由本身也要求 ADMIN）
-            if ($title === '论坛积分流水' && ! $isAdmin) {
                 continue;
             }
 

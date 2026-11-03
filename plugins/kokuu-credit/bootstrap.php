@@ -924,8 +924,16 @@ return function ($plugin) {
      * 事件给的是整个 $menu 数组（含 user/admin/explore 三个键）的引用，
      * 监听器第一个参数是事件对象，所以必须写 $event->menu['user'][]。
      */
-    \Illuminate\Support\Facades\Event::listen(\App\Events\ConfigureUserMenu::class, function ($event) {
-        $event->menu['user'][] = [
+    /*
+     * 积分流水是**管理功能**，只挂到后台（admin）菜单，不再出现在用户中心。
+     *
+     * 历史问题：原先挂在 ConfigureUserMenu（用户侧菜单），
+     * 普通用户也能看到「积分流水」入口 —— 但该路由本身要求 ADMIN，
+     * 点了就是 403。用户反馈「用户的后台页面怎么还有积分流水这种东西」。
+     * 现在改挂 ConfigureAdminMenu，普通用户完全不可见，管理员在后台可查。
+     */
+    \Illuminate\Support\Facades\Event::listen(\App\Events\ConfigureAdminMenu::class, function ($event) {
+        $event->menu['admin'][] = [
             'title' => '积分流水',
             'link' => 'plugin/kokuu-credit/ledger',
             'icon' => 'fa-coins',

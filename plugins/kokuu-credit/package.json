@@ -1,8 +1,8 @@
 {
   "name": "kokuu-credit",
   "version": "1.0.0",
-  "title": "KokuuSkin 论坛积分",
-  "description": "论坛赚积分的唯一账本。提供带 HMAC 签名的服务端加分接口，把 Flarum 论坛产生的加分事件写入 users.score 并留下 credit_ledger 流水。论坛侧只加分不扣分，扣分场景（建角色/衣柜/兑换）仍走内核原有逻辑。",
+  "title": "KokuuSkin 积分",
+  "description": "皮肤站积分账本：原子记录积分变动、event_id 幂等防重、提供管理平台服务端到服务端调分接口。签到流水由 kokuu-signin 插件补记。",
   "author": "KokuuStudio",
   "namespace": "KokuuStudio\\KokuuCredit",
   "config": "config.blade.php",

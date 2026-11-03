@@ -29,27 +29,28 @@
    * （它们也在用），但它现在是**别名**而不是副本。
    */
   --k-paper: var(--paper, var(--k-bg));
-  --k-ink:   var(--ink,   var(--k-brand-ink));
-  --k-rain:  var(--rain,  var(--k-brand-rain));
+  --k-ink: var(--ink, var(--k-brand-ink));
+  --k-rain: var(--rain, var(--k-brand-rain));
   --k-lilac: var(--lilac, var(--k-brand-lilac));
 
   /* Apple 扁平体系 */
-  --a-bg: var(--k-bg);              /* 苹果系统级浅灰底 */
-  --a-surface: #fff;         /* 卡片面 */
-  --a-surface-2: var(--k-surface-2);       /* 次级面（表头等） */
-  --a-text: var(--k-text);            /* 主文字 */
-  --a-text-2: var(--k-text-2);          /* 次文字 */
-  --a-text-3: var(--k-text-3);          /* 三级/占位 */
-  --a-sep: rgba(60, 60, 67, 0.13);   /* 极淡分隔线 */
-  --a-sep-strong: rgba(60, 60, 67, 0.20);
-  --a-radius: 18px;             /* 大圆角 */
+  --a-bg: var(--k-bg); /* 苹果系统级浅灰底 */
+  --a-surface: #fff; /* 卡片面 */
+  --a-surface-2: var(--k-surface-2); /* 次级面（表头等） */
+  --a-text: var(--k-text); /* 主文字 */
+  --a-text-2: var(--k-text-2); /* 次文字 */
+  --a-text-3: var(--k-text-3); /* 三级/占位 */
+  --a-sep: rgba(60, 60, 67, 0.13); /* 极淡分隔线 */
+  --a-sep-strong: rgba(60, 60, 67, 0.2);
+  --a-radius: 18px; /* 大圆角 */
   --a-radius-sm: 12px;
   --a-radius-lg: 24px;
-  --a-shadow: 0 1px 2px rgba(0,0,0,.04), 0 6px 20px rgba(0,0,0,.05);  /* 细腻柔和 */
-  --a-shadow-hover: 0 2px 6px rgba(0,0,0,.06), 0 12px 32px rgba(0,0,0,.10);
+  --a-shadow: 0 1px 2px rgba(0, 0, 0, 0.04), 0 6px 20px rgba(0, 0, 0, 0.05); /* 细腻柔和 */
+  --a-shadow-hover: 0 2px 6px rgba(0, 0, 0, 0.06),
+    0 12px 32px rgba(0, 0, 0, 0.1);
   --a-blur: saturate(180%) blur(20px);
-  --a-ease: cubic-bezier(.4, 0, .2, 1);       /* Apple 标准缓动 */
-  --a-ease-out: cubic-bezier(.16, 1, .3, 1);  /* 更丝滑的出场 */
+  --a-ease: cubic-bezier(0.4, 0, 0.2, 1); /* Apple 标准缓动 */
+  --a-ease-out: cubic-bezier(0.16, 1, 0.3, 1); /* 更丝滑的出场 */
   --a-nav-h: 56px;
   --a-side-w: 248px;
 }
@@ -80,7 +81,7 @@ body.kokuu-apple .main-header .navbar-nav > .nav-item > .nav-link {
   color: var(--a-text) !important;
   font-weight: 500;
   border-radius: 10px;
-  transition: background .2s var(--a-ease), color .2s var(--a-ease);
+  transition: background 0.2s var(--a-ease), color 0.2s var(--a-ease);
 }
 body.kokuu-apple .main-header .nav-link:hover,
 body.kokuu-apple .main-header .navbar-nav > li > a:hover {
@@ -128,9 +129,9 @@ body.kokuu-apple .main-header .dropdown-item:hover {
  */
 body.kokuu-apple .dropdown-menu {
   background: var(--a-surface, #fff) !important;
-  border: 1px solid var(--a-sep, rgba(60, 60, 67, .13)) !important;
+  border: 1px solid var(--a-sep, rgba(60, 60, 67, 0.13)) !important;
   border-radius: 14px !important;
-  box-shadow: 0 12px 32px rgba(0, 0, 0, .14) !important;
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.14) !important;
   padding: 6px;
   z-index: 1080;
 }
@@ -139,23 +140,23 @@ body.kokuu-apple .dropdown-item {
   padding: 8px 12px;
   color: var(--a-text, var(--k-text)) !important;
   font-size: 13px;
-  transition: background-color .16s var(--a-ease, ease);
+  transition: background-color 0.16s var(--a-ease, ease);
 }
 body.kokuu-apple .dropdown-item:hover,
 body.kokuu-apple .dropdown-item:focus {
-  background: rgba(120, 120, 128, .1) !important;
+  background: rgba(120, 120, 128, 0.1) !important;
   color: var(--a-text, var(--k-text)) !important;
 }
 body.kokuu-apple.dark-mode .dropdown-menu {
-  background: rgba(44, 44, 46, .96) !important;
-  border-color: rgba(255, 255, 255, .12) !important;
+  background: rgba(44, 44, 46, 0.96) !important;
+  border-color: rgba(255, 255, 255, 0.12) !important;
 }
 body.kokuu-apple.dark-mode .dropdown-item {
   color: var(--a-text, var(--k-bg)) !important;
 }
 body.kokuu-apple.dark-mode .dropdown-item:hover,
 body.kokuu-apple.dark-mode .dropdown-item:focus {
-  background: rgba(255, 255, 255, .1) !important;
+  background: rgba(255, 255, 255, 0.1) !important;
 }
 
 /* ---- 侧边栏：纯净白面 + 极淡右边框（扁平，不用深色渐变） ---- */
@@ -165,7 +166,7 @@ body.kokuu-apple .sidebar {
   border-right: 1px solid var(--a-sep) !important;
   box-shadow: none !important;
   width: var(--a-side-w);
-  transition: width .3s var(--a-ease), transform .3s var(--a-ease);
+  transition: width 0.3s var(--a-ease), transform 0.3s var(--a-ease);
 }
 body.kokuu-apple .brand-link {
   border-bottom: 1px solid var(--a-sep) !important;
@@ -182,8 +183,13 @@ body.kokuu-apple .user-panel {
   border-bottom: 1px solid var(--a-sep) !important;
   padding: 14px 16px;
 }
-body.kokuu-apple .user-panel .info a { color: var(--a-text) !important; font-weight: 600; }
-body.kokuu-apple .user-panel .info small { color: var(--a-text-2); }
+body.kokuu-apple .user-panel .info a {
+  color: var(--a-text) !important;
+  font-weight: 600;
+}
+body.kokuu-apple .user-panel .info small {
+  color: var(--a-text-2);
+}
 
 /* 侧栏导航：扁平、圆角、选中为淡品牌色底 */
 body.kokuu-apple .nav-sidebar .nav-link {
@@ -192,7 +198,7 @@ body.kokuu-apple .nav-sidebar .nav-link {
   margin: 2px 10px;
   padding: 9px 12px;
   font-weight: 500;
-  transition: background .18s var(--a-ease), color .18s var(--a-ease);
+  transition: background 0.18s var(--a-ease), color 0.18s var(--a-ease);
 }
 body.kokuu-apple .nav-sidebar .nav-link:hover {
   background: rgba(0, 0, 0, 0.045) !important;
@@ -218,17 +224,24 @@ body.kokuu-apple .nav-header {
   color: var(--a-text-2) !important;
   font-size: 11.5px;
   font-weight: 700;
-  letter-spacing: .6px;
+  letter-spacing: 0.6px;
   text-transform: uppercase;
   padding: 18px 16px 6px;
 }
-body.kokuu-apple .nav-sidebar .nav-icon { color: inherit !important; }
+body.kokuu-apple .nav-sidebar .nav-icon {
+  color: inherit !important;
+}
 
 /* 折叠态（AdminLTE sidebar-collapse）紧凑化 */
 body.kokuu-apple.sidebar-collapse .main-sidebar,
-body.kokuu-apple.sidebar-mini.sidebar-collapse .main-sidebar { width: 64px; }
+body.kokuu-apple.sidebar-mini.sidebar-collapse .main-sidebar {
+  width: 64px;
+}
 body.kokuu-apple.sidebar-collapse .nav-sidebar .nav-link p,
-body.kokuu-apple.sidebar-collapse .nav-sidebar .nav-header { opacity: 0; pointer-events: none; }
+body.kokuu-apple.sidebar-collapse .nav-sidebar .nav-header {
+  opacity: 0;
+  pointer-events: none;
+}
 
 /* ---- 内容区：大留白纯净底 ---- */
 body.kokuu-apple .content-wrapper {
@@ -245,7 +258,18 @@ body.kokuu-apple section.content h1 {
   font-size: clamp(24px, 2.4vw, 32px);
   letter-spacing: -0.5px;
 }
-body.kokuu-apple .content .container-fluid { padding: 0; max-width: 1200px; }
+/* 后台内容容器
+   ⚠️ 2026-11-03 修正：原规则 `padding:0; max-width:1200px` 有两个问题：
+     1. max-width 没有配 margin:auto → 大屏下容器贴左，右侧大片空白
+     2. padding:0 把 Bootstrap 默认左右内边距清零 → 内容贴边
+   现在：限宽 + 水平居中 + 保留呼吸内边距。 */
+body.kokuu-apple .content .container-fluid {
+  padding-left: 24px;
+  padding-right: 24px;
+  max-width: 1400px;
+  margin-left: auto;
+  margin-right: auto;
+}
 
 /* ---- 浅色态背景兜底（与下方深色段对称）----
    同样原因：layout-top-nav 无侧边栏，body 背景会裸露。 */
@@ -281,16 +305,23 @@ body.kokuu-apple.layout-top-nav .content .container-fluid {
   width: 100%;
 }
 /* 筛选区与网格之间的呼吸空间 */
-body.kokuu-apple.layout-top-nav .content-wrapper > * + * { margin-top: 18px; }
-body.kokuu-apple.layout-top-nav .row { row-gap: 20px; }
-body.kokuu-apple.layout-top-nav [class*="col-"] { padding-left: 8px; padding-right: 8px; }
+body.kokuu-apple.layout-top-nav .content-wrapper > * + * {
+  margin-top: 18px;
+}
+body.kokuu-apple.layout-top-nav .row {
+  row-gap: 20px;
+}
+body.kokuu-apple.layout-top-nav [class*='col-'] {
+  padding-left: 8px;
+  padding-right: 8px;
+}
 
 /* 用户自己填了 {year}（footer.js 替换成功）时，
    把内核致谢降级成极淡小字：保留开源致谢但不与自定义署名抢视觉。
    不直接 display:none —— 开源协议要求保留署名。 */
 body.kokuu-apple .main-footer[data-kokuu-year] #copyright-text {
   font-size: 11px;
-  opacity: .5;
+  opacity: 0.5;
 }
 
 /* ---- 移动端：换行堆叠，不再单边靠左 ---- */
@@ -343,14 +374,17 @@ body.kokuu-apple .card {
    */
   overflow: visible;
   margin-bottom: 20px;
-  transition: box-shadow .28s var(--a-ease), border-color .28s var(--a-ease);
+  transition: box-shadow 0.28s var(--a-ease), border-color 0.28s var(--a-ease);
 }
 body.kokuu-apple .card .card-header {
   background: transparent !important;
   border-bottom: 1px solid var(--a-sep) !important;
   padding: 16px 20px;
 }
-body.kokuu-apple .card .card-body { background: transparent !important; padding: 20px; }
+body.kokuu-apple .card .card-body {
+  background: transparent !important;
+  padding: 20px;
+}
 body.kokuu-apple .card .card-footer {
   background: transparent !important;
   border-top: 1px solid var(--a-sep) !important;
@@ -390,7 +424,9 @@ body.kokuu-apple .card.card-success > .card-header {
 body.kokuu-apple .card.card-primary > .card-header .card-title,
 body.kokuu-apple .card.card-info > .card-header .card-title,
 body.kokuu-apple .card.card-warning > .card-header .card-title,
-body.kokuu-apple .card.card-success > .card-header .card-title { color: var(--a-text) !important; }
+body.kokuu-apple .card.card-success > .card-header .card-title {
+  color: var(--a-text) !important;
+}
 
 /*
  * ⚠️⚠️ 同样的坑，藏在**链接**而不是标题上 —— 衣柜页 tab 实测踩中。
@@ -414,7 +450,9 @@ body.kokuu-apple .card.card-success > .card-header .card-title { color: var(--a-
 body.kokuu-apple .card.card-primary > .card-header a,
 body.kokuu-apple .card.card-info > .card-header a,
 body.kokuu-apple .card.card-warning > .card-header a,
-body.kokuu-apple .card.card-success > .card-header a { color: var(--a-text) !important; }
+body.kokuu-apple .card.card-success > .card-header a {
+  color: var(--a-text) !important;
+}
 
 /* .active 的 tab 有自己的一套配色（白底 + 深字 + 圆角），
  * 优先级要盖过上面这条统一色，否则激活态会退化成普通文字。
@@ -425,11 +463,11 @@ body.kokuu-apple .nav-tabs .nav-link {
   border: 0 !important;
   border-radius: 10px 10px 0 0;
   padding: 10px 18px;
-  transition: color .2s var(--a-ease), background-color .2s var(--a-ease);
+  transition: color 0.2s var(--a-ease), background-color 0.2s var(--a-ease);
 }
 body.kokuu-apple .nav-tabs .nav-link:hover {
   color: var(--a-text) !important;
-  background: rgba(120, 120, 128, .08);
+  background: rgba(120, 120, 128, 0.08);
 }
 body.kokuu-apple .nav-tabs .nav-link.active {
   color: var(--a-text) !important;
@@ -469,12 +507,13 @@ body.kokuu-apple .card:hover {
  */
 body.kokuu-apple .d-flex.flex-wrap > .card,
 body.kokuu-apple .d-flex.flex-wrap > a > .card {
-  transition: box-shadow .3s var(--a-ease-out), border-color .3s var(--a-ease-out);
+  transition: box-shadow 0.3s var(--a-ease-out),
+    border-color 0.3s var(--a-ease-out);
 }
 body.kokuu-apple .d-flex.flex-wrap > .card:hover,
 body.kokuu-apple .d-flex.flex-wrap > a > .card:hover {
-  box-shadow: 0 12px 32px rgba(0, 0, 0, .14) !important;
-  border-color: rgba(120, 120, 128, .28) !important;
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.14) !important;
+  border-color: rgba(120, 120, 128, 0.28) !important;
 }
 
 /* 皮肤预览图：白底、完整显示 */
@@ -509,14 +548,19 @@ body.kokuu-apple textarea.form-control {
   border-radius: var(--a-radius-sm);
   padding: 10px 14px;
   box-shadow: none !important;
-  transition: border-color .2s var(--a-ease), box-shadow .2s var(--a-ease);
+  transition: border-color 0.2s var(--a-ease), box-shadow 0.2s var(--a-ease);
 }
 body.kokuu-apple .form-control:focus {
   border-color: var(--k-rain) !important;
   box-shadow: 0 0 0 4px rgba(15, 163, 163, 0.14) !important;
 }
-body.kokuu-apple .form-control::placeholder { color: var(--a-text-3); }
-body.kokuu-apple label { color: var(--a-text-2); font-weight: 600; }
+body.kokuu-apple .form-control::placeholder {
+  color: var(--a-text-3);
+}
+body.kokuu-apple label {
+  color: var(--a-text-2);
+  font-weight: 600;
+}
 body.kokuu-apple .input-group-text,
 body.kokuu-apple .input-group-prepend .btn,
 body.kokuu-apple .input-group-append .btn {
@@ -530,9 +574,12 @@ body.kokuu-apple .input-group-append .btn {
 body.kokuu-apple .btn {
   border-radius: var(--a-radius-sm) !important;
   font-weight: 600;
-  transition: transform .16s var(--a-ease), background .2s var(--a-ease), box-shadow .2s var(--a-ease);
+  transition: transform 0.16s var(--a-ease), background 0.2s var(--a-ease),
+    box-shadow 0.2s var(--a-ease);
 }
-body.kokuu-apple .btn:active { transform: scale(.97); }
+body.kokuu-apple .btn:active {
+  transform: scale(0.97);
+}
 body.kokuu-apple .btn-primary,
 body.kokuu-apple .btn-success,
 body.kokuu-apple .btn-info {
@@ -544,7 +591,7 @@ body.kokuu-apple .btn-primary:hover,
 body.kokuu-apple .btn-success:hover,
 body.kokuu-apple .btn-info:hover {
   filter: brightness(1.06);
-  box-shadow: 0 4px 14px rgba(15, 163, 163, .3);
+  box-shadow: 0 4px 14px rgba(15, 163, 163, 0.3);
 }
 body.kokuu-apple .btn-secondary,
 body.kokuu-apple .btn-default,
@@ -557,7 +604,9 @@ body.kokuu-apple .btn-light {
 body.kokuu-apple .btn-secondary:hover,
 body.kokuu-apple .btn-default:hover,
 body.kokuu-apple .btn.bg-olive:hover,
-body.kokuu-apple .btn-light:hover { background: var(--k-surface-3) !important; }
+body.kokuu-apple .btn-light:hover {
+  background: var(--k-surface-3) !important;
+}
 body.kokuu-apple .btn.bg-olive.active,
 body.kokuu-apple .btn-secondary.active {
   background: var(--k-rain) !important;
@@ -582,7 +631,9 @@ body.kokuu-apple .btn-warning {
   color: #fff !important;
   border-color: transparent !important;
 }
-body.kokuu-apple .btn-danger { border-radius: var(--a-radius-sm) !important; }
+body.kokuu-apple .btn-danger {
+  border-radius: var(--a-radius-sm) !important;
+}
 
 /* 徽章：柔和淡色底 + 同色文字（Apple 标签） */
 body.kokuu-apple .badge {
@@ -607,7 +658,9 @@ body.kokuu-apple .badge.bg-warning {
 /* =========================================================
    四、表格 / 分页 / 弹窗 / 提示
    ========================================================= */
-body.kokuu-apple .table-responsive { border-radius: var(--a-radius-sm); }
+body.kokuu-apple .table-responsive {
+  border-radius: var(--a-radius-sm);
+}
 body.kokuu-apple .table thead th {
   background: var(--a-surface-2) !important;
   color: var(--a-text-2) !important;
@@ -623,11 +676,19 @@ body.kokuu-apple .table td {
   padding: 14px;
   vertical-align: middle;
 }
-body.kokuu-apple .table-striped tbody tr:nth-of-type(odd) { background: transparent !important; }
-body.kokuu-apple .table-hover tbody tr { transition: background .16s var(--a-ease); }
-body.kokuu-apple .table-hover tbody tr:hover { background: rgba(0, 0, 0, 0.03) !important; }
+body.kokuu-apple .table-striped tbody tr:nth-of-type(odd) {
+  background: transparent !important;
+}
+body.kokuu-apple .table-hover tbody tr {
+  transition: background 0.16s var(--a-ease);
+}
+body.kokuu-apple .table-hover tbody tr:hover {
+  background: rgba(0, 0, 0, 0.03) !important;
+}
 
-body.kokuu-apple .pagination { gap: 4px; }
+body.kokuu-apple .pagination {
+  gap: 4px;
+}
 body.kokuu-apple .pagination .page-link {
   background: var(--a-surface) !important;
   color: var(--a-text) !important;
@@ -635,30 +696,44 @@ body.kokuu-apple .pagination .page-link {
   border-radius: 10px !important;
   padding: 7px 13px;
   font-weight: 500;
-  transition: background .18s var(--a-ease), color .18s var(--a-ease);
+  transition: background 0.18s var(--a-ease), color 0.18s var(--a-ease);
 }
-body.kokuu-apple .pagination .page-link:hover { background: var(--a-surface-2) !important; }
+body.kokuu-apple .pagination .page-link:hover {
+  background: var(--a-surface-2) !important;
+}
 body.kokuu-apple .pagination .page-item.active .page-link {
   background: var(--k-rain) !important;
   color: #fff !important;
   border-color: transparent !important;
 }
-body.kokuu-apple .pagination .page-item.disabled .page-link { opacity: .4; }
+body.kokuu-apple .pagination .page-item.disabled .page-link {
+  opacity: 0.4;
+}
 
 body.kokuu-apple .modal-content {
   background: var(--a-surface) !important;
   border: 1px solid var(--a-sep);
   border-radius: var(--a-radius-lg) !important;
-  box-shadow: 0 20px 60px rgba(0, 0, 0, .18) !important;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.18) !important;
   overflow: hidden;
 }
 body.kokuu-apple .modal-header {
   border-bottom: 1px solid var(--a-sep) !important;
   padding: 18px 24px;
 }
-body.kokuu-apple .modal-title { color: var(--a-text) !important; font-weight: 700; font-size: 19px; }
-body.kokuu-apple .modal-body { padding: 22px 24px; color: var(--a-text-2); }
-body.kokuu-apple .modal-footer { border-top: 1px solid var(--a-sep) !important; padding: 14px 24px; }
+body.kokuu-apple .modal-title {
+  color: var(--a-text) !important;
+  font-weight: 700;
+  font-size: 19px;
+}
+body.kokuu-apple .modal-body {
+  padding: 22px 24px;
+  color: var(--a-text-2);
+}
+body.kokuu-apple .modal-footer {
+  border-top: 1px solid var(--a-sep) !important;
+  padding: 14px 24px;
+}
 
 body.kokuu-apple .toast {
   background: rgba(255, 255, 255, 0.9) !important;
@@ -675,18 +750,38 @@ body.kokuu-apple .toast-header {
   border-bottom: 1px solid var(--a-sep) !important;
   font-weight: 600;
 }
-body.kokuu-apple .toast-body { background: transparent !important; color: var(--a-text-2) !important; }
+body.kokuu-apple .toast-body {
+  background: transparent !important;
+  color: var(--a-text-2) !important;
+}
 
-body.kokuu-apple .overlay { background: rgba(242, 242, 247, 0.6) !important; border-radius: var(--a-radius) !important; }
+body.kokuu-apple .overlay {
+  background: rgba(242, 242, 247, 0.6) !important;
+  border-radius: var(--a-radius) !important;
+}
 body.kokuu-apple .text-center.m-5,
-body.kokuu-apple .card-body.text-center { color: var(--a-text-3) !important; }
+body.kokuu-apple .card-body.text-center {
+  color: var(--a-text-3) !important;
+}
 
 /* 链接/文字 */
-body.kokuu-apple a { color: var(--k-rain); text-decoration: none; }
-body.kokuu-apple a:hover { color: var(--k-ink); }
-body.kokuu-apple p, body.kokuu-apple .content-wrapper p { color: var(--a-text-2); }
-body.kokuu-apple h1, body.kokuu-apple h2, body.kokuu-apple h3,
-body.kokuu-apple .card-title { color: var(--a-text) !important; }
+body.kokuu-apple a {
+  color: var(--k-rain);
+  text-decoration: none;
+}
+body.kokuu-apple a:hover {
+  color: var(--k-ink);
+}
+body.kokuu-apple p,
+body.kokuu-apple .content-wrapper p {
+  color: var(--a-text-2);
+}
+body.kokuu-apple h1,
+body.kokuu-apple h2,
+body.kokuu-apple h3,
+body.kokuu-apple .card-title {
+  color: var(--a-text) !important;
+}
 
 /* =========================================================
    五、鉴权页（登录/注册）Apple 化
@@ -698,22 +793,32 @@ body.kokuu-apple .card.login-card {
   -webkit-backdrop-filter: var(--a-blur);
   border: 1px solid var(--a-sep);
   border-radius: var(--a-radius-lg) !important;
-  box-shadow: 0 20px 60px rgba(0, 0, 0, .14) !important;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.14) !important;
 }
-body.kokuu-apple .login-logo a { color: var(--a-text) !important; font-weight: 700; }
+body.kokuu-apple .login-logo a {
+  color: var(--a-text) !important;
+  font-weight: 700;
+}
 
 /* =========================================================
    六、滚动条（Apple 风格细滚动条）
    ========================================================= */
-body.kokuu-apple ::-webkit-scrollbar { width: 10px; height: 10px; }
-body.kokuu-apple ::-webkit-scrollbar-track { background: transparent; }
+body.kokuu-apple ::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+body.kokuu-apple ::-webkit-scrollbar-track {
+  background: transparent;
+}
 body.kokuu-apple ::-webkit-scrollbar-thumb {
   background: rgba(60, 60, 67, 0.28);
   border-radius: 999px;
   border: 2px solid transparent;
   background-clip: content-box;
 }
-body.kokuu-apple ::-webkit-scrollbar-thumb:hover { background-color: rgba(60, 60, 67, 0.45); }
+body.kokuu-apple ::-webkit-scrollbar-thumb:hover {
+  background-color: rgba(60, 60, 67, 0.45);
+}
 
 /* =========================================================
    七、深色态（body.dark-mode）：Apple Dark 微调
@@ -729,8 +834,8 @@ body.kokuu-apple.dark-mode {
   --a-text-3: var(--k-text-3);
   --a-sep: rgba(84, 84, 88, 0.5);
   --a-sep-strong: rgba(84, 84, 88, 0.7);
-  --a-shadow: 0 1px 2px rgba(0,0,0,.3), 0 8px 24px rgba(0,0,0,.35);
-  --a-shadow-hover: 0 2px 8px rgba(0,0,0,.4), 0 16px 40px rgba(0,0,0,.5);
+  --a-shadow: 0 1px 2px rgba(0, 0, 0, 0.3), 0 8px 24px rgba(0, 0, 0, 0.35);
+  --a-shadow-hover: 0 2px 8px rgba(0, 0, 0, 0.4), 0 16px 40px rgba(0, 0, 0, 0.5);
 }
 body.kokuu-apple.dark-mode .main-header {
   background: rgba(28, 28, 30, 0.72) !important;
@@ -755,24 +860,42 @@ body.kokuu-apple.dark-mode .main-footer {
   color: var(--a-text-3) !important;
 }
 
-body.kokuu-apple.dark-mode .main-sidebar { background: var(--a-surface) !important; }
+body.kokuu-apple.dark-mode .main-sidebar {
+  background: var(--a-surface) !important;
+}
 body.kokuu-apple.dark-mode .main-header .dropdown-menu,
-body.kokuu-apple.dark-mode .toast { background: rgba(28, 28, 30, 0.86); }
+body.kokuu-apple.dark-mode .toast {
+  background: rgba(28, 28, 30, 0.86);
+}
 body.kokuu-apple.dark-mode .nav-sidebar .nav-link:hover,
 body.kokuu-apple.dark-mode .main-header .nav-link:hover,
-body.kokuu-apple .btn.bg-olive:hover { background: rgba(255, 255, 255, 0.08) !important; }
+body.kokuu-apple .btn.bg-olive:hover {
+  background: rgba(255, 255, 255, 0.08) !important;
+}
 body.kokuu-apple.dark-mode .nav-sidebar .nav-link.active {
   background: rgba(79, 227, 208, 0.16) !important;
   color: var(--k-brand-rain) !important;
 }
-body.kokuu-apple.dark-mode .table-hover tbody tr:hover { background: rgba(255, 255, 255, 0.05) !important; }
-body.kokuu-apple.dark-mode .card .card-body:has(.card-img-top) { background: var(--a-surface-2) !important; }
+body.kokuu-apple.dark-mode .table-hover tbody tr:hover {
+  background: rgba(255, 255, 255, 0.05) !important;
+}
+body.kokuu-apple.dark-mode .card .card-body:has(.card-img-top) {
+  background: var(--a-surface-2) !important;
+}
 body.kokuu-apple.dark-mode .btn.bg-olive,
 body.kokuu-apple.dark-mode .btn-secondary,
 body.kokuu-apple.dark-mode .btn-default,
-body.kokuu-apple.dark-mode .btn-light { color: var(--a-text) !important; }
-body.kokuu-apple.dark-mode .badge.bg-teal { background: rgba(79, 227, 208, 0.16) !important; color: var(--k-brand-rain) !important; }
-body.kokuu-apple.dark-mode .badge.bg-indigo { background: rgba(167, 139, 250, 0.18) !important; color: var(--k-brand-moon) !important; }
+body.kokuu-apple.dark-mode .btn-light {
+  color: var(--a-text) !important;
+}
+body.kokuu-apple.dark-mode .badge.bg-teal {
+  background: rgba(79, 227, 208, 0.16) !important;
+  color: var(--k-brand-rain) !important;
+}
+body.kokuu-apple.dark-mode .badge.bg-indigo {
+  background: rgba(167, 139, 250, 0.18) !important;
+  color: var(--k-brand-moon) !important;
+}
 
 /* =========================================================
    页脚（真实选择器版）
@@ -783,7 +906,7 @@ body.kokuu-apple.dark-mode .badge.bg-indigo { background: rgba(167, 139, 250, 0.
       线上真实 body class 是 `hold-transition layout-top-nav` /
       `hold-transition sidebar-mini`，`hold-transition` 两个布局都有。
    ========================================================= */
-   页脚
+页脚
    ------------------------------------------------------------
    内核结构是两个**对齐方式冲突**的节点：
        <div id="copyright-text" class="float-right d-none d-sm-inline">…</div>
@@ -831,14 +954,14 @@ body.hold-transition .main-footer > .container {
 body.hold-transition .main-footer #copyright-text {
   float: none !important;
   margin: 0;
-  order: 2;                /* 内核致谢在右 */
+  order: 2; /* 内核致谢在右 */
   font-size: 12px;
-  opacity: .75;
+  opacity: 0.75;
 }
 
 /* footer.js 把裸文本包成了 .kokuu-footer-note */
 body.hold-transition .main-footer .kokuu-footer-note {
-  order: 1;                /* 自定义版权在左 */
+  order: 1; /* 自定义版权在左 */
   font-size: 12.5px;
   line-height: 1.6;
   min-width: 0;
@@ -873,9 +996,9 @@ body.hold-transition .main-footer {
 
 /* footer.js 替换成功时把内核致谢降级成极淡小字。
    不 display:none —— 开源协议要求保留 Blessing Skin 署名。 */
-body.hold-transition .main-footer[data-kokuu-year="1"] #copyright-text {
+body.hold-transition .main-footer[data-kokuu-year='1'] #copyright-text {
   font-size: 11px;
-  opacity: .5;
+  opacity: 0.5;
 }
 
 /* ---- 移动端：换行堆叠，不再单边靠左 ---- */

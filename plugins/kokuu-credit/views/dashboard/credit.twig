@@ -30,7 +30,7 @@
       <span class="kcDash-balance-unit">积分</span>
     </div>
 
-    <p class="kcDash-sub">皮肤站账户唯一账本，论坛消费直接扣除</p>
+    <p class="kcDash-sub">皮肤站账户积分账本</p>
 
     {# ---------- 今日 + 签到 ---------- #}
     <div class="kcDash-metrics">
@@ -79,7 +79,7 @@
     {% if not data.ledgerReady %}
       <p class="kcDash-empty">积分流水尚未初始化</p>
     {% elseif data.recent is empty %}
-      <p class="kcDash-empty">还没有积分记录，去论坛发帖或回复试试</p>
+      <p class="kcDash-empty">还没有积分记录，签到试试</p>
     {% else %}
       <ul class="kcDash-list">
         {% for item in data.recent %}

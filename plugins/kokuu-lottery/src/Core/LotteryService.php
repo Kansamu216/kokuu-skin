@@ -5,29 +5,22 @@ declare(strict_types=1);
 namespace Kokuu\Lottery\Core;
 
 /**
- * 抽奖服务（可移植核心）
+ * 抽卡服务 v2（可移植核心）
  *
- * 全部业务规则集中在此，不依赖任何宿主框架。
- * 依赖通过构造函数注入，便于单测与跨框架复用。
+ * ══════════════════════════════════════════════════════════════════
+ * 玩法规则（2026-11-03 按需求重做）
+ * ══════════════════════════════════════════════════════════════════
+ * 金粒（= 皮肤站积分 users.score）抽卡：
+ *   蓝色 普通  → 获得金粒（回本为主）
+ *   紫色 稀有  → 获得钻石（存 user_assets）
+ *   金色 传说  → 获得绿宝石（存 user_assets）
  *
- * 关键设计（沿用原 kokuu-coupon 的实战经验）：
+ * 保底：
+ *   每 pityPurple 抽（默认 10）必出紫或以上
+ *   每 pityGold   抽（默认 80）必出金
+ *   出紫后 since_purple 归零；出金后两者都归零
  *
- * 1. 扣分「两道闸」
- *    事务外预检 → 给友好提示（区分「积分不足」与「需保留 N 积分」）
- *    事务内 lockForUpdate 后再查 → 防并发扣穿底仓
- *    缺第二道时两个并发请求都通过预检，各扣一次。
- *
- * 2. 抽奖次数 lockForUpdate
- *    否则两个请求都读到 draws=1，各抽一次 → 一次机会抽两次。
- *
- * 3. 随机源用 random_int（CSPRNG）
- *    奖品是真实积分，可预测 = 可被脚本刷大奖。
- *
- * 4. 中奖加分放事务外
- *    ScoreSink 内部自带事务，嵌进来会变成 savepoint（虽正确但多一层嵌套）。
- *
- * 5. event_id = draw:<id>
- *    保证加分幂等，重放不会重复入账。
+ * 十连：drawMany(uid, 10) 一个事务内连抽，共用保底计数，扣一次总价。
  */
 final class LotteryService
 {
@@ -36,138 +29,148 @@ final class LotteryService
         private WalletRepository $wallets,
         private DrawLogRepository $logs,
         private ScoreAccount $scores,
+        private AssetAccount $assets,
+        private PityRepository $pity,
         private Transaction $tx,
         private ScoreSink $sink,
         private LotteryConfig $config,
     ) {
     }
 
-    /**
-     * 抽奖一次。
-     *
-     * 两种消耗来源（via）：
-     *   code → 用兑换码换来的次数，不扣积分
-     *   cost → 花积分买一次，会扣 ScoreAccount
-     */
     public function draw(int $uid, string $ip = ''): DrawResult
     {
+        return $this->drawMany($uid, 1, $ip);
+    }
+
+    public function drawMany(int $uid, int $times, string $ip = ''): DrawResult
+    {
+        $times = max(1, min(10, $times));
         $this->prizes->ensureDefaults();
         $this->wallets->ensure($uid);
 
-        /* ============ 事务外预检：只为友好提示 ============ */
-        $cooldown = $this->config->cooldownSeconds();
-        if ($cooldown > 0) {
-            $last = $this->logs->lastDrawAt($uid);
-            if ($last !== null) {
-                $left = $cooldown - (time() - strtotime($last));
-                if ($left > 0) {
-                    return DrawResult::fail('冷却中，请 '.$left.' 秒后再试');
-                }
-            }
+        $cost = $this->config->drawCost() * $times;
+        $balance = $this->scores->balance($uid);
+
+        if ($balance < $cost) {
+            return $this->failWith('金粒不足：本次需 '.$cost.'，当前 '.$balance, $uid);
         }
 
-        $dailyLimit = $this->config->dailyLimit();
-        if ($dailyLimit > 0 && $this->logs->todayCount($uid) >= $dailyLimit) {
-            return DrawResult::fail('今日抽奖次数已达上限（'.$dailyLimit.'次）');
-        }
-
-        $drawsLeft = $this->wallets->balance($uid);
-        $cost = $this->config->drawCost();
-
-        if ($drawsLeft <= 0) {
-            if ($cost <= 0) {
-                return DrawResult::fail('当前没有可用的抽奖次数，且未开放积分抽奖');
+        $outcome = $this->tx->run(function () use ($uid, $ip, $cost, $times): array {
+            $balance = $this->scores->lockBalance($uid);
+            if ($balance < $cost) {
+                return ['ok' => false, 'msg' => '金粒不足：本次需 '.$cost.'，当前 '.$balance];
             }
-            $balance = $this->scores->balance($uid);
-            $keep = $this->config->minKeep();
-            $spendable = $balance - $keep;
-            if ($spendable < $cost) {
-                return DrawResult::fail(
-                    $spendable < 0
-                        ? '抽奖需保留 '.$keep.' 积分，当前余额 '.$balance.' 已不足'
-                        : '积分不足：本次需 '.$cost.'，扣除保留的 '.$keep.' 后可用 '.$spendable
-                );
-            }
-        }
+            $this->scores->deduct($uid, $cost);
 
-        /* ================= 事务开始 ================= */
-        $outcome = $this->tx->run(function () use ($uid, $ip, $cost): array {
-            // 次数账户加锁 → 并发抽奖串行化
-            $this->wallets->ensure($uid);
-            $curDraws = $this->wallets->lockForUpdate($uid);
-            $via = $curDraws > 0 ? 'code' : 'cost';
+            $pity = $this->pity->lockForUpdate($uid);
+            $sincePurple = (int) $pity['since_purple'];
+            $sinceGold = (int) $pity['since_gold'];
 
-            if ($via === 'code') {
-                $this->wallets->consumeOne($uid);
-            } else {
-                /* ★ 第二道闸：加锁后再查余额 */
-                $keep = $this->config->minKeep();
-                $balance = $this->scores->lockBalance($uid);
-                if (($balance - $keep) < $cost) {
-                    return [
-                        'ok' => false,
-                        'msg' => ($balance - $keep) < 0
-                            ? '抽奖需保留 '.$keep.' 积分，当前余额 '.$balance.' 已不足'
-                            : '积分不足：本次需 '.$cost.'，扣除保留的 '.$keep.' 后可用 '.($balance - $keep),
-                    ];
-                }
-                $this->scores->deduct($uid, $cost);
-            }
-
-            // 奖品在事务内读，避免「已扣次数」与配置不一致
             $prizes = $this->prizes->enabledPrizes();
-            $prize = self::pickWeighted($prizes);
-            $label = $prize?->label ?? '谢谢参与';
-            $amount = $prize?->amount ?? 0;
+            if (! $prizes) {
+                return ['ok' => false, 'msg' => '奖池为空，请联系管理员'];
+            }
 
-            $drawId = $this->logs->insert(
-                $uid,
-                $prize?->id,
-                mb_substr($label, 0, 80),
-                $amount,
-                $via,
-                mb_substr($ip, 0, 45)
-            );
+            $results = [];
+            for ($i = 0; $i < $times; $i++) {
+                $sincePurple++;
+                $sinceGold++;
 
-            return [
-                'ok' => true,
-                'label' => $label,
-                'amount' => $amount,
-                'via' => $via,
-                'drawId' => $drawId,
-            ];
+                $forceGold = $sinceGold >= $this->config->pityGold();
+                $forcePurple = ! $forceGold && $sincePurple >= $this->config->pityPurple();
+
+                $prize = $this->pickPrize($prizes, $forceGold, $forcePurple);
+
+                $gotGold = $prize->isGold();
+                $gotPurple = Rarity::isAtLeast($prize->rarity, Rarity::PURPLE);
+
+                if ($gotGold) {
+                    $sinceGold = 0;
+                    $sincePurple = 0;
+                } elseif ($gotPurple) {
+                    $sincePurple = 0;
+                }
+
+                $drawId = $this->logs->insert(
+                    $uid,
+                    $prize->id,
+                    mb_substr($prize->label, 0, 80),
+                    $prize->amount,
+                    'cost',
+                    mb_substr($ip, 0, 45),
+                    $prize->rarity,
+                    $prize->asset
+                );
+
+                $results[] = [
+                    'drawId' => $drawId,
+                    'label' => $prize->label,
+                    'amount' => $prize->amount,
+                    'rarity' => $prize->rarity,
+                    'asset' => $prize->asset,
+                ];
+            }
+
+            $this->pity->save($uid, $sincePurple, $sinceGold, $times);
+
+            return ['ok' => true, 'results' => $results];
         });
 
         if (! $outcome['ok']) {
-            return DrawResult::fail((string) $outcome['msg']);
+            return $this->failWith((string) $outcome['msg'], $uid);
         }
 
-        /* ---- 中奖加分（事务外，幂等键 draw:<id>）---- */
-        if ((int) $outcome['amount'] > 0) {
-            $this->sink->award(
-                $uid,
-                (int) $outcome['amount'],
-                'draw:'.$outcome['drawId'],
-                '抽奖：'.$outcome['label']
-            );
+        // 入账（事务外，金粒走流水幂等，宝石直接加资产）
+        foreach ($outcome['results'] as $r) {
+            if ((int) $r['amount'] <= 0) {
+                continue;
+            }
+            if ($r['asset'] === 'gold') {
+                $this->sink->award($uid, (int) $r['amount'], 'draw:'.$r['drawId'], '抽卡：'.$r['label']);
+            } else {
+                $this->assets->add($uid, (string) $r['asset'], (int) $r['amount']);
+            }
         }
+
+        $bal = $this->scores->balance($uid);
+        $keep = $this->config->minKeep();
+        $first = $outcome['results'][0];
 
         return DrawResult::success(
-            '抽到 '.$outcome['label'],
-            (string) $outcome['label'],
-            (int) $outcome['amount'],
-            (string) $outcome['via'],
-            (int) $outcome['drawId'],
-            $this->scores->balance($uid),
-            $this->wallets->balance($uid)
+            $times === 1 ? '抽到 '.$first['label'] : '十连完成',
+            $times === 1 ? (string) $first['label'] : '',
+            $times === 1 ? (int) $first['amount'] : 0,
+            'cost',
+            $times === 1 ? (int) $first['drawId'] : 0,
+            $bal,
+            $this->wallets->balance($uid),
+            max(0, $bal - $keep),
+            $this->config->cooldownSeconds(),
+            $outcome['results'],
+            $this->assets->all($uid)
         );
     }
 
-    /**
-     * 按权重抽一个奖品。
-     *
-     * @param Prize[] $prizes
-     */
+    private function pickPrize(array $prizes, bool $forceGold, bool $forcePurple): Prize
+    {
+        if ($forceGold) {
+            $gold = array_values(array_filter($prizes, fn (Prize $p) => $p->isGold()));
+            if ($gold) {
+                return $gold[random_int(0, count($gold) - 1)];
+            }
+        }
+
+        if ($forcePurple) {
+            $pool = array_values(array_filter($prizes, fn (Prize $p) => Rarity::isAtLeast($p->rarity, Rarity::PURPLE)));
+            if ($pool) {
+                return $pool[random_int(0, count($pool) - 1)];
+            }
+        }
+
+        return self::pickWeighted($prizes) ?? $prizes[0];
+    }
+
+    /** @param Prize[] $prizes */
     public static function pickWeighted(array $prizes): ?Prize
     {
         $total = 0;
@@ -178,7 +181,6 @@ final class LotteryService
             return null;
         }
 
-        // random_int 是 CSPRNG：奖品是真实积分，必须不可预测
         $roll = random_int(1, $total);
         $acc = 0;
         foreach ($prizes as $p) {
@@ -191,38 +193,12 @@ final class LotteryService
         return $prizes ? $prizes[array_key_last($prizes)] : null;
     }
 
-    /**
-     * 奖品概率表（给用户看的展示数据）
-     *
-     * 全部算好再传视图：模板层不做业务算术。
-     *
-     * @return array<int, array{label:string,amount:int,weight:int,percent:float,cumulative:float}>
-     */
-    public function oddsTable(): array
+    private function failWith(string $msg, int $uid): DrawResult
     {
-        $this->prizes->ensureDefaults();
-        $prizes = $this->prizes->enabledPrizes();
+        $keep = $this->config->minKeep();
+        $bal = $this->scores->balance($uid);
 
-        $total = 0;
-        foreach ($prizes as $p) {
-            $total += max(0, $p->weight);
-        }
-
-        $out = [];
-        $cum = 0.0;
-        foreach ($prizes as $p) {
-            $percent = $total > 0 ? max(0, $p->weight) / $total * 100 : 0.0;
-            $cum += $percent;
-            $out[] = [
-                'label' => $p->label,
-                'amount' => $p->amount,
-                'weight' => $p->weight,
-                'percent' => round($percent, 2),
-                'cumulative' => round($cum, 2),
-            ];
-        }
-
-        return $out;
+        return DrawResult::fail($msg, max(0, $bal - $keep), $this->wallets->balance($uid), $this->config->cooldownSeconds());
     }
 
     public function walletBalance(int $uid): int
@@ -241,7 +217,43 @@ final class LotteryService
             return 0;
         }
         $left = $cooldown - (time() - strtotime($last));
+
         return $left > 0 ? $left : 0;
+    }
+
+    public function oddsTable(): array
+    {
+        $this->prizes->ensureDefaults();
+        $prizes = $this->prizes->enabledPrizes();
+
+        $total = 0;
+        foreach ($prizes as $p) {
+            $total += max(0, $p->weight);
+        }
+
+        $out = [];
+        foreach ($prizes as $p) {
+            $out[] = [
+                'label' => $p->label,
+                'amount' => $p->amount,
+                'rarity' => $p->rarity,
+                'asset' => $p->asset,
+                'weight' => $p->weight,
+                'percent' => $total > 0 ? round(max(0, $p->weight) / $total * 100, 2) : 0,
+            ];
+        }
+
+        return $out;
+    }
+
+    public function assets(int $uid): array
+    {
+        return $this->assets->all($uid);
+    }
+
+    public function pityState(int $uid): array
+    {
+        return $this->pity->peek($uid);
     }
 }
 

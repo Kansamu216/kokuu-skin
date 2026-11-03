@@ -5,19 +5,11 @@ declare(strict_types=1);
 namespace Kokuu\Lottery\Host;
 
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Schema;
-use Illuminate\Database\Schema\Blueprint;
 use Kokuu\Lottery\Core\DrawLogRepository;
 use Kokuu\Lottery\Core\LotteryConfig;
-use Kokuu\Lottery\Core\Prize;
-use Kokuu\Lottery\Core\PrizeProvider;
-use Kokuu\Lottery\Core\ScoreAccount;
-use Kokuu\Lottery\Core\ScoreSink;
-use Kokuu\Lottery\Core\Transaction;
-use Kokuu\Lottery\Core\WalletRepository;
 
 /**
- * 抽奖记录实现
+ * 抽卡记录仓储 v2（新增 rarity / asset 列）
  */
 final class DbDrawLogRepository implements DrawLogRepository
 {
@@ -39,21 +31,29 @@ final class DbDrawLogRepository implements DrawLogRepository
             ->count();
     }
 
-    public function insert(int $uid, ?int $prizeId, string $label, int $amount, string $via, string $ip): int
-    {
+    public function insert(
+        int $uid,
+        ?int $prizeId,
+        string $label,
+        int $amount,
+        string $via,
+        string $ip,
+        string $rarity = 'blue',
+        string $asset = 'gold'
+    ): int {
         Schema_::ensure();
 
-        $id = DB::table('lottery_draws')->insertGetId([
+        return (int) DB::table('lottery_draws')->insertGetId([
             'uid' => $uid,
             'prize_id' => $prizeId,
             'prize_label' => $label,
             'amount' => $amount,
             'via' => $via,
             'ip' => $ip,
+            'rarity' => $rarity,
+            'asset' => $asset,
             'created_at' => now(),
             'updated_at' => now(),
         ]);
-
-        return (int) $id;
     }
 }

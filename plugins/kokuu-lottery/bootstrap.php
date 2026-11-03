@@ -10,6 +10,8 @@ use Kokuu\Lottery\Host\BsLotteryConfig;
 use Kokuu\Lottery\Host\BsScoreAccount;
 use Kokuu\Lottery\Host\CreditLedgerSink;
 use Kokuu\Lottery\Host\DbDrawLogRepository;
+use Kokuu\Lottery\Host\DbAssetAccount;
+use Kokuu\Lottery\Host\DbPityRepository;
 use Kokuu\Lottery\Host\DbPrizeProvider;
 use Kokuu\Lottery\Host\DbWalletRepository;
 use Kokuu\Lottery\Host\LaravelTransaction;
@@ -50,6 +52,8 @@ if (! function_exists('kokuu_lottery_service')) {
             new DbWalletRepository(),
             new DbDrawLogRepository(),
             new BsScoreAccount(),
+            new DbAssetAccount(),      // v2：钻石/绿宝石资产
+            new DbPityRepository(),    // v2：保底计数
             new LaravelTransaction(),
             new CreditLedgerSink(),
             new BsLotteryConfig()
@@ -76,9 +80,12 @@ if (! function_exists('kokuu_lottery_config_read')) {
         };
 
         return [
-            'draw_cost' => (int) $pick('draw_cost', 50),
-            'draw_cooldown' => (int) $pick('draw_cooldown', 3),
-            'daily_draw_limit' => (int) $pick('daily_draw_limit', 50),
+            'draw_cost' => (int) $pick('draw_cost', 100),
+            'draw_cooldown' => (int) $pick('draw_cooldown', 0),
+            'daily_draw_limit' => (int) $pick('daily_draw_limit', 0),
+            'min_keep' => (int) $pick('min_keep', 0),
+            'pity_purple' => (int) $pick('pity_purple', 10),
+            'pity_gold' => (int) $pick('pity_gold', 80),
             'notice' => (string) $pick('notice', ''),
         ];
     }
@@ -88,7 +95,7 @@ if (! function_exists('kokuu_lottery_config_write')) {
     function kokuu_lottery_config_write(array $p): void
     {
         $c = app('options');
-        foreach (['draw_cost', 'draw_cooldown', 'daily_draw_limit', 'notice'] as $k) {
+        foreach (['draw_cost', 'draw_cooldown', 'daily_draw_limit', 'min_keep', 'pity_purple', 'pity_gold', 'notice'] as $k) {
             if (array_key_exists($k, $p)) {
                 $c->set('kokuu_lottery_'.$k, $p[$k]);
             }
@@ -103,15 +110,17 @@ return function ($plugin) {
     // 视图命名空间
     View::addLocation($plugin->getPath().'/views');
 
-    // 样式与脚本（仅抽奖页）
-    Hook::addStyleFileToPage($plugin->assets('lottery.css'), [
-        'plugin/kokuu-lottery',
-        'plugin/kokuu-lottery/*',
-    ]);
-    Hook::addScriptFileToPage($plugin->assets('lottery.js'), [
-        'plugin/kokuu-lottery',
-        'plugin/kokuu-lottery/*',
-    ]);
+    /*
+     * ⚠️ 资源不在 bootstrap 里 Hook 注入（2026-11-03 修正）
+     *
+     * 原因：模板 before_foot 里也写了一遍 <link>/<script>，导致
+     * lottery.css / lottery.js 各被加载两次 —— 其中一次不带 ?v= 版本号，
+     * 浏览器就用了旧缓存（改了半天 JS 用户看到的还是老行为）。
+     *
+     * 现在统一由模板 before_foot 注入，因为顺序可控：
+     * 必须先内联 window.KG_CSRF，再加载 lottery.js。
+     * Hook 注入无法保证这个顺序。
+     */
 
     /* =========================================================
      * 侧边栏菜单：抽奖入口
@@ -140,46 +149,54 @@ return function ($plugin) {
             $cfg = kokuu_lottery_config_read();
             $uid = (int) $user->uid;
 
-            $walletDraws = $svc->walletBalance($uid);
             $cost = (int) $cfg['draw_cost'];
-            $keep = (new BsLotteryConfig())->minKeep();
-            $balance = (int) DB::table('users')->where('uid', $uid)->value('score');
-            $spendable = $balance - $keep;
-            $cooldown = $svc->cooldownLeft($uid);
+            $keep = (int) $cfg['min_keep'];
+            // 金粒 = 皮肤站积分
+            $gold = (int) DB::table('users')->where('uid', $uid)->value('score');
+            $spendable = max(0, $gold - $keep);
 
-            // 能否抽：有次数 或（开放积分抽奖且可用积分够）
-            $canDraw = $walletDraws > 0 || ($cost > 0 && $spendable >= $cost);
+            $assets = $svc->assets($uid);
+            $pity = $svc->pityState($uid);
+
+            View::share('lottery', [
+                'cost' => $cost,
+                'keep' => $keep,
+                'gold' => $gold,
+                'spendable' => $spendable,
+                'diamond' => (int) ($assets['diamond'] ?? 0),
+                'emerald' => (int) ($assets['emerald'] ?? 0),
+                'canDraw' => $spendable >= $cost,
+                'canTen' => $spendable >= $cost * 10,
+                'drawUrl' => url('plugin/kokuu-lottery/draw'),
+                'odds' => $svc->oddsTable(),
+                'pityPurple' => (int) $cfg['pity_purple'],
+                'pityGold' => (int) $cfg['pity_gold'],
+                'sincePurple' => (int) $pity['since_purple'],
+                'sinceGold' => (int) $pity['since_gold'],
+                'totalDraws' => (int) $pity['total_draws'],
+            ]);
 
             Schema_::ensure();
             $myDraws = DB::table('lottery_draws')
                 ->where('uid', $uid)
                 ->orderByDesc('id')
-                ->limit(8)
-                ->get(['prize_label', 'amount', 'via', 'created_at']);
-
-            // 模板用 d.* 访问（保留原 kokuu-coupon 模板契约）
-            View::share('lottery', [
-                'draws' => $walletDraws,
-                'spendable' => max(0, $spendable),
-                'cost' => $cost,
-                'keep' => $keep,
-                'cooldown' => $cooldown,
-                'canDraw' => $canDraw,
-                'drawUrl' => url('plugin/kokuu-lottery/draw'),
-                'odds' => $svc->oddsTable(),
-            ]);
+                ->limit(20)
+                ->get(['prize_label', 'amount', 'rarity', 'asset', 'created_at']);
             View::share('myDraws', $myDraws);
 
             return view('user.lottery.index');
         })->middleware(['web', 'auth']);
 
-        // ---- 执行抽奖 ----
+        // ---- 执行抽卡（支持单抽 times=1 / 十连 times=10）----
         $router->post('plugin/kokuu-lottery/draw', function (Request $request) {
             $user = $request->user();
             abort_if(! $user, 403);
 
+            $times = (int) $request->input('times', 1);
+            $times = ($times >= 10) ? 10 : 1;
+
             $svc = kokuu_lottery_service();
-            $result = $svc->draw((int) $user->uid, (string) $request->ip());
+            $result = $svc->drawMany((int) $user->uid, $times, (string) $request->ip());
 
             return response()->json($result->toArray());
         })->middleware(['web', 'auth']);

@@ -1,60 +1,56 @@
-/* KokuuSkin 祈愿（kokuu-lottery）v2.0
+/* MC 风格抽卡 v3 (kokuu-lottery)
  *
- * 2026-11-03 与模板/CSS 一同重写，类名前缀 kcp* → kg*。
+ * 2026-11-03 重写。单抽/十连、逐张翻牌、场景轮播。
  *
- * ══════════════════════════════════════════════════════════════
- * 沿用的硬事实（都是线上踩过的，别改回去）
- * ══════════════════════════════════════════════════════════════
- * 1. CSRF 值提交时**实时再读一次 cookie**。页面加载时的快照会 419，
- *    因为 session/token 会轮换。绝不用变量缓存。
- * 2. cookie 值只 decodeURIComponent，**不要剥 CookieValuePrefix** ——
- *    服务端会自己剥，多剥一次就无效。
- * 3. 判据是「非 419」，不是「等于 200」。419=CSRF 拦截（没到业务），
- *    422=业务失败（已穿过 CSRF）。
- * 4. disabled 按钮的 click() 被浏览器**静默忽略**（一个请求都不发），
- *    所以状态没变就 early return，不要发出去等 422。
- * 5. 抽奖成功后**冷却才刚开始**，必须按响应里的真实冷却秒数倒计时，
- *    不能假设配置值（管理员可能改过）。
- * 6. 奖品 label 是管理员填的，innerHTML 前必须转义。
- * 7. 🎬 动画层 position:fixed;inset:0，播放期间吃掉整页点击。
- *    必须在 ANIM_MS 准时收层，否则页面一直点不动 ——
- *    这是 JS 定时器与 CSS 动画时长必须对齐的唯一理由。
- *    防重复触发靠 animBusy，不能指望 overlay（它不阻止定时器）。
+ * ══════════════════════════════════════════════════════════════════
+ * 沿用硬事实（线上踩过，别改回去）
+ * ══════════════════════════════════════════════════════════════════
+ * 1. CSRF 提交时实时读 cookie，不缓存（session 会轮换，否则 419）
+ * 2. cookie 值只 decodeURIComponent，不剥 CookieValuePrefix
+ * 3. 判据「非 419」，不是「等于 200」
+ * 4. disabled 按钮 click 被浏览器静默忽略 → early return
+ * 5. 奖品 label 管理员可填，innerHTML 前必须转义
+ * 6. 动画层 fixed inset:0 会吃掉整页点击 → 必须准时收层 + 跳过按钮
+ * 7. 抽卡接口返回 {ok, msg, label, amount, spendable, draws, assets, results}
  */
 ;(function () {
   'use strict'
 
-  var btn = document.getElementById('kg-draw-btn')
-  var btnText = document.getElementById('kg-draw-btn-text')
-  var result = document.getElementById('kg-draw-result')
-  if (!btn || !btnText || !result) {
+  var root = document.getElementById('mc-lot')
+  if (!root) {
     return
   }
 
-  var pool = document.getElementById('kg-pool')
-  var elDraws = document.getElementById('kg-draws')
-  var elSpend = document.getElementById('kg-spendable')
+  var btn1 = document.getElementById('mc-draw1')
+  var btn10 = document.getElementById('mc-draw10')
+  var result = document.getElementById('mc-result')
+  var hint = document.getElementById('mc-hint')
+  var sceneEl = document.getElementById('mc-scene')
 
-  var anim = document.getElementById('kg-anim')
-  var animName = document.getElementById('kg-anim-name')
-  var animAmt = document.getElementById('kg-anim-amt')
+  var anim = document.getElementById('mc-anim')
+  var cardsBox = document.getElementById('mc-cards')
+  var skipBtn = document.getElementById('mc-skip')
 
-  /* 🔴 必须与 lottery.css 里 .kg-anim 的总时长（2.9s）一致。
-     多给 100ms 余量：宁可晚收，不可早收 —— 早收会「文字还没浮现就没了」。 */
-  var ANIM_MS = 3000
-  var animBusy = false
+  var elGold = document.getElementById('mc-gold')
+  var elDiamond = document.getElementById('mc-diamond')
+  var elEmerald = document.getElementById('mc-emerald')
 
-  var drawUrl = btn.getAttribute('data-url') || '/plugin/kokuu-lottery/draw'
-  var busy = false
-  var timer = null
+  var drawUrl = root.getAttribute('data-url') || '/plugin/kokuu-lottery/draw'
 
-  /* 🔴 实时读 cookie，不缓存（第 1、2 条） */
-  function csrfToken() {
-    var m = document.cookie.match(/(?:^|;\s*)XSRF-TOKEN=([^;]+)/)
-    return m ? decodeURIComponent(m[1]) : ''
-  }
+  /* MC 场景图（复用外观插件的 6 张真实 MC 截图） */
+  var SCENES = [
+    '/plugins/kokuu-appearance/assets/scenes/01-mineshaft.png',
+    '/plugins/kokuu-appearance/assets/scenes/02-nether.png',
+    '/plugins/kokuu-appearance/assets/scenes/03-snow.png',
+    '/plugins/kokuu-appearance/assets/scenes/04-jungle.png',
+    '/plugins/kokuu-appearance/assets/scenes/05-end.png',
+    '/plugins/kokuu-appearance/assets/scenes/06-village.png',
+  ]
 
-  function escapeHtml(s) {
+  var sceneIdx = 0
+  var sceneTimer = null
+
+  function esc(s) {
     return String(s === null || s === undefined ? '' : s)
       .replace(/&/g, '&amp;')
       .replace(/</g, '&lt;')
@@ -63,50 +59,125 @@
       .replace(/'/g, '&#39;')
   }
 
-  function say(html, kind) {
+  function csrfToken() {
+    var m = document.cookie.match(/(?:^|;\s*)XSRF-TOKEN=([^;]+)/)
+    return m ? decodeURIComponent(m[1]) : ''
+  }
+
+  /* ---------- 场景轮播 ---------- */
+  function showScene(i) {
+    if (!sceneEl) {
+      return
+    }
+    sceneEl.style.backgroundImage = 'url("' + SCENES[i % SCENES.length] + '")'
+  }
+
+  function startScenes() {
+    if (!sceneEl || SCENES.length < 2) {
+      return
+    }
+    showScene(0)
+    sceneTimer = window.setInterval(function () {
+      sceneIdx = (sceneIdx + 1) % SCENES.length
+      showScene(sceneIdx)
+    }, 6000)
+
+    // 系统偏好减少动效 → 不轮播，固定一张
+    var mq = window.matchMedia
+      ? window.matchMedia('(prefers-reduced-motion: reduce)')
+      : null
+    if (mq && mq.matches && sceneTimer) {
+      window.clearInterval(sceneTimer)
+      sceneTimer = null
+    }
+  }
+
+  /* ---------- 资产回填 ---------- */
+  function applyAssets(assets, spendable) {
+    if (spendable !== undefined && spendable !== null && elGold) {
+      elGold.textContent = spendable
+    }
+    if (assets) {
+      if (assets.diamond !== undefined && elDiamond) {
+        elDiamond.textContent = assets.diamond
+      }
+      if (assets.emerald !== undefined && elEmerald) {
+        elEmerald.textContent = assets.emerald
+      }
+    }
+  }
+
+  function say(html, warn) {
+    if (!result) {
+      return
+    }
     result.hidden = false
-    result.className = 'kg-result' + (kind === 'warn' ? ' is-warn' : '')
+    result.className = 'mc-result' + (warn ? ' is-warn' : '')
     result.innerHTML = html
   }
 
-  function setBtn(text, disabled) {
-    btnText.textContent = text
-    btn.disabled = !!disabled
-    if (pool) {
-      pool.classList.toggle('is-ready', !disabled)
-    }
-  }
-
-  /* 卡池光爆：0.76s（与 CSS kg-hit-flash 一致），
-     结束后摘 class，否则下次触发动画不重放。 */
-  function flashPool() {
-    if (!pool) {
-      return
-    }
-    pool.classList.remove('is-hit')
-    void pool.offsetWidth /* 强制回流，确保动画重放 */
-    pool.classList.add('is-hit')
-    window.setTimeout(function () {
-      pool.classList.remove('is-hit')
-    }, 800)
-  }
-
-  /* 🎬 播放祈愿动画
+  /* ---------- 翻牌动画 ----------
    *
-   * 只做三件事：填文案 → 摘 hidden 加 .is-on → 定时收层。
-   * 全部时序在 CSS 里，JS 不监听 animationend ——
-   * CSS 时序是设计的一部分，让 JS 编排等于把设计拆成两半。
+   * 参照原神：卡片逐张浮现，金卡有额外光效。
+   * 时长与 CSS .mc-card animation 对齐（.38s + stagger）。
    */
-  function playAnim(label, amount) {
-    flashPool()
+  var CARD_BASE_MS = 380 // 与 CSS mc-card-in 时长一致
+  var CARD_STAGGER_MS = 90 // 逐张延迟
 
-    if (!anim || !animName || !animAmt) {
+  function iconClass(asset) {
+    if (asset === 'diamond') {
+      return 'mc-card-ico--diamond'
+    }
+    if (asset === 'emerald') {
+      return 'mc-card-ico--emerald'
+    }
+    return 'mc-card-ico--gold'
+  }
+
+  function buildCard(r) {
+    var div = document.createElement('div')
+    div.className = 'mc-card mc-card--' + (r.rarity || 'blue')
+    div.innerHTML =
+      '<div class="mc-card-ico ' +
+      iconClass(r.asset) +
+      '"></div>' +
+      '<div class="mc-card-amt">×' +
+      esc(r.amount) +
+      '</div>' +
+      '<div class="mc-card-name">' +
+      esc(r.label) +
+      '</div>'
+    return div
+  }
+
+  var animTimers = []
+
+  function clearAnimTimers() {
+    animTimers.forEach(function (t) {
+      window.clearTimeout(t)
+    })
+    animTimers = []
+  }
+
+  function closeAnim() {
+    clearAnimTimers()
+    if (!anim) {
+      return
+    }
+    anim.classList.remove('is-on')
+    anim.hidden = true
+    if (cardsBox) {
+      cardsBox.innerHTML = ''
+      cardsBox.classList.remove('is-ten')
+    }
+  }
+
+  /* 播放抽卡动画：results 为后端返回的数组 */
+  function playDraw(results) {
+    if (!anim || !cardsBox) {
       return
     }
 
-    /* 系统开了「减少动态效果」→ 不播，直接给结果。
-       CSS 里也有 reduced-motion 分支，这里再判一次是为了
-       根本不显示覆盖层，省掉 3 秒白等。 */
     var mq = window.matchMedia
       ? window.matchMedia('(prefers-reduced-motion: reduce)')
       : null
@@ -114,94 +185,54 @@
       return
     }
 
-    if (animBusy) {
-      return
-    }
-    animBusy = true
-
-    var amt = Number(amount) || 0
-
-    /* 🔴 未中奖（amount === 0）走 .is-miss：去金色，换冷灰。
-       判据是**数字**，不是「文案里有没有谢谢」——
-       「谢谢参与」「未中奖」都是管理员自填的，靠字符串猜会失效。 */
-    anim.classList.toggle('is-miss', amt <= 0)
-
-    var name = label || '奖品'
-
-    /* 🔴 奖品池默认 label 就是「N 积分」，会让大字行和金额行重复。
-       这里判「精确的默认格式」（label === amount + ' 积分'）才屏蔽金额行；
-       管理员改成「限定皮肤」时两行都正常显示。 */
-    var autoNamed = amt > 0 && name.replace(/\s+/g, '') === amt + '积分'
-
-    if (autoNamed) {
-      animAmt.textContent = ''
-      animName.textContent = name
-    } else if (amt > 0) {
-      animAmt.textContent = '+' + amt
-      animName.textContent = name
-    } else {
-      animAmt.textContent = ''
-      animName.textContent = name
+    cardsBox.innerHTML = ''
+    if (results.length > 1) {
+      cardsBox.classList.add('is-ten')
     }
 
-    /* 摘 hidden 前先清 .is-on：上一轮若被中断，残留 class 会让动画不重放 */
-    anim.classList.remove('is-on')
     anim.hidden = false
-    void anim.offsetWidth /* 强制回流后再加 .is-on */
+    void anim.offsetWidth
     anim.classList.add('is-on')
 
-    window.setTimeout(function () {
-      anim.classList.remove('is-on')
-      anim.classList.remove('is-miss')
-      anim.hidden = true
-      animName.textContent = ''
-      animAmt.textContent = ''
-      animBusy = false
-    }, ANIM_MS)
-  }
+    // 暗场 + 闪光后开始翻牌（.34s 闪光起点）
+    var flipStart = 620
 
-  /* 冷却倒计时（用服务端给的秒数，不猜配置值） */
-  function cooldown(seconds, label) {
-    if (timer) {
-      clearInterval(timer)
-      timer = null
-    }
-    var left = Math.max(0, parseInt(seconds, 10) || 0)
-    if (left <= 0) {
-      setBtn(label || '祈 愿 一 次', false)
-      return
-    }
-    setBtn('冷却中（' + left + 's）', true)
-    timer = setInterval(function () {
-      left -= 1
-      if (left <= 0) {
-        clearInterval(timer)
-        timer = null
-        setBtn(label || '祈 愿 一 次', false)
-      } else {
-        setBtn('冷却中（' + left + 's）', true)
+    results.forEach(function (r, i) {
+      var t = window.setTimeout(function () {
+        var card = buildCard(r)
+        card.style.animationDelay = '0s'
+        cardsBox.appendChild(card)
+      }, flipStart + i * CARD_STAGGER_MS)
+      animTimers.push(t)
+    })
+
+    var totalMs =
+      flipStart + results.length * CARD_STAGGER_MS + CARD_BASE_MS + 400
+    var closeT = window.setTimeout(closeAnim, totalMs)
+    animTimers.push(closeT)
+
+    // 跳过按钮：立即收层
+    if (skipBtn) {
+      skipBtn.onclick = function () {
+        closeAnim()
       }
-    }, 1000)
-  }
-
-  /* 🔴 只信服务端回传的 spendable（余额 - 底仓）。
-     用 balance 会把「可用积分」显示成总余额，看着像抽奖没扣钱。 */
-  function refreshWallet(spendable, draws) {
-    if (draws !== null && draws !== undefined && elDraws) {
-      elDraws.textContent = draws
-    }
-    if (spendable !== null && spendable !== undefined && elSpend) {
-      elSpend.textContent = spendable
     }
   }
 
-  btn.addEventListener('click', function () {
-    if (busy || btn.disabled) {
+  /* ---------- 抽卡请求 ---------- */
+  var busy = false
+
+  function doDraw(times) {
+    if (busy) {
       return
     }
     busy = true
-    btn.classList.add('is-busy')
-    setBtn('祈愿中…', true)
+    if (btn1) {
+      btn1.disabled = true
+    }
+    if (btn10) {
+      btn10.disabled = true
+    }
 
     fetch(drawUrl, {
       method: 'POST',
@@ -211,16 +242,13 @@
         'X-Requested-With': 'XMLHttpRequest',
         'X-XSRF-TOKEN': csrfToken(),
       },
-      body: '',
+      body: 'times=' + times,
     })
       .then(function (r) {
         return r
           .json()
           .catch(function () {
-            return {
-              code: 1,
-              message: '服务器返回异常（HTTP ' + r.status + '）',
-            }
+            return { ok: false, msg: '服务器异常（HTTP ' + r.status + '）' }
           })
           .then(function (j) {
             return { status: r.status, body: j }
@@ -230,47 +258,90 @@
         var j = res.body || {}
 
         if (res.status === 419) {
-          say('CSRF 校验未通过（419），请刷新页面后重试。', 'warn')
-          setBtn('请刷新页面', true)
+          say('登录状态已失效（419），请刷新页面。', true)
           return
         }
 
         if (j.ok === true) {
-          say(
-            '获得 <span class="kg-result-name">' +
-              escapeHtml(j.label || '奖品') +
-              '</span>' +
-              (j.amount > 0
-                ? ' · <span class="kg-result-amount">+' +
-                  (j.amount || 0) +
-                  ' 积分</span>'
-                : ''),
-            'win',
-          )
-          refreshWallet(j.spendable, j.draws)
-          /* 先播动画再起冷却：覆盖层吃掉点击，顺序反了会出现
-           「冷却结束但动画还在播」，用户以为按钮坏了。 */
-          playAnim(j.label || '奖品', j.amount || 0)
-          cooldown(j.cooldown !== undefined ? j.cooldown : 3, '祈 愿 一 次')
-          return
-        }
+          var results = j.results || []
+          // 结果摘要
+          var golds = results.filter(function (x) {
+            return x.rarity === 'gold'
+          }).length
+          var purples = results.filter(function (x) {
+            return x.rarity === 'purple'
+          }).length
 
-        /* 业务失败（422 = 已穿过 CSRF，功能本身是通的） */
-        say(escapeHtml(j.msg || '祈愿失败'), 'warn')
-        refreshWallet(j.spendable, j.draws)
-        if (/不足|没有/.test(j.msg || '')) {
-          setBtn('次数与积分均不足', true)
+          var summary
+          if (times === 1) {
+            var r0 = results[0] || {}
+            summary = '获得 <b>' + esc(r0.label || '奖励') + '</b>'
+          } else {
+            summary = '十连完成：'
+            if (golds) {
+              summary += ' <b style="color:#B9821A">' + golds + ' 传说</b>'
+            }
+            if (purples) {
+              summary += ' <b style="color:#7C3AED">' + purples + ' 稀有</b>'
+            }
+            if (!golds && !purples) {
+              summary += ' 全部普通'
+            }
+          }
+          say(summary + ' · 消耗 ' + times * 100 + ' 金粒', false)
+
+          applyAssets(j.assets, j.spendable)
+          playDraw(results)
         } else {
-          cooldown(j.cooldown !== undefined ? j.cooldown : 3, '祈 愿 一 次')
+          say(esc(j.msg || '祈愿失败'), true)
+          applyAssets(j.assets, j.spendable)
         }
       })
       .catch(function (e) {
-        say('网络错误：' + escapeHtml(e.message), 'warn')
-        setBtn('祈 愿 一 次', false)
+        say('网络错误：' + esc(e.message), true)
       })
       .then(function () {
         busy = false
-        btn.classList.remove('is-busy')
+        // 按当前金粒恢复按钮可用性
+        refreshButtons()
       })
+  }
+
+  /* 根据当前显示的金粒数恢复按钮状态 */
+  function refreshButtons() {
+    var gold = parseInt((elGold && elGold.textContent) || '0', 10) || 0
+    var cost = parseInt(root.getAttribute('data-cost') || '100', 10) || 100
+    if (btn1) {
+      btn1.disabled = gold < cost
+    }
+    if (btn10) {
+      btn10.disabled = gold < cost * 10
+    }
+    if (hint) {
+      hint.textContent =
+        gold < cost ? '金粒不足，无法祈愿' : '每次祈愿消耗 ' + cost + ' 金粒'
+    }
+  }
+
+  if (btn1) {
+    btn1.addEventListener('click', function () {
+      doDraw(1)
+    })
+  }
+  if (btn10) {
+    btn10.addEventListener('click', function () {
+      doDraw(10)
+    })
+  }
+
+  /* ---------- 初始化 ---------- */
+  startScenes()
+
+  /* 页面卸载时清理定时器 */
+  window.addEventListener('beforeunload', function () {
+    if (sceneTimer) {
+      window.clearInterval(sceneTimer)
+    }
+    clearAnimTimers()
   })
 })()

@@ -3,7 +3,7 @@
  #  Yggdrasil API「启动器配置」卡片 —— Apple 扁平化（第二版）
  # ----------------------------------------------------------------------------
  #  作用：这是一个**视图覆盖**，本文件不属于 yggdrasil-api 插件，
- #        而是由 kokuu-ui 在 bootstrap 里通过 View 工厂的 replaceNamespace()
+ #        而是由 kokuu-appearance 在 bootstrap 里通过 View 工厂的 replaceNamespace()
  #        挂到 `Yggdrasil::dnd` 这个视图名上（见 bootstrap.php）。
  #
  #  第二版改了什么（第一版的实测反馈）：
@@ -28,27 +28,27 @@
 
   <header class="kyCard-head">
     <span class="kyCard-eyebrow">
-      <i class="fas fa-cubes"></i>{{ trans('KokuuStudio\\KokuuUi::ygg.eyebrow') }}
+      <i class="fas fa-cubes"></i>{{ trans('KokuuStudio\\KokuuAppearance::ygg.eyebrow') }}
     </span>
   </header>
 
-  <h3 class="kyCard-title">{{ trans('KokuuStudio\\KokuuUi::ygg.title') }}</h3>
+  <h3 class="kyCard-title">{{ trans('KokuuStudio\\KokuuAppearance::ygg.title') }}</h3>
 
   {# ---- 地址块：标签说明「这是什么」，等宽 URL 方便核对/手填 ---- #}
   <div class="kyCard-url">
-    <span class="kyCard-url-label">{{ trans('KokuuStudio\\KokuuUi::ygg.urlLabel') }}</span>
+    <span class="kyCard-url-label">{{ trans('KokuuStudio\\KokuuAppearance::ygg.urlLabel') }}</span>
     <code class="kyCard-url-code">{{ url('/api/yggdrasil') }}</code>
   </div>
 
   {# ---- 主按钮：卡片上唯一的动作。做大、做出"实体感"，暗示可以拖走 ---- #}
   <button type="button" id="ygg-dnd-button" class="kyCard-drag"
           draggable="true" data-clipboard-text="{{ url('/api/yggdrasil') }}">
-    <i class="fas fa-hand-pointer"></i>{{ trans('KokuuStudio\\KokuuUi::ygg.button') }}
+    <i class="fas fa-hand-pointer"></i>{{ trans('KokuuStudio\\KokuuAppearance::ygg.button') }}
   </button>
 
   {# ---- 兼容性：前缀 + 两个胶囊徽章。徽章化之后不再是一句松散的说明 ---- #}
   <div class="kyCard-note">
-    <span class="kyCard-note-label">{{ trans('KokuuStudio\\KokuuUi::ygg.noteLabel') }}</span>
+    <span class="kyCard-note-label">{{ trans('KokuuStudio\\KokuuAppearance::ygg.noteLabel') }}</span>
     <span class="kyCard-chip">HMCL</span>
     <span class="kyCard-chip">PCL</span>
   </div>

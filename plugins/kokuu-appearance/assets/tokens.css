@@ -24,59 +24,58 @@
 
 :root {
   /* ---------- 品牌色（不随主题变化，保持识别度） ---------- */
-  --k-brand-ink:    #2B1F52;   /* 深紫：品牌主色 */
-  --k-brand-rain:   #0FA3A3;   /* 青：强调色 */
-  --k-brand-lilac:  #8B7FD4;   /* 淡紫：次强调 */
-  --k-brand-moon:   #C9BCF0;   /* 月白紫：点缀 */
+  --k-brand-ink: #2b1f52; /* 深紫：品牌主色 */
+  --k-brand-rain: #0fa3a3; /* 青：强调色 */
+  --k-brand-lilac: #8b7fd4; /* 淡紫：次强调 */
+  --k-brand-moon: #c9bcf0; /* 月白紫：点缀 */
 
   /* ---------- 语义色彩（浅色主题） ---------- */
-  --k-bg:           #F7F5F0;   /* 页面底色：暖纸白 */
-  --k-bg-sub:       #F1EEE7;   /* 次级底色：分区 / 侧栏 */
-  --k-surface:      #FFFFFF;   /* 卡片面 */
-  --k-surface-2:    #FAF9F6;   /* 次级面：表头 / 内嵌块 */
-  --k-surface-3:    #F3F1EC;   /* 三级面：hover / 选中 */
-  --k-overlay:      rgba(43, 31, 82, .38);  /* 遮罩 */
+  --k-bg: #f7f5f0; /* 页面底色：暖纸白 */
+  --k-bg-sub: #f1eee7; /* 次级底色：分区 / 侧栏 */
+  --k-surface: #ffffff; /* 卡片面 */
+  --k-surface-2: #faf9f6; /* 次级面：表头 / 内嵌块 */
+  --k-surface-3: #f3f1ec; /* 三级面：hover / 选中 */
+  --k-overlay: rgba(43, 31, 82, 0.38); /* 遮罩 */
 
-  --k-text:         #241A45;   /* 主文字 */
-  --k-text-2:       #6B6483;   /* 次文字 */
-  --k-text-3:       #9A94AC;   /* 三级文字 / 占位 */
-  --k-text-invert:  #F7F5F0;   /* 深底上的文字 */
+  --k-text: #241a45; /* 主文字 */
+  --k-text-2: #6b6483; /* 次文字 */
+  --k-text-3: #9a94ac; /* 三级文字 / 占位 */
+  --k-text-invert: #f7f5f0; /* 深底上的文字 */
 
-  --k-border:       rgba(43, 31, 82, .10);
-  --k-border-2:     rgba(43, 31, 82, .16);
-  --k-border-strong:rgba(43, 31, 82, .26);
+  --k-border: rgba(43, 31, 82, 0.1);
+  --k-border-2: rgba(43, 31, 82, 0.16);
+  --k-border-strong: rgba(43, 31, 82, 0.26);
 
   /* ---------- 语义色 ---------- */
-  --k-success:      #2FA36B;
-  --k-success-bg:   rgba(47, 163, 107, .10);
-  --k-warning:      #C98A15;
-  --k-warning-bg:   rgba(201, 138, 21, .12);
-  --k-danger:       #C4344E;
-  --k-danger-bg:    rgba(196, 52, 78, .10);
-  --k-info:         var(--k-brand-rain);
-  --k-info-bg:      rgba(15, 163, 163, .10);
+  --k-success: #2fa36b;
+  --k-success-bg: rgba(47, 163, 107, 0.1);
+  --k-warning: #c98a15;
+  --k-warning-bg: rgba(201, 138, 21, 0.12);
+  --k-danger: #c4344e;
+  --k-danger-bg: rgba(196, 52, 78, 0.1);
+  --k-info: var(--k-brand-rain);
+  --k-info-bg: rgba(15, 163, 163, 0.1);
 
   /* ---------- 强调色（可被品牌色覆盖处） ---------- */
-  --k-accent:       var(--k-brand-rain);
-  --k-accent-2:     var(--k-brand-lilac);
-  --k-accent-ink:   var(--k-brand-ink);
+  --k-accent: var(--k-brand-rain);
+  --k-accent-2: var(--k-brand-lilac);
+  --k-accent-ink: var(--k-brand-ink);
 
   /* ---------- 圆角（统一标度） ---------- */
-  --k-r-xs:  8px;
-  --k-r-sm:  10px;
-  --k-r-md:  12px;
-  --k-r-lg:  16px;
-  --k-r-xl:  22px;
+  --k-r-xs: 8px;
+  --k-r-sm: 10px;
+  --k-r-md: 12px;
+  --k-r-lg: 16px;
+  --k-r-xl: 22px;
   --k-r-pill: 999px;
 
   /* ---------- 阴影（紫色调，极克制） ---------- */
-  --k-elev-1: 0 1px 2px rgba(36, 26, 69, .04),
-              0 2px 8px rgba(36, 26, 69, .05);
-  --k-elev-2: 0 2px 6px rgba(36, 26, 69, .06),
-              0 10px 26px rgba(36, 26, 69, .08);
-  --k-elev-3: 0 4px 12px rgba(36, 26, 69, .08),
-              0 20px 48px rgba(36, 26, 69, .12);
-  --k-elev-glow: 0 0 0 3px rgba(15, 163, 163, .18);
+  --k-elev-1: 0 1px 2px rgba(36, 26, 69, 0.04), 0 2px 8px rgba(36, 26, 69, 0.05);
+  --k-elev-2: 0 2px 6px rgba(36, 26, 69, 0.06),
+    0 10px 26px rgba(36, 26, 69, 0.08);
+  --k-elev-3: 0 4px 12px rgba(36, 26, 69, 0.08),
+    0 20px 48px rgba(36, 26, 69, 0.12);
+  --k-elev-glow: 0 0 0 3px rgba(15, 163, 163, 0.18);
 
   /* ---------- 间距（4 的倍数） ---------- */
   --k-s-1: 4px;
@@ -90,87 +89,89 @@
   --k-s-9: 56px;
 
   /* ---------- 字体 ---------- */
-  --k-font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC",
-                 "Hiragino Sans GB", "Microsoft YaHei", "Noto Sans SC",
-                 system-ui, sans-serif;
-  --k-font-mono: ui-monospace, "SF Mono", "Cascadia Code", Menlo, Consolas, monospace;
+  --k-font-sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC',
+    'Hiragino Sans GB', 'Microsoft YaHei', 'Noto Sans SC', system-ui, sans-serif;
+  --k-font-mono: ui-monospace, 'SF Mono', 'Cascadia Code', Menlo, Consolas,
+    monospace;
 
-  --k-fs-xs:  12px;
-  --k-fs-sm:  13px;
-  --k-fs-md:  14px;
-  --k-fs-lg:  16px;
-  --k-fs-xl:  20px;
+  --k-fs-xs: 12px;
+  --k-fs-sm: 13px;
+  --k-fs-md: 14px;
+  --k-fs-lg: 16px;
+  --k-fs-xl: 20px;
   --k-fs-2xl: 26px;
   --k-fs-3xl: 34px;
 
   --k-fw-normal: 400;
   --k-fw-medium: 500;
-  --k-fw-bold:   650;
-  --k-fw-black:  800;
+  --k-fw-bold: 650;
+  --k-fw-black: 800;
 
   --k-lh-tight: 1.25;
-  --k-lh-base:  1.6;
+  --k-lh-base: 1.6;
 
   /* ---------- 动效 ---------- */
-  --k-ease:      cubic-bezier(.32, .72, 0, 1);
-  --k-ease-out:  cubic-bezier(.16, 1, .3, 1);
-  --k-dur-fast:  .15s;
-  --k-dur-base:  .25s;
-  --k-dur-slow:  .38s;
+  --k-ease: cubic-bezier(0.32, 0.72, 0, 1);
+  --k-ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --k-dur-fast: 0.15s;
+  --k-dur-base: 0.25s;
+  --k-dur-slow: 0.38s;
 
   /* ---------- 布局尺寸 ---------- */
-  --k-nav-h:     56px;
-  --k-side-w:    248px;
-  --k-max-w:     1180px;
+  --k-nav-h: 56px;
+  --k-side-w: 248px;
+  --k-max-w: 1180px;
 
   /* ---------- 层级 ---------- */
-  --k-z-nav:     1000;
-  --k-z-modal:   2000;
-  --k-z-toast:   3000;
+  --k-z-nav: 1000;
+  --k-z-modal: 2000;
+  --k-z-toast: 3000;
 }
 
 /* =========================================================
    深色主题（虚空）
    只覆盖令牌值，不重复规则
    ========================================================= */
+/* ⚠️ 首页深色用的是 .kokuu-root.kokuu-void 类（见 home.js），
+   而全站深色用 body.dark-mode。两者都要覆盖令牌，
+   否则首页深色下 --k-surface-2 / --k-text 仍是浅色值 →
+   卡片白底配浅色字，文字看不清（2026-11-03 用户反馈）。 */
 body.dark-mode,
-[data-theme="dark"] {
-  --k-bg:           #0B0716;
-  --k-bg-sub:       #100B1F;
-  --k-surface:      #17112B;
-  --k-surface-2:    #1F1839;
-  --k-surface-3:    #272041;
-  --k-overlay:      rgba(0, 0, 0, .62);
+[data-theme='dark'],
+.kokuu-void {
+  --k-bg: #0b0716;
+  --k-bg-sub: #100b1f;
+  --k-surface: #17112b;
+  --k-surface-2: #1f1839;
+  --k-surface-3: #272041;
+  --k-overlay: rgba(0, 0, 0, 0.62);
 
-  --k-text:         #EDEAFF;
-  --k-text-2:       #A9A2C4;
-  --k-text-3:       #6F6889;
-  --k-text-invert:  #0B0716;
+  --k-text: #edeaff;
+  --k-text-2: #a9a2c4;
+  --k-text-3: #6f6889;
+  --k-text-invert: #0b0716;
 
-  --k-border:       rgba(167, 139, 250, .16);
-  --k-border-2:     rgba(167, 139, 250, .26);
-  --k-border-strong:rgba(167, 139, 250, .40);
+  --k-border: rgba(167, 139, 250, 0.16);
+  --k-border-2: rgba(167, 139, 250, 0.26);
+  --k-border-strong: rgba(167, 139, 250, 0.4);
 
-  --k-brand-rain:   #4FE3D0;
-  --k-brand-lilac:  #A78BFA;
-  --k-brand-moon:   #C9BCF0;
+  --k-brand-rain: #4fe3d0;
+  --k-brand-lilac: #a78bfa;
+  --k-brand-moon: #c9bcf0;
 
-  --k-success:      #4FD694;
-  --k-success-bg:   rgba(79, 214, 148, .14);
-  --k-warning:      #FFB340;
-  --k-warning-bg:   rgba(255, 179, 64, .14);
-  --k-danger:       #FF6B81;
-  --k-danger-bg:    rgba(255, 107, 129, .14);
-  --k-info:         #4FE3D0;
-  --k-info-bg:      rgba(79, 227, 208, .14);
+  --k-success: #4fd694;
+  --k-success-bg: rgba(79, 214, 148, 0.14);
+  --k-warning: #ffb340;
+  --k-warning-bg: rgba(255, 179, 64, 0.14);
+  --k-danger: #ff6b81;
+  --k-danger-bg: rgba(255, 107, 129, 0.14);
+  --k-info: #4fe3d0;
+  --k-info-bg: rgba(79, 227, 208, 0.14);
 
-  --k-elev-1: 0 1px 2px rgba(0, 0, 0, .34),
-              0 2px 10px rgba(0, 0, 0, .30);
-  --k-elev-2: 0 2px 8px rgba(0, 0, 0, .40),
-              0 12px 30px rgba(0, 0, 0, .40);
-  --k-elev-3: 0 4px 16px rgba(0, 0, 0, .48),
-              0 24px 56px rgba(0, 0, 0, .52);
-  --k-elev-glow: 0 0 0 3px rgba(79, 227, 208, .22);
+  --k-elev-1: 0 1px 2px rgba(0, 0, 0, 0.34), 0 2px 10px rgba(0, 0, 0, 0.3);
+  --k-elev-2: 0 2px 8px rgba(0, 0, 0, 0.4), 0 12px 30px rgba(0, 0, 0, 0.4);
+  --k-elev-3: 0 4px 16px rgba(0, 0, 0, 0.48), 0 24px 56px rgba(0, 0, 0, 0.52);
+  --k-elev-glow: 0 0 0 3px rgba(79, 227, 208, 0.22);
 }
 
 /* =========================================================
@@ -181,40 +182,40 @@ body.dark-mode,
 :root,
 body.dark-mode {
   /* 旧 theme.css 命名 */
-  --paper:     var(--k-bg);
-  --paper-2:   var(--k-surface);
-  --ink:       var(--k-text);
-  --rain:      var(--k-brand-rain);
-  --lilac:     var(--k-brand-lilac);
+  --paper: var(--k-bg);
+  --paper-2: var(--k-surface);
+  --ink: var(--k-text);
+  --rain: var(--k-brand-rain);
+  --lilac: var(--k-brand-lilac);
   --radius-card: var(--k-r-lg);
-  --radius-btn:  var(--k-r-sm);
-  --shadow-card:  var(--k-elev-2);
+  --radius-btn: var(--k-r-sm);
+  --shadow-card: var(--k-elev-2);
   --shadow-hover: var(--k-elev-3);
-  --sans:      var(--k-font-sans);
+  --sans: var(--k-font-sans);
 
   /* 旧 apple.css 命名 */
-  --a-bg:        var(--k-bg);
-  --a-surface:   var(--k-surface);
+  --a-bg: var(--k-bg);
+  --a-surface: var(--k-surface);
   --a-surface-2: var(--k-surface-2);
-  --a-text:      var(--k-text);
-  --a-text-2:    var(--k-text-2);
-  --a-text-3:    var(--k-text-3);
-  --a-sep:       var(--k-border);
-  --a-sep-strong:var(--k-border-2);
-  --a-radius:    var(--k-r-lg);
+  --a-text: var(--k-text);
+  --a-text-2: var(--k-text-2);
+  --a-text-3: var(--k-text-3);
+  --a-sep: var(--k-border);
+  --a-sep-strong: var(--k-border-2);
+  --a-radius: var(--k-r-lg);
   --a-radius-sm: var(--k-r-md);
   --a-radius-lg: var(--k-r-xl);
-  --a-shadow:    var(--k-elev-1);
+  --a-shadow: var(--k-elev-1);
   --a-shadow-hover: var(--k-elev-2);
-  --a-ease:      var(--k-ease);
-  --a-ease-out:  var(--k-ease-out);
-  --a-nav-h:     var(--k-nav-h);
-  --a-side-w:    var(--k-side-w);
+  --a-ease: var(--k-ease);
+  --a-ease-out: var(--k-ease-out);
+  --a-nav-h: var(--k-nav-h);
+  --a-side-w: var(--k-side-w);
 
   /* 旧 --k-* 别名（apple.css 曾定义） */
   --k-paper: var(--k-bg);
-  --k-ink:   var(--k-text);
-  --k-rain:  var(--k-brand-rain);
+  --k-ink: var(--k-text);
+  --k-rain: var(--k-brand-rain);
   --k-lilac: var(--k-brand-lilac);
 
   /* theme.css 使用的文字透明度变体 */
@@ -224,4 +225,3 @@ body.dark-mode {
   --ink-08: color-mix(in srgb, var(--k-text) 8%, transparent);
   --ink-04: color-mix(in srgb, var(--k-text) 4.5%, transparent);
 }
-

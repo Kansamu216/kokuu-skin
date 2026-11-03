@@ -910,7 +910,7 @@ return function ($plugin) {
      *   stagger 动画那些）—— 那些是 kokuu-ui 的职责，
      *   复制一份会两边状态打架（都往 localStorage 写同一个 key）。
      */
-    Hook::addStyleFileToPage('/plugins/kokuu-ui/assets/apple.css', [
+    Hook::addStyleFileToPage('/plugins/kokuu-appearance/assets/apple.css', [
         'plugin/kokuu-credit/*',
     ]);
 

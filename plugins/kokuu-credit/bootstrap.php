@@ -12,9 +12,8 @@
  * 【余额原子性】用数据库层 increment/decrement 而非「读出来算完再写回」，
  *   避免并发请求读到同一旧余额导致丢更新。
  *
- * 【签到】内核 UserController@sign 自己加分但不写流水，
- *   本插件监听 user.sign.after 事件把签到补记进 credit_ledger，
- *   让仪表盘「今日获得/今日笔数」能统计到签到。
+ * 【签到已独立】签到功能已拆分到 kokuu-signin 插件，
+ *   本插件只负责积分账本与调分接口。
  *
  * 【管理平台接口】/api/admin/* 供 KokuuPanel 等服务端到服务端调用，
  *   用 HMAC-SHA256 签名（时间戳 + nonce + 过期时间），密钥存 options 表。
@@ -300,73 +299,6 @@ if (! function_exists('kokuu_credit_stats')) {
     }
 }
 
-if (! function_exists('kokuu_credit_sign_status')) {
-    /**
-     * 签到状态。
-     *
-     * ⚠️ 字段是 `users.last_sign_at`（datetime，**不是**时间戳）——
-     *   Blessing Skin 里另有 `last_seen_at`（int时间戳），
-     *   两者语义不同：前者=最后一次签到，后者=最后一次访问。
-     *   早期代码注释里写过「Blessing Skin 没有 last_sign_at」是错的，
-     *   实际表结构里一直都有，别被那句注释带偏。
-     *
-     * 判定「今天签过了」必须用日期比较而不是时间戳大小：
-     * 数据库里存的是 datetime 字符串，转时间戳会踩时区。
-     */
-    function kokuu_credit_sign_status(?string $lastSignAt): array
-    {
-        if (empty($lastSignAt)) {
-            return ['signed' => false, 'at' => null, 'text' => '尚未签到'];
-        }
-
-        try {
-            $at = \Carbon\Carbon::parse($lastSignAt);
-        } catch (\Throwable $e) {
-            // 脏数据不该让整个仪表盘 500
-            return ['signed' => false, 'at' => null, 'text' => '尚未签到'];
-        }
-
-        $signedToday = $at->isSameDay(\Carbon\Carbon::today());
-
-        return [
-            'signed' => $signedToday,
-            'at'     => $at,
-            'text'   => $signedToday
-                ? '今日已签到 · ' . $at->format('H:i')
-                : '上次签到 ' . $at->diffForHumans(),
-        ];
-    }
-}
-
-if (! function_exists('kokuu_credit_source_labels')) {
-    /**
-     * 积分来源 → 中文标签的**唯一**映射表。
-     *
-     * ⚠️ 这是权威定义，其他地方一律调本函数，不要再抄一份数组。
-     *    历史教训：曾经有三份副本，`manual` 在一处写「手动调整」、
-     *    另两处写「管理员手动」，同一笔流水在仪表盘和流水页显示不同文案。
-     */
-    function kokuu_credit_source_labels(): array
-    {
-        return [
-            'thread' => '发起主题',
-            'reply'  => '回复帖子',
-            'liked'  => '帖子被赞',
-            'sign'   => '每日签到',
-            'manual' => '管理员手动',
-            'legacy' => '历史补录',
-        ];
-    }
-}
-
-if (! function_exists('kokuu_credit_source_label')) {
-    function kokuu_credit_source_label(string $source): string
-    {
-        return kokuu_credit_source_labels()[$source] ?? $source;
-    }
-}
-
-
 if (! function_exists('kokuu_credit_dashboard_data')) {
     /**
      * 仪表盘「积分」+「社区互联」两个容器所需的全部数据。
@@ -380,7 +312,6 @@ if (! function_exists('kokuu_credit_dashboard_data')) {
         // ⚠️ 必须传当前用户 uid —— 不传会统计**全站**今天的流水，
         // 新用户就会看到别人的「今日获得/今日笔数」。见 kokuu_credit_stats() 注释。
         $stats = kokuu_credit_stats($user->uid ?? null);
-        $sign  = kokuu_credit_sign_status($user->last_sign_at ?? null);
 
         // 今日已获得的积分与今日是否已签到是两件事，别混用
         $todayEarned = $stats['today'];
@@ -420,7 +351,6 @@ if (! function_exists('kokuu_credit_dashboard_data')) {
             'score'        => (int) ($user->score ?? 0),
             'todayEarned'  => (int) $todayEarned,
             'todayEvents'  => (int) $stats['events'],
-            'sign'         => $sign,
             'recent'       => $recent,
             'ledgerReady'  => $ledgerOk,
         ];
@@ -889,57 +819,7 @@ return function ($plugin) {
 
         // ---- 签名自检（后台"测试连通"用） ----
 
-    /*
-     * ---- 签到流水：把内核签到加分记进 credit_ledger ----
-     *
-     * 为什么需要：内核 `UserController@sign` 自己把积分加到 `users.score`
-     * 并 save()，但**不写** credit_ledger。于是签到在流水里查不到，
-     * 仪表盘「今日获得 / 今日笔数」也就统计不到它 ——
-     * 用户看到的现象是「刚签到 +92，今日获得却对不上」。
-     *
-     * ⚠️⚠️ 这里**绝不能**用 kokuu_credit_ledger()：
-     *   那个函数会在事务里 `increment` 余额，而内核 sign 已经
-     *   `$user->score += $x; $user->save();` 过了 → 会**双加**积分。
-     *   所以这里只做「补记一条流水」，不再动余额：
-     *   balance_after 直接取内核已经写好的 users.score。
-     *
-     * 幂等：event_id 用 `sign:<uid>:<日期>`，同一天重复触发会撞唯一索引
-     *   → insert 抛 1062 就忽略，天然防重复（反复点签到也不会双记）。
-     */
-    \Illuminate\Support\Facades\Event::listen('user.sign.after', function ($acquiredScore = 0) {
-        try {
-            $user = auth()->user();
-            if (! $user) {
-                return;
-            }
-            $score = (int) $acquiredScore;
-            if ($score <= 0) {
-                return;
-            }
-            kokuu_credit_ensure_tables();
-            DB::table('credit_ledger')->insert([
-                'event_id'      => 'sign:' . $user->uid . ':' . now()->toDateString(),
-                'uid'           => (int) $user->uid,
-                'delta'         => $score,
-                // 内核已 save 过，这里取当前余额**只读不写**
-                'balance_after' => (int) $user->score,
-                'source'        => 'sign',
-                'ref'           => null,
-                'note'          => '每日签到',
-                'created_at'    => now(),
-                'updated_at'    => now(),
-            ]);
-        } catch (\Illuminate\Database\QueryException $e) {
-            // 1062 = event_id 已存在（同一天重复签到）→ 幂等命中，静默忽略
-            if ($e->getCode() === '23000' || $e->getCode() === 23000) {
-                return;
-            }
-            // 记账失败绝不能把签到本身搞挂
-            error_log('[kokuu-credit] 签到流水记录失败: ' . $e->getMessage());
-        } catch (\Throwable $e) {
-            error_log('[kokuu-credit] 签到流水记录异常: ' . $e->getMessage());
-        }
-    });
+
     });
 
     // ---- 页面样式 ----

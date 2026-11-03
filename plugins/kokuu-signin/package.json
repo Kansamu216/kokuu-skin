@@ -1,0 +1,13 @@
+{
+  "name": "kokuu-signin",
+  "version": "1.0.0",
+  "title": "KokuuSkin 签到",
+  "description": "每日签到：内核已完成加分与状态更新，本插件负责把签到记入积分流水，并在仪表盘展示签到状态。核心逻辑（src/Core，签到状态计算与幂等记录契约）不依赖任何框架，可脱离皮肤站复用。",
+  "author": "KokuuStudio",
+  "namespace": "Kokuu\\Signin",
+  "require": {
+    "blessing-skin-server": "^6.0",
+    "php": ">=8.1"
+  }
+}
+

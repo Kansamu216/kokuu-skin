@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Kokuu\Credit\Core;
+namespace KokuuStudio\KokuuCredit\Core;
 
 /**
  * 统计聚合（纯函数：给定流水行，算出统计）

@@ -40,13 +40,13 @@ use Illuminate\Support\Facades\View;
  * 保留原签名，内部委托给 Core，保持向后兼容。
  */
 if (! function_exists('kokuu_credit_service')) {
-    function kokuu_credit_service(): \Kokuu\Credit\Core\CreditService
+    function kokuu_credit_service(): \KokuuStudio\KokuuCredit\Core\CreditService
     {
         static $svc = null;
         if ($svc === null) {
-            $svc = new \Kokuu\Credit\Core\CreditService(
-                new \Kokuu\Credit\Host\DbLedgerRepository(),
-                new \Kokuu\Credit\Host\BsAccountRepository()
+            $svc = new \KokuuStudio\KokuuCredit\Core\CreditService(
+                new \KokuuStudio\KokuuCredit\Host\DbLedgerRepository(),
+                new \KokuuStudio\KokuuCredit\Host\BsAccountRepository()
             );
         }
 
@@ -1106,32 +1106,44 @@ return function ($plugin) {
         View::share('kcDash', kokuu_credit_dashboard_data(auth()->user()));
 
         /*
-         * ⚠️ 这里是**追加**，不是替换（2026-11-03 修正）
+         * 后台仪表盘布局（2026-11-03 二次调整）
          *
-         * 历史问题：早期实现直接 return 一个只含积分卡的新 grid，
-         * 把内核原生的注册人数 / 角色数 / 材质数 / 存储空间 / 图表
-         * 全部挤掉了。用户反馈「管理后台仪表盘被积分管理接管了，
-         * 其实我还想看原来那个注册人数什么的」。
+         * 演进过程：
+         *   1.0 整个替换 → 只剩积分卡，丢掉了原生统计（用户不满）
+         *   2.0 追加一列 → 保留全部原生 widget（用户仍不满：图表太占地方）
+         *   3.0 当前 → 保留统计与通知，**去掉 chart 折线图**
          *
-         * 现在做法：原样保留内核的 layout/widgets，只在第一行
-         * 追加一列放积分卡。内核将来调整 grid 结构也能自动跟随。
+         * 用户原话：「我还是感觉不好 这个中间的部分不要了」
+         * （红框圈的是 chart widget：用户注册 / 材质上传两条折线）
          *
-         * 内核原始结构（AdminController::index）：
+         * 内核原始结构：
          *   layout  = [ ['md-6','md-6'] ]
          *   widgets = [ [ [usage, notification], [chart] ] ]
-         *   即：1 行 2 列；列0 挂 usage+notification，列1 挂 chart
+         *   列0 = usage + notification，列1 = chart
          *
-         * 追加后：1 行 3 列，列2 放积分卡，layout 相应均分。
+         * 现在改成 1 行 2 列：
+         *   列0 = usage + notification（统计数字 + 发通知表单）
+         *   列1 = 积分卡
+         *   chart 整个丢弃
+         *
+         * 若内核将来改了结构导致列数对不上，退回原样，绝不把后台搞坏。
          */
         if (! isset($grid['widgets'][0]) || ! is_array($grid['widgets'][0])) {
-            // grid 结构异常时退回原样，绝不因为插件把后台搞坏
             return $grid;
         }
 
+        // 保留列0（usage + notification），丢弃列1（chart），再追加积分卡
+        $col0 = $grid['widgets'][0][0] ?? [];
+
         $grid['layout'] = [
-            ['md-4', 'md-4', 'md-4'],
+            ['md-7', 'md-5'],
         ];
-        $grid['widgets'][0][] = ['KokuuStudio\\KokuuCredit::dashboard.credit'];
+        $grid['widgets'] = [
+            [
+                $col0,
+                ['KokuuStudio\\KokuuCredit::dashboard.credit'],
+            ],
+        ];
 
         return $grid;
     });

@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Kokuu\Credit\Core;
+namespace KokuuStudio\KokuuCredit\Core;
 
 /**
  * 来源标签（纯映射，无 IO）

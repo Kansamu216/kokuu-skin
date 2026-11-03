@@ -2,14 +2,14 @@
 
 declare(strict_types=1);
 
-namespace Kokuu\Credit\Host;
+namespace KokuuStudio\KokuuCredit\Host;
 
 use Illuminate\Support\Facades\DB;
-use Kokuu\Credit\Core\AccountRepository;
-use Kokuu\Credit\Core\CreditConfig;
-use Kokuu\Credit\Core\LedgerEntry;
-use Kokuu\Credit\Core\LedgerRepository;
-use Kokuu\Credit\Core\LedgerResult;
+use KokuuStudio\KokuuCredit\Core\AccountRepository;
+use KokuuStudio\KokuuCredit\Core\CreditConfig;
+use KokuuStudio\KokuuCredit\Core\LedgerEntry;
+use KokuuStudio\KokuuCredit\Core\LedgerRepository;
+use KokuuStudio\KokuuCredit\Core\LedgerResult;
 
 /**
  * 积分流水仓储（BlessingSkin 实现）
@@ -109,6 +109,6 @@ final class DbLedgerRepository implements LedgerRepository
         }
         $rows = $q->get(['delta', 'created_at'])->all();
 
-        return \Kokuu\Credit\Core\StatsCalculator::summarize($rows);
+        return \KokuuStudio\KokuuCredit\Core\StatsCalculator::summarize($rows);
     }
 }

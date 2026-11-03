@@ -1,6 +1,6 @@
 {
   "name": "kokuu-credit",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "title": "KokuuSkin 积分",
   "description": "皮肤站积分账本：原子记录积分变动、event_id 幂等防重、提供管理平台服务端到服务端调分接口。签到流水由 kokuu-signin 插件补记。",
   "author": "KokuuStudio",

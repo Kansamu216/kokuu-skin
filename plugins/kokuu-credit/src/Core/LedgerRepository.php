@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Kokuu\Credit\Core;
+namespace KokuuStudio\KokuuCredit\Core;
 
 /**
  * 流水仓储：原子写入 + event_id 幂等

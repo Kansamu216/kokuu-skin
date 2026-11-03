@@ -1,6 +1,6 @@
 {
   "name": "kokuu-lottery",
-  "version": "1.0.0",
+  "version": "2.0.0",
   "title": "KokuuSkin 抽奖",
   "description": "积分抽奖：按权重随机抽取积分奖品。架构分为可移植核心（src/Core，不依赖任何框架）与 BlessingSkin 适配层（src/Host），核心逻辑可脱离皮肤站在任意 PHP 项目复用。从 kokuu-coupon 拆分而来，兑换码功能已移除。",
   "author": "KokuuStudio",
@@ -12,4 +12,3 @@
     "php": ">=8.1"
   }
 }
-

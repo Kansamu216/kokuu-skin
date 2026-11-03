@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Kokuu\Credit\Core;
+namespace KokuuStudio\KokuuCredit\Core;
 
 /**
  * 积分账本服务（可移植核心）

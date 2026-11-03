@@ -1,47 +1,39 @@
-{% extends 'user.base.twig' %}
-
 {#
-  积分抽奖（独立页）—— plugin/kokuu-lottery
+  积分抽奖 —— plugin/kokuu-lottery
 
-  ————————————————————————————————————————————
-  ⚠️ twigbridge 的限制（写这个模板前必读）：
-  · 插件自定义的 kokuu_xxx() 函数在模板里**一律不可调用**（Twig 沙箱不放行）
-  · **没有 max / min 过滤器**（实测 |max 整页 500 Unknown "max" filter）
-    所以「能不能抽」「抽几次」全部在 PHP 侧算好传进来
-  · 可用 block 只有三个：title / content / before_foot
-    **没有 {% block scripts %}** → 资源必须放 before_foot
+  ══════════════════════════════════════════════════════════════════
+  2026-11-03 视觉与交互全面重做
+  ══════════════════════════════════════════════════════════════════
+  用户反馈：「这个界面实在是太丑了，而且一点也不合理，我想做成
+  米哈游二次元游戏抽卡那种界面，动画全部重新设计，界面合理好用」
 
-  ⚠️ 别在这里再写 <h2>：内核 base 模板的 content-header 已用
-     {% block title %} 渲染了 <h1>。重复会出现两个标题。
+  旧版问题诊断：
+  · 深紫底 + 金色礼盒 + 月亮星点 → 像中秋抽月饼，不是二次元抽卡
+  · 信息挤在中间一坨，没有层级
+  · 抽奖结果和卡池挤在一起，没有「揭晓」的仪式感
 
-  ————————————————————————————————————————————
-  📍 v1.3 视觉重做（用户原话：「太丑了，排版挤在一起不好看，而且非常
-     乱，不需要那么多东西，也不用告诉概率，就抽奖就可以了，就像原神等
-     二次元游戏抽卡页面一样那种」）
+  新版设计语言（对齐全站 tokens.css，冷色调几何）：
+  · 深空蓝紫渐变舞台（#0d0b1f → #1a1638），不是暖黄节日感
+  · 青色(#4FE3D0) + 淡紫(#A78BFA) 双色光效，与站点品牌一致
+  · 六边形几何徽记 + 棱镜光条，替代「礼盒 + 月亮」
+  · 稀有度光晕用金色点缀，只在「中奖」时出现
+  · 动效：入场 → 蓄力 → 光爆 → 揭晓，四段式，纯 CSS 驱动
 
-  用户看到的问题（已用 CDP 读**计算样式**确认，不是猜的）：
-  · 三个 .kcpDash 容器 background=transparent / border=0 / padding=0
-    → **完全裸奔**。v1.2 之前它们是仪表盘 widget，外面套着 AdminLTE 的
-    <section class="box"> 提供白底；搬到独立页后外壳没了，而 draw.css
-    只定义了 --kcp-* 变量、**从没把这些变量用在自己身上**。
-    （这就是「排版挤在一起、很乱」的直接原因，不是配色问题。）
-  · 概率表六行 + 记录表 + 三个数字格 + 顶部长段说明 = 信息过载
-  · 按钮是一条通栏青杠，没有「卡池」的仪式感
+  信息结构（自上而下，单列居中）：
+    1. 资源条    抽奖次数 / 可用积分
+    2. 卡池      视觉主体（几何徽记 + 光环 + 星尘）
+    3. 抽奖按钮  大号胶囊，hover 流光
+    4. 消耗提示  一行小字
+    5. 结果区    抽中后显示，不遮挡卡池
+    6. 记录      最近抽奖
 
-  v1.3 的取舍：
-  ✅ 保留：卡池（视觉主体）、抽奖按钮、次数/可用积分、结果、轻量历史
-  ❌ 去掉：概率表、期望值、「每次消耗」独立格子、顶部长段说明、公告
-     —— 用户明确说「不用告诉概率，就抽奖就可以了」
-
-  形态对标二次元手游抽卡：一个居中的池子（星辉背景），下面是
-  次数/积分，再下面一个按钮。信息让位给画面。
-
-  ⚠️ d.odds 仍在 PHP 侧计算（后台配置页要展示、守卫也验过它存在），
-     只是**这个模板不渲染**了 —— 以后想恢复不用重写 PHP。
-
-  ⚠️ 视图名必须用 manifest 的 namespace **原值（双反斜杠）**：
-     KokuuStudio\\KokuuCoupon::user.coupon.draw
-     写短名会 500 且**不提示**正确名字。
+  ══════════════════════════════════════════════════════════════════
+  ⚠️ twigbridge 限制（改模板前必读）：
+  · 插件自定义 kokuu_xxx() 函数在模板里不可调用（Twig 沙箱）
+  · 没有 max / min 过滤器 → 所有数值在 PHP 侧算好传进来
+  · 只有 title / content / before_foot 三个 block
+  · 不要写 <h2>：base 模板的 content-header 已用 title 渲染 <h1>
+  ══════════════════════════════════════════════════════════════════
 #}
 
 {% block title %}积分抽奖{% endblock %}
@@ -49,177 +41,190 @@
 {% block content %}
 {% set d = lottery %}
 
-<div class="kcpStage">
+<div class="kg-stage" id="kg-stage">
 
-  {# ================= 卡池 =================
-     整页的视觉主体。深色渐变 + 星点，营造抽卡的「池子」感。
-     深色是**刻意的**：抽奖页做成一张「卡面」，与站点其余浅色页面
-     形成对比，反而更聚焦。 #}
-  <div class="kcpPool{{ d.canDraw and d.cooldown <= 0 ? ' is-ready' : '' }}">
-    <div class="kcpPool-glow" aria-hidden="true"></div>
-    <div class="kcpPool-stars" aria-hidden="true"></div>
-
-    {# 池中央的奖杯 —— 没有真实图片素材，用图标 + 光晕代替。
-       抽中后 JS 会给 .kcpPool 加 .is-hit 触发一次光爆。 #}
-    <div class="kcpPool-mark" aria-hidden="true">
-      <i class="fas fa-gift"></i>
+  {# ============ 资源条 ============ #}
+  <div class="kg-res">
+    <div class="kg-res-item">
+      <span class="kg-res-label">抽奖次数</span>
+      <span class="kg-res-val" id="kg-draws">{{ d.draws }}</span>
     </div>
-
-    <div class="kcpPool-title">幸运抽奖</div>
-
-    {# 次数 / 可用积分：两个数字就够，不再做三宫格
-       （「每次消耗」是配置值，抽完会变，写死在页面上只会让人困惑） #}
-    <div class="kcpPool-nums">
-      <div class="kcpNum">
-        <b class="kcpNum-v" id="kcp-draws">{{ d.draws }}</b>
-        <span class="kcpNum-l">抽奖次数</span>
-      </div>
-      <div class="kcpPool-div" aria-hidden="true"></div>
-      <div class="kcpNum">
-        {# 🔴 这里必须是**可用积分**（余额 - 底仓），不是总余额。
-           抽完后 JS 用响应里的 j.spendable 回填。填 balance 会显示成
-           总余额，看着像抽奖没扣钱（底仓只有服务端知道，前端减不了）。 #}
-        <b class="kcpNum-v" id="kcp-spendable">{{ d.spendable }}</b>
-        <span class="kcpNum-l">可用积分</span>
-      </div>
+    <div class="kg-res-sep" aria-hidden="true"></div>
+    <div class="kg-res-item">
+      {# 必须显示「可用积分」（余额 - 底仓），不是总余额 #}
+      <span class="kg-res-label">可用积分</span>
+      <span class="kg-res-val" id="kg-spendable">{{ d.spendable }}</span>
     </div>
   </div>
 
-  {# ================= 抽奖按钮 =================
-     🔴 disabled 的 click() 被浏览器**静默忽略**（一个请求都不发），
-        所以「次数与积分均不足」必须真 disabled，不能只靠 JS 拦。
-     🔴 内联 JS 注释里不能出现反引号（会截断模板字符串）→ 用 node --check 抓。 #}
-  <button type="button" class="kcpGo" id="kcp-draw-btn"
+  {# ============ 卡池（视觉主体）============
+     is-ready：可抽状态 → 徽记常亮、光环缓慢旋转
+     is-hit  ：抽中瞬间 → 一次光爆，760ms 后由 JS 摘除 #}
+  <div class="kg-pool{{ d.canDraw and d.cooldown <= 0 ? ' is-ready' : '' }}" id="kg-pool">
+    <div class="kg-pool-bg" aria-hidden="true"></div>
+    <div class="kg-pool-grid" aria-hidden="true"></div>
+
+    {# 星尘层：由 CSS 生成，无图片素材 #}
+    <div class="kg-dust" aria-hidden="true">
+      <i></i><i></i><i></i><i></i><i></i><i></i>
+      <i></i><i></i><i></i><i></i><i></i><i></i>
+    </div>
+
+    {# 光环：三层同心，速度不同 #}
+    <div class="kg-rings" aria-hidden="true">
+      <span class="kg-ring kg-ring--1"></span>
+      <span class="kg-ring kg-ring--2"></span>
+      <span class="kg-ring kg-ring--3"></span>
+    </div>
+
+    {# 棱镜光条：四向交叉 #}
+    <div class="kg-rays" aria-hidden="true">
+      <span></span><span></span><span></span><span></span>
+    </div>
+
+    {# 中央徽记：六边形 + 内嵌菱形 #}
+    <div class="kg-emblem" aria-hidden="true">
+      <svg viewBox="0 0 120 120" class="kg-emblem-svg">
+        <defs>
+          <linearGradient id="kgGrad" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0%" stop-color="#4FE3D0"/>
+            <stop offset="55%" stop-color="#A78BFA"/>
+            <stop offset="100%" stop-color="#7C6BE0"/>
+          </linearGradient>
+        </defs>
+        <path class="kg-hex" d="M60 8 L104 34 L104 86 L60 112 L16 86 L16 34 Z"
+              fill="none" stroke="url(#kgGrad)" stroke-width="2.5"/>
+        <path class="kg-hex-inner" d="M60 26 L88 43 L88 77 L60 94 L32 77 L32 43 Z"
+              fill="none" stroke="url(#kgGrad)" stroke-width="1" opacity=".5"/>
+        <path class="kg-diamond" d="M60 40 L78 60 L60 80 L42 60 Z"
+              fill="url(#kgGrad)" opacity=".9"/>
+      </svg>
+    </div>
+
+    <div class="kg-pool-name">限时祈愿</div>
+    <div class="kg-pool-sub">消耗积分，抽取积分奖励</div>
+  </div>
+
+  {# ============ 抽奖按钮 ============
+     🔴 disabled 的 click() 被浏览器静默忽略，所以「次数与积分均不足」
+        必须真 disabled，不能只靠 JS 拦 #}
+  <button type="button" class="kg-draw-btn" id="kg-draw-btn"
           data-url="{{ d.drawUrl }}"
           {% if not d.canDraw or d.cooldown > 0 %}disabled{% endif %}>
-    <span id="kcp-draw-btn-text">
+    <span class="kg-draw-glow" aria-hidden="true"></span>
+    <span class="kg-draw-text" id="kg-draw-btn-text">
       {% if d.cooldown > 0 %}
         冷却中（{{ d.cooldown }}s）
       {% elseif d.canDraw %}
-        抽 一 次
+        祈 愿 一 次
       {% else %}
         次数与积分均不足
       {% endif %}
     </span>
   </button>
 
-  {# 消耗说明：一行小字，不做成独立卡片。d.cost 为 0 表示只能用次数抽。 #}
-  <p class="kcpCost">
+  {# ============ 消耗提示 ============ #}
+  <p class="kg-cost">
     {% if d.cost > 0 %}
-      每次消耗 <b>{{ d.cost }}</b> 积分{% if d.keep > 0 %}，至少保留 {{ d.keep }}{% endif %}
+      每次消耗 <b>{{ d.cost }}</b> 积分{% if d.keep > 0 %}，账户至少保留 {{ d.keep }}{% endif %}
     {% else %}
-      当前未开放积分抽奖，仅可用抽奖次数
+      当前未开放积分祈愿，仅可使用祈愿次数
     {% endif %}
   </p>
 
-  {# ---- 结果区：抽奖后由 JS 填。初始 hidden ---- #}
-  {# 🔴 aria-live="polite"：抽奖结果是**状态播报**，不是页面内容。
-     不加的话读屏用户点了按钮完全不知道结果 —— 动画层是 aria-hidden 的
-     （纯装饰），这里就是唯一的可读出口。role="status" 是 polite 的语义别名，
-     写上是为了让意图在代码里自解释。 #}
-  <div class="kcpResult" id="kcp-draw-result" role="status" aria-live="polite" hidden></div>
+  {# ============ 结果区 ============
+     aria-live=polite：抽奖结果是状态播报，读屏用户需要知道结果
+     动画层是 aria-hidden 的纯装饰，这里是唯一可读出口 #}
+  <div class="kg-result" id="kg-draw-result" role="status" aria-live="polite" hidden></div>
 
-  {# ---- 历史：最近 8 条，只列奖品和积分。
-         不做表格 —— 表格在这个页面会把它压得很重。 #}
-  {#
-  🔴 v1.4 修：原来 `{% if myDraws is not empty %}` 把**标题和列表一起**
-     包住了 → 一条记录都没有时，整块消失，
-     用户只看到一个空卡池，不知道这页还能看历史。
-     守卫抓到过一个假 FAIL（断言区块存在 vs 库里没记录），
-     顺着查出来是这个真问题：**不是守卫写错，是页面缺空态。**
-     现在标题常显，只把列表换成一句话提示。 #}
-  <div class="kcpHistory">
-    <div class="kcpHistory-h">最近抽奖</div>
+  {# ============ 最近记录 ============ #}
+  <section class="kg-history">
+    <header class="kg-history-head">
+      <span class="kg-history-title">最近祈愿</span>
+      {% if myDraws is not empty %}
+        <span class="kg-history-count">{{ myDraws|length }} 条</span>
+      {% endif %}
+    </header>
+
     {% if myDraws is not empty %}
-      <ul class="kcpHistory-list">
+      <ul class="kg-history-list">
         {% for r in myDraws|slice(0, 8) %}
-          <li>
-            <span class="kcpHistory-l">{{ r.prize_label }}</span>
-            <span class="kcpHistory-a">+{{ r.amount }}</span>
+          <li class="kg-history-item">
+            <span class="kg-history-dot" aria-hidden="true"></span>
+            <span class="kg-history-label">{{ r.prize_label }}</span>
+            <span class="kg-history-amt{{ r.amount > 0 ? ' is-win' : '' }}">+{{ r.amount }}</span>
           </li>
         {% endfor %}
       </ul>
     {% else %}
-      <div class="kcpHistory-empty">还没有抽奖记录</div>
+      <div class="kg-history-empty">还没有祈愿记录</div>
     {% endif %}
-  </div>
+  </section>
 </div>
 {% endblock %}
 
-{#
-  资源放 before_foot —— 内核 base 模板唯一的资源注入点（没有 block scripts）
-#}
 {% block before_foot %}
-{#
-  ⚠️ 资源名跟路由名对齐（draw.*），dash.* 已于 v1.2 改名并从服务器删除。
-     这里若还写 dash.css，页面会静默 404 掉样式（结构还在、就是没样式），
-     属于最难自查的一类问题 —— 守卫必须断言真实 href。
-#}
 <link rel="stylesheet" href="{{ url('/plugins/kokuu-lottery/assets/lottery.css') }}">
 
 {#
-  ══════════════════════════════════════════════════════════════
-  🎬 抽卡动画层（v1.4）
-  用户原话：「就像原神等二次元游戏抽卡页面一样那种」
-  → 要的是**抽卡那一下的仪式感**，不是花哨的界面。
+  ══════════════════════════════════════════════════════════════════
+  🎬 祈愿动画层（全屏覆盖，播放期间接管整页）
+  ══════════════════════════════════════════════════════════════════
+  四段式时序（总 2.9s，必须与 lottery.js 的 ANIM_MS 以及 CSS 动画
+  时长严格对齐，改一处要同步三处）：
 
-  做法：全屏覆盖层 + 纯 CSS 动画，靠 JS 加/摘 .is-on 播放。
-  为什么不放图片/视频素材：
-    · 没有版权干净的抽卡序列帧素材
-    · 纯 CSS 能自适应任意屏幕，不会有拉伸和加载失败
-    · 体积只有几 KB，比任何素材都小
+    0.00 - 0.55s  空间收拢   背景由透明 → 深空，暗角压迫
+    0.55 - 1.30s  蓄力       光环收缩聚拢，星屑向中心汇聚
+    1.30 - 2.00s  光爆       棱镜光条炸开，白光洗屏
+    2.00 - 2.90s  揭晓       奖品名浮现 + 稀有度光晕
 
-  ⚠️ 这一整块默认 hidden（HTML 属性），只有 .is-on 时才显示。
-     不这么做的话，它会挡住整个页面的点击。
-  ⚠️ 整层 aria-hidden="true"：**这是纯装饰，不是内容**。
-     它显示的奖品名在下面的 .kcpResult（aria-live=polite）里另有一份可读文本，
-     所以读屏用户已经能听到结果了。这里再播一遍就是重复噪音。
-     ⚠️ 别一边写 aria-hidden 一边在注释里说 role=status ——
-        那是两套相反的语义（aria-hidden=不读，role=status=主动播报），
-        注释与实现不符会误导下一个人。
-  ══════════════════════════════════════════════════════════════
+  ⚠️ 整块默认 hidden，只有 .is-on 才显示；不这么做会永久挡住页面点击
+  ⚠️ aria-hidden="true"：纯装饰，奖品名在 .kg-result 里另有一份可读文本
+  ══════════════════════════════════════════════════════════════════
 #}
-<div class="kcpAnim" id="kcp-anim" hidden aria-hidden="true">
-  {# 深蓝夜空底 + 径向光晕 #}
-  <div class="kcpAnim-sky"></div>
-  {# 流星：3 道错落划过，只在动画期间可见 #}
-  <div class="kcpAnim-meteors" aria-hidden="true">
-    <i class="kcpMeteor kcpMeteor-1"></i>
-    <i class="kcpMeteor kcpMeteor-2"></i>
-    <i class="kcpMeteor kcpMeteor-3"></i>
+<div class="kg-anim" id="kg-anim" hidden aria-hidden="true">
+  <div class="kg-anim-void"></div>
+
+  <div class="kg-anim-charge">
+    <span class="kg-charge-ring kg-charge-ring--1"></span>
+    <span class="kg-charge-ring kg-charge-ring--2"></span>
+    <span class="kg-charge-ring kg-charge-ring--3"></span>
   </div>
-  {# 中央的「星芒」：两层交叉旋转的光条 #}
-  <div class="kcpAnim-burst" aria-hidden="true">
-    <div class="kcpAnim-rings">
-      <i class="kcpRing kcpRing-1"></i>
-      <i class="kcpRing kcpRing-2"></i>
-      <i class="kcpRing kcpRing-3"></i>
-    </div>
-    <div class="kcpAnim-star">
-      <i class="kcpRay kcpRay-1"></i>
-      <i class="kcpRay kcpRay-2"></i>
-      <i class="kcpRay kcpRay-3"></i>
-      <i class="kcpRay kcpRay-4"></i>
-    </div>
-    <div class="kcpAnim-core"></div>
+
+  <div class="kg-anim-gather" aria-hidden="true">
+    <i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i>
   </div>
-  {# 奖品名：光爆之后浮现 #}
-  <div class="kcpAnim-label">
-    <span class="kcpAnim-name" id="kcp-anim-name"></span>
-    <span class="kcpAnim-amt" id="kcp-anim-amt"></span>
+
+  <div class="kg-anim-burst" aria-hidden="true">
+    <span class="kg-burst-ray kg-burst-ray--1"></span>
+    <span class="kg-burst-ray kg-burst-ray--2"></span>
+    <span class="kg-burst-ray kg-burst-ray--3"></span>
+    <span class="kg-burst-ray kg-burst-ray--4"></span>
+    <span class="kg-burst-ray kg-burst-ray--5"></span>
+    <span class="kg-burst-ray kg-burst-ray--6"></span>
+    <span class="kg-burst-flash"></span>
+  </div>
+
+  <div class="kg-anim-reveal">
+    <div class="kg-reveal-card">
+      <div class="kg-reveal-glow" aria-hidden="true"></div>
+      <div class="kg-reveal-amt" id="kg-anim-amt"></div>
+      <div class="kg-reveal-name" id="kg-anim-name"></div>
+      <div class="kg-reveal-tag">获 得</div>
+    </div>
   </div>
 </div>
 
 {#
-  ⚠️ CSRF：路由挂了 web 中间件（含 VerifyCsrfToken），
-     不带 X-XSRF-TOKEN 一律 419。值取自 XSRF-TOKEN cookie，
-     只 decodeURIComponent，**不要剥前缀**（Laravel 服务端会自己剥）。
+  CSRF：路由走 web 中间件，不带 X-XSRF-TOKEN 会 419。
+  值取自 XSRF-TOKEN cookie，只 decodeURIComponent，不剥前缀。
 #}
 <script>
-  window.KCP_CSRF = (function () {
+  window.KG_CSRF = (function () {
     var m = document.cookie.match(/(?:^|;\s*)XSRF-TOKEN=([^;]+)/);
     return m ? decodeURIComponent(m[1]) : '';
   })();
 </script>
 <script src="{{ url('/plugins/kokuu-lottery/assets/lottery.js') }}"></script>
 {% endblock %}
+

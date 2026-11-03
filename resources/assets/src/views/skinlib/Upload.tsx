@@ -54,8 +54,14 @@ const Upload: React.FC = () => {
     const [file] = files
     if (file) {
       setFile(file)
-      if (!name && file.name.endsWith('.png')) {
-        setName(file.name.slice(0, file.name.length - 4))
+      if (!name) {
+        // 自动用文件名填充：
+        //   1. 扩展名判断不区分大小写（Windows 常见 .PNG）
+        //   2. 没有 .png 扩展名时用整个文件名兜底（如哈希命名的下载文件）
+        //   3. 截断到 50 字符，与 textures.name varchar(50) 对齐
+        //      否则后端会抛 1406 Data too long
+        const base = file.name.replace(/\.png$/i, '').trim() || file.name
+        setName(base.slice(0, 50))
       }
       const texture = URL.createObjectURL(file)
       setTexture(texture)
@@ -133,6 +139,7 @@ const Upload: React.FC = () => {
               id="texture-name"
               type="text"
               placeholder={nameRule}
+              maxLength={50}
               value={name}
               onChange={handleNameChange}
             />

@@ -200,6 +200,12 @@ class SkinlibController extends Controller
         $data = $request->validate([
             'name' => [
                 'required',
+                'string',
+                // ⚠️ 必须限制长度：textures.name 是 varchar(50)，
+                //    而 'string' 规则只校验类型不校验长度。
+                //    前端曾把 64 位哈希塞进 name 字段 → 数据库抛
+                //    SQLSTATE[22001] 1406 Data too long，用户看到「严重错误」。
+                'max:50',
                 option('texture_name_regexp') ? 'regex:'.option('texture_name_regexp') : 'string',
             ],
             'file' => 'required|mimes:png|max:'.option('max_upload_file_size'),
@@ -410,6 +416,8 @@ class SkinlibController extends Controller
     ) {
         $data = $request->validate(['name' => [
             'required',
+            'string',
+            'max:50',   // 与 textures.name varchar(50) 对齐，防 1406
             option('texture_name_regexp')
                 ? 'regex:'.option('texture_name_regexp')
                 : 'string',

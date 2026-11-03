@@ -193,11 +193,21 @@ const Closet: React.FC = () => {
                   {t('general.cape')}
                 </a>
               </li>
-              <li className="nav-item d-none d-md-block">
+              {/*
+                ⚠️ 上传入口修复（2026-11-03）
+                原为 <li className="nav-item d-none d-md-block">：
+                  · d-md-block 在视口 < 768px 时完全隐藏 → 手机用户看不到入口
+                  · 混在「皮肤/披风」标签页那一排里，视觉上不像按钮
+                用户反馈「直接去衣柜里面上传不了」「必须从右上角才能上传」。
+                改为独立按钮：始终可见、有明显的按钮外观、图标+文字。
+              */}
+              <li className="nav-item ml-2">
                 <a
                   href={`${blessing.base_url}/skinlib/upload`}
-                  className="nav-link"
+                  className="btn btn-success btn-sm kc-closet-upload"
+                  title={t('user.closet.upload')}
                 >
+                  <i className="fas fa-upload mr-1" />
                   {t('user.closet.upload')}
                 </a>
               </li>

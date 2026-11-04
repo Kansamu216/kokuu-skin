@@ -10,54 +10,67 @@
 
    设计原则：不破坏 AdminLTE / React 的既有行为，只做加法。
    ========================================================= */
-(function () {
-  "use strict";
+;(function () {
+  'use strict'
 
-  var BODY_CLASS = "kokuu-apple";
-  var IN_CLASS = "kokuu-in";
+  var BODY_CLASS = 'kokuu-apple'
+  var IN_CLASS = 'kokuu-in'
 
   function ready(fn) {
-    if (document.readyState === "loading") {
-      document.addEventListener("DOMContentLoaded", fn);
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', fn)
     } else {
-      fn();
+      fn()
     }
   }
 
   /* 标记 body，启用 apple.css 的作用域样式 */
   function markBody() {
-    document.body.classList.add(BODY_CLASS);
+    document.body.classList.add(BODY_CLASS)
   }
 
   /* 侧边栏折叠：接管 pushmenu 按钮，状态写 localStorage，跨页保持 */
   function initSidebar() {
-    var toggle = document.querySelector('[data-widget="pushmenu"]');
-    var sidebar = document.querySelector(".main-sidebar");
-    if (!toggle || !sidebar) { return; }
+    var toggle = document.querySelector('[data-widget="pushmenu"]')
+    var sidebar = document.querySelector('.main-sidebar')
+    if (!toggle || !sidebar) {
+      return
+    }
 
-    var KEY = "kokuu_sidebar_collapsed";
-    var stored = null;
-    try { stored = localStorage.getItem(KEY); } catch (e) { /* 忽略 */ }
+    var KEY = 'kokuu_sidebar_collapsed'
+    var stored = null
+    try {
+      stored = localStorage.getItem(KEY)
+    } catch (e) {
+      /* 忽略 */
+    }
 
     function isCollapsed() {
-      return document.body.classList.contains("sidebar-collapse");
+      return document.body.classList.contains('sidebar-collapse')
     }
     function apply(collapsed) {
-      document.body.classList.toggle("sidebar-collapse", collapsed);
+      document.body.classList.toggle('sidebar-collapse', collapsed)
       try {
-        localStorage.setItem(KEY, collapsed ? "1" : "0");
-      } catch (e) { /* 忽略 */ }
+        localStorage.setItem(KEY, collapsed ? '1' : '0')
+      } catch (e) {
+        /* 忽略 */
+      }
     }
 
-    if (stored === "1") { apply(true); }
-    else if (stored === "0") { apply(false); }
+    if (stored === '1') {
+      apply(true)
+    } else if (stored === '0') {
+      apply(false)
+    }
 
     // AdminLTE 的 pushmenu 自带 toggle；但要接管持久化，
     // 监听其点击（事件委托，避免被 AdminLTE 停止冒泡）
-    toggle.addEventListener("click", function () {
+    toggle.addEventListener('click', function () {
       // 等待 AdminLTE 完成自身切换后同步状态
-      setTimeout(function () { apply(isCollapsed()); }, 60);
-    });
+      setTimeout(function () {
+        apply(isCollapsed())
+      }, 60)
+    })
   }
 
   /* =========================================================
@@ -81,76 +94,94 @@
        2. 这里在 animationend 时打 .kokuu-in-done，
           由 CSS 把 transform 钉成 none（双保险，防回归）
      ========================================================= */
-  var DONE_CLASS = "kokuu-in-done";
+  var DONE_CLASS = 'kokuu-in-done'
 
   function markInDone(el) {
-    if (el.classList.contains(DONE_CLASS)) { return; }
-    el.classList.add(DONE_CLASS);
+    if (el.classList.contains(DONE_CLASS)) {
+      return
+    }
+    el.classList.add(DONE_CLASS)
     // 顺手把自定义延迟变量也清掉，避免后续复用时串味
-    el.style.removeProperty("--kokuu-in-delay");
+    el.style.removeProperty('--kokuu-in-delay')
   }
 
   function bindInEnd(el) {
-    if (el.__kokuuInBound) { return; }
-    el.__kokuuInBound = true;
-    el.addEventListener("animationend", function (ev) {
+    if (el.__kokuuInBound) {
+      return
+    }
+    el.__kokuuInBound = true
+    el.addEventListener('animationend', function (ev) {
       // 只认自己那条入场动画，忽略子元素冒泡上来的
-      if (ev.target !== el || ev.animationName !== "kokuuAppleCardIn") { return; }
-      markInDone(el);
-    });
+      if (ev.target !== el || ev.animationName !== 'kokuuAppleCardIn') {
+        return
+      }
+      markInDone(el)
+    })
     // 兜底：万一 animationend 没触发（元素被隐藏/动画被中断），
     // 动画时长 0.6s + 最大延迟 40*0.055≈2.2s，3.5s 后无条件收尾
-    setTimeout(function () { markInDone(el); }, 3500);
+    setTimeout(function () {
+      markInDone(el)
+    }, 3500)
   }
 
   function staggerCards() {
-    var host =
-      document.querySelector(".content-wrapper") || document.body;
+    var host = document.querySelector('.content-wrapper') || document.body
     var cards = host.querySelectorAll(
-      ".content > .container-fluid > .card, .content > .container-fluid > .row, .d-flex.flex-wrap > .card, .d-flex.flex-wrap > a > .card"
-    );
-    var i = 0;
+      '.content > .container-fluid > .card, .content > .container-fluid > .row, .d-flex.flex-wrap > .card, .d-flex.flex-wrap > a > .card',
+    )
+    var i = 0
     for (var k = 0; k < cards.length; k++) {
-      var el = cards[k];
-      if (el.classList.contains(IN_CLASS)) { continue; }
-      el.classList.add(IN_CLASS);
+      var el = cards[k]
+      if (el.classList.contains(IN_CLASS)) {
+        continue
+      }
+      el.classList.add(IN_CLASS)
       // 容器级（前几个 block 卡片）给较大间隔，网格内卡片快速递增
-      el.style.setProperty("--kokuu-in-delay", (i * 0.055).toFixed(3) + "s");
-      bindInEnd(el);
-      i++;
-      if (i > 40) { i = 40; } // 防止过多累积延迟
+      el.style.setProperty('--kokuu-in-delay', (i * 0.055).toFixed(3) + 's')
+      bindInEnd(el)
+      i++
+      if (i > 40) {
+        i = 40
+      } // 防止过多累积延迟
     }
   }
 
   /* React 异步渲染完成后，把新出现的卡片也补上进场动画 */
   function watchForNewCards() {
-    if (!("MutationObserver" in window)) {
-      setTimeout(staggerCards, 400);
-      return;
+    if (!('MutationObserver' in window)) {
+      setTimeout(staggerCards, 400)
+      return
     }
-    var host = document.querySelector(".content-wrapper") || document.body;
+    var host = document.querySelector('.content-wrapper') || document.body
     var mo = new MutationObserver(function () {
-      staggerCards();
-    });
-    mo.observe(host, { childList: true, subtree: true });
+      staggerCards()
+    })
+    mo.observe(host, { childList: true, subtree: true })
     // 观察一段时间后停止，节省开销
-    setTimeout(function () { mo.disconnect(); }, 8000);
+    setTimeout(function () {
+      mo.disconnect()
+    }, 8000)
   }
 
   /* 自适应：大屏恢复正常边距，小屏默认折叠侧栏（Apple 移动端观感） */
   function responsive() {
-    var mq = window.matchMedia("(max-width: 992px)");
+    var mq = window.matchMedia('(max-width: 992px)')
     function apply() {
       // 无侧栏布局（如皮肤库 layout-top-nav）不存在折叠态，
       // 强行加 sidebar-collapse 会让 AdminLTE 布局规则错乱、挤压内容
-      if (!document.querySelector(".main-sidebar")) { return; }
+      if (!document.querySelector('.main-sidebar')) {
+        return
+      }
       if (mq.matches) {
-        document.body.classList.add("sidebar-collapse");
+        document.body.classList.add('sidebar-collapse')
       }
     }
-    apply();
-    if (mq.addEventListener) { mq.addEventListener("change", apply); }
-    else if (mq.addListener) { mq.addListener(apply); }
+    apply()
+    if (mq.addEventListener) {
+      mq.addEventListener('change', apply)
+    } else if (mq.addListener) {
+      mq.addListener(apply)
+    }
   }
 
   /* ---- 深色模式切换按钮（补齐 layout-top-nav 布局的缺失）----
@@ -160,46 +191,74 @@
      这里对无侧边栏布局补一个等价的按钮，并自行处理切换与持久化。 */
   function ensureDarkToggle() {
     // 已有（内核渲染的）则不干预
-    if (document.querySelector("#toggle-dark-mode")) { return; }
+    if (document.querySelector('#toggle-dark-mode')) {
+      return
+    }
     // 只对无侧边栏布局补齐；侧边栏布局由内核处理
-    if (document.querySelector(".main-sidebar")) { return; }
+    if (document.querySelector('.main-sidebar')) {
+      return
+    }
 
     var bar =
-      document.querySelector(".main-header .navbar-custom-menu ul.nav") ||
-      document.querySelector(".main-header .navbar-nav");
-    if (!bar) { return; }
+      document.querySelector('.main-header .navbar-custom-menu ul.nav') ||
+      document.querySelector('.main-header .navbar-nav')
+    var base = (window.blessing && window.blessing.base_url) || ''
 
-    var base = (window.blessing && window.blessing.base_url) || "";
-    var li = document.createElement("li");
-    li.className = "nav-item kokuu-dark-toggle";
-    li.id = "toggle-dark-mode";
-    li.innerHTML =
-      '<a class="nav-link" href="#" role="button" title="切换深色模式" aria-label="切换深色模式">' +
-        '<i class="fas fa-sun" aria-hidden="true"></i>' +
-      "</a>";
-    // 插到用户菜单之前，避免与用户头像挤在一起
-    bar.insertBefore(li, bar.firstChild);
-
-    li.addEventListener("click", function (ev) {
-      ev.preventDefault();
-      var isDark = document.body.classList.toggle("dark-mode");
-      var icon = li.querySelector("i");
-      if (icon) {
-        icon.className = "fas fa-" + (isDark ? "moon" : "sun");
+    function toggle(ev) {
+      if (ev) {
+        ev.preventDefault()
       }
-      // 持久化：端点为 toggle 语义，未登录时静默失败即可
-      var tokenEl = document.querySelector('meta[name="csrf-token"]');
+      var isDark = document.body.classList.toggle('dark-mode')
+      var icon = this.querySelector('i')
+      if (icon) {
+        icon.className = 'fas fa-' + (isDark ? 'moon' : 'sun')
+      }
       try {
-        fetch(base + "/user/dark-mode", {
-          method: "PUT",
-          credentials: "same-origin",
+        fetch(base + '/user/dark-mode', {
+          method: 'PUT',
+          credentials: 'same-origin',
           headers: {
-            "X-Requested-With": "XMLHttpRequest",
-            "X-CSRF-TOKEN": tokenEl ? tokenEl.content : ""
-          }
-        }).catch(function () {});
-      } catch (e) { /* 忽略 */ }
-    });
+            'X-Requested-With': 'XMLHttpRequest',
+            'X-CSRF-TOKEN':
+              (document.querySelector('meta[name="csrf-token"]') || {})
+                .content || '',
+          },
+        }).catch(function () {})
+      } catch (e) {
+        /* 忽略 */
+      }
+    }
+
+    if (bar) {
+      var li = document.createElement('li')
+      li.className = 'nav-item kokuu-dark-toggle'
+      li.id = 'toggle-dark-mode'
+      li.innerHTML =
+        '<a class="nav-link" href="#" role="button" title="切换深色模式" aria-label="切换深色模式">' +
+        '<i class="fas fa-sun" aria-hidden="true"></i>' +
+        '</a>'
+      bar.insertBefore(li, bar.firstChild)
+      li.addEventListener('click', toggle)
+      return
+    }
+
+    /*
+     * 登录 / 注册 / 找回密码页（layout-top-nav 之外的 login-page）
+     * 完全没有顶栏，上面那条路径会直接 return → 用户没有任何入口切深色。
+     * 这里补一个固定定位的圆形按钮，复用同一套切换与持久化逻辑。
+     */
+    if (!document.querySelector('.login-page')) {
+      return
+    }
+    var floating = document.createElement('button')
+    floating.type = 'button'
+    floating.id = 'toggle-dark-mode'
+    floating.className = 'kokuu-dark-fab'
+    floating.title = '切换深色模式'
+    floating.setAttribute('aria-label', '切换深色模式')
+    floating.innerHTML = '<i class="fas fa-sun" aria-hidden="true"></i>'
+    document.body.appendChild(floating)
+    floating.addEventListener('click', toggle)
   }
 
   /* 内容区整体进场动画（motion.css 的 kokuuApplePageIn）同样会残留
@@ -207,35 +266,41 @@
      ⚠️ `.content-wrapper` 是**所有**弹窗的祖先，它残留 transform 的
         危害最大，必须一起处理。 */
   function settlePageIn() {
-    ["content-wrapper", "content-header"].forEach(function (cls) {
-      var el = document.querySelector("." + cls);
-      if (!el) { return; }
+    ;['content-wrapper', 'content-header'].forEach(function (cls) {
+      var el = document.querySelector('.' + cls)
+      if (!el) {
+        return
+      }
       var finish = function () {
         if (!el.classList.contains(DONE_CLASS)) {
-          el.classList.add(DONE_CLASS);
+          el.classList.add(DONE_CLASS)
         }
-      };
-      el.addEventListener("animationend", function (ev) {
-        if (ev.target !== el) { return; }
-        finish();
-      });
-      setTimeout(finish, 1200);
-    });
+      }
+      el.addEventListener('animationend', function (ev) {
+        if (ev.target !== el) {
+          return
+        }
+        finish()
+      })
+      setTimeout(finish, 1200)
+    })
   }
 
   function mount() {
     try {
-      markBody();
-      initSidebar();
-      settlePageIn();
-      staggerCards();
-      responsive();
-      watchForNewCards();
-      ensureDarkToggle();
+      markBody()
+      initSidebar()
+      settlePageIn()
+      staggerCards()
+      responsive()
+      watchForNewCards()
+      ensureDarkToggle()
     } catch (e) {
-      if (window.console) { console.error("[KokuuUI]", e); }
+      if (window.console) {
+        console.error('[KokuuUI]', e)
+      }
     }
   }
 
-  ready(mount);
-})();
+  ready(mount)
+})()

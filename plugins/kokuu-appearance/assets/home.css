@@ -1450,3 +1450,115 @@ body {
     line-height: 1;
   }
 }
+
+/* =========================================================
+   扁平横向 Banner（2026-11-04）
+   原先首屏是 530–720px 的「整块海报」，占满一屏，下方内容要滚动才出现。
+   用户要更扁的 banner：改为 16:5 左右的横向画幅，文字块收紧，
+   让功能入口在第一屏就能露出来。图片、轮播、按钮位置均不变。
+   ========================================================= */
+.kokuu-root .kokuu-hero {
+  min-height: 0;
+  aspect-ratio: 16 / 5;
+  max-height: 420px;
+  margin-top: 18px;
+  padding: clamp(20px, 3vw, 44px);
+  align-items: center;
+}
+.kokuu-root .kokuu-hero .kokuu-title {
+  font-size: clamp(30px, 3.6vw, 52px);
+}
+.kokuu-root .kokuu-hero .kokuu-tagline {
+  font-size: clamp(15px, 1.5vw, 20px);
+  margin-bottom: 8px;
+}
+.kokuu-root .kokuu-hero .kokuu-sub {
+  font-size: 13.5px;
+  line-height: 1.6;
+  margin-bottom: 16px;
+  max-width: 46ch;
+}
+.kokuu-root .kokuu-hero .kokuu-eyebrow {
+  margin-bottom: 12px;
+  font-size: 10px;
+}
+.kokuu-root .kokuu-cta {
+  margin-bottom: 14px;
+  gap: 8px;
+}
+.kokuu-root .kokuu-hero .kbtn {
+  min-height: 42px;
+  padding: 0 18px;
+  font-size: 13.5px;
+}
+.kokuu-root .kokuu-badges {
+  gap: 8px 16px;
+  font-size: 11px;
+}
+.kokuu-root .kokuu-hero-text {
+  width: min(54%, 620px);
+  padding-bottom: 0;
+}
+.kokuu-root .kokuu-align-left-upper .kokuu-hero-text {
+  width: 40%;
+  padding-top: 0;
+}
+.kokuu-root .kokuu-align-right .kokuu-hero-text {
+  width: 46%;
+  padding-top: 0;
+  align-self: center;
+}
+.kokuu-root .kokuu-align-left-upper .kokuu-title,
+.kokuu-root .kokuu-align-right .kokuu-title {
+  font-size: clamp(28px, 3.2vw, 44px);
+}
+.kokuu-root .kokuu-shot-cap {
+  bottom: 14px;
+  right: 16px;
+}
+.kokuu-root .kokuu-bg-dots {
+  bottom: 18px;
+  right: 18px;
+}
+.kokuu-root .kokuu-pause {
+  top: 14px;
+  right: 14px;
+  padding: 6px 12px;
+  font-size: 11px;
+}
+@media (max-width: 900px) {
+  .kokuu-root .kokuu-hero {
+    aspect-ratio: 16 / 7;
+    max-height: 360px;
+  }
+  .kokuu-root .kokuu-hero-text,
+  .kokuu-root .kokuu-align-left-upper .kokuu-hero-text,
+  .kokuu-root .kokuu-align-right .kokuu-hero-text {
+    width: min(64%, 480px);
+  }
+}
+@media (max-width: 640px) {
+  .kokuu-root .kokuu-hero {
+    aspect-ratio: auto;
+    min-height: 430px;
+    max-height: none;
+    padding: 210px 18px 22px;
+    align-items: flex-end;
+  }
+  .kokuu-root .kokuu-hero .kokuu-hero-text {
+    width: 100%;
+    padding-bottom: 0;
+  }
+  .kokuu-root .kokuu-hero .kokuu-title {
+    font-size: 34px;
+  }
+  .kokuu-root .kokuu-hero .kokuu-tagline {
+    font-size: 16px;
+  }
+  .kokuu-root .kokuu-hero .kokuu-sub {
+    font-size: 12.5px;
+  }
+  .kokuu-root .kokuu-badges {
+    display: none;
+  }
+}

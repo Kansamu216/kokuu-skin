@@ -827,7 +827,9 @@ body.kokuu-apple ::-webkit-scrollbar-thumb:hover {
    ========================================================= */
 body.kokuu-apple.dark-mode {
   --a-bg: #000000;
-  --a-surface: var(--k-text);
+  /* ⚠️ 曾经误写成 var(--k-text)（文字色 #edeaff）→ 卡片背景变成浅紫白，
+     白字叠白底完全不可读。表面色必须指向表面令牌。 */
+  --a-surface: var(--k-surface);
   --a-surface-2: var(--k-surface-2);
   --a-text: var(--k-text);
   --a-text-2: var(--k-text-2);
@@ -1023,4 +1025,83 @@ body.hold-transition .main-footer[data-kokuu-year='1'] #copyright-text {
     font-size: 12px;
     line-height: 1.65;
   }
+}
+
+/* =========================================================
+   登录页深色切换按钮（login-page 无顶栏，rebuild.js 动态插入）
+   ========================================================= */
+.kokuu-dark-fab {
+  position: fixed;
+  top: 18px;
+  right: 18px;
+  z-index: 1080;
+  width: 40px;
+  height: 40px;
+  display: grid;
+  place-items: center;
+  font-size: 15px;
+  color: #6b6483;
+  background: rgba(255, 255, 255, 0.82);
+  border: 1px solid rgba(43, 31, 82, 0.14);
+  border-radius: 50%;
+  cursor: pointer;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  transition: color 0.18s ease, background 0.18s ease, border-color 0.18s ease;
+}
+.kokuu-dark-fab:hover {
+  color: #241a45;
+  border-color: rgba(43, 31, 82, 0.28);
+}
+body.dark-mode .kokuu-dark-fab {
+  color: #edeaff;
+  background: rgba(23, 17, 43, 0.86);
+  border-color: rgba(167, 139, 250, 0.28);
+}
+body.dark-mode .kokuu-dark-fab:hover {
+  border-color: rgba(167, 139, 250, 0.5);
+}
+
+/* 深色下输入框必须是「深底 + 浅字」；先前出现浅底浅字（不可读） */
+body.dark-mode input.form-control,
+body.dark-mode textarea.form-control,
+body.dark-mode select.form-control,
+body.dark-mode .custom-file-label,
+body.dark-mode .input-group-text {
+  background-color: rgba(11, 7, 22, 0.72) !important;
+  color: var(--k-text) !important;
+  border-color: var(--k-border-2) !important;
+}
+body.dark-mode input.form-control::placeholder,
+body.dark-mode textarea.form-control::placeholder {
+  color: var(--k-text-3) !important;
+}
+body.dark-mode .custom-file-label::after {
+  background-color: var(--k-surface-2) !important;
+  color: var(--k-text) !important;
+  border-left-color: var(--k-border-2) !important;
+}
+/* Chrome 自动填充会把输入框刷成 rgb(232,240,254) 浅蓝底 + 黑字，
+   在深色登录页里非常刺眼。用 inset 阴影覆盖填充色（背景色改不动）。 */
+body.dark-mode input:-webkit-autofill,
+body.dark-mode input:-webkit-autofill:hover,
+body.dark-mode input:-webkit-autofill:focus,
+body.dark-mode textarea:-webkit-autofill {
+  -webkit-text-fill-color: var(--k-text) !important;
+  -webkit-box-shadow: 0 0 0 1000px rgba(11, 7, 22, 0.92) inset !important;
+  box-shadow: 0 0 0 1000px rgba(11, 7, 22, 0.92) inset !important;
+  caret-color: var(--k-text);
+  transition: background-color 9999s ease-out 0s;
+}
+/* 登录页表单控件：确保深底浅字（含 Bootstrap 自定义样式覆盖） */
+body.dark-mode.login-page .form-control,
+body.dark-mode.login-page .custom-select {
+  background-color: rgba(11, 7, 22, 0.72) !important;
+  color: var(--k-text) !important;
+  border-color: var(--k-border-2) !important;
+}
+body.dark-mode.login-page .form-control:focus {
+  background-color: rgba(11, 7, 22, 0.9) !important;
+  border-color: var(--k-brand-rain) !important;
+  box-shadow: 0 0 0 0.2rem rgba(79, 227, 208, 0.18) !important;
 }

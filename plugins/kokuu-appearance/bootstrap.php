@@ -229,9 +229,11 @@ return function ($plugin) {
     Hook::addScriptFileToPage($plugin->assets('shell.js'), ['*']);
 
     // 后台外壳重建（侧栏悬浮、内容区重排、顶栏玻璃化）
+    // auth/* 也纳入：登录页没有顶栏，ensureDarkToggle 会补一个浮动切换按钮，
+    // 否则登录/注册页完全没有进入深色的入口（2026-11-04 用户反馈）。
     Hook::addScriptFileToPage(
         $plugin->assets('rebuild.js'),
-        ['user', 'user/*', 'admin', 'admin/*', 'skinlib', 'skinlib/*']
+        ['user', 'user/*', 'admin', 'admin/*', 'skinlib', 'skinlib/*', 'auth/*']
     );
 
     /*
@@ -265,9 +267,17 @@ return function ($plugin) {
     Event::listen(RenderingHeader::class, function ($event) {
         $config = kokuu_appearance_config();
         if (request()->path() === '/') {
-            $config['featured_skins'] = \App\Models\Texture::query()
+            /*
+             * 每次访问随机挑选 3 款公开皮肤，避免首页长期只展示同样三张。
+             * 先取主键再回表，比 orderByRaw('RAND()') 便宜；不足 3 条时
+             * 退化为全部，页面在 0 条时会自行隐藏精选区。
+             */
+            $pool = \App\Models\Texture::query()
                 ->where('public', true)->whereIn('type', ['steve', 'alex'])
-                ->orderByDesc('upload_at')->limit(3)->get(['tid', 'name', 'type'])
+                ->pluck('tid');
+            $picked = $pool->count() > 3 ? $pool->random(3)->all() : $pool->all();
+            $config['featured_skins'] = \App\Models\Texture::query()
+                ->whereIn('tid', $picked)->get(['tid', 'name', 'type'])
                 ->map(fn ($texture) => ['id' => $texture->tid, 'name' => $texture->name,
                     'model' => $texture->type === 'alex' ? 'Alex' : 'Steve'])->all();
         }

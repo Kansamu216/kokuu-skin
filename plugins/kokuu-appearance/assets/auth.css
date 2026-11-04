@@ -16,9 +16,16 @@
 body.login-page {
   font-family: var(--k-font-sans);
   min-height: 100vh;
-  background:
-    radial-gradient(120% 90% at 15% 0%, color-mix(in srgb, var(--k-brand-rain) 9%, transparent) 0%, transparent 55%),
-    radial-gradient(110% 80% at 85% 100%, color-mix(in srgb, var(--k-brand-lilac) 11%, transparent) 0%, transparent 55%),
+  background: radial-gradient(
+      120% 90% at 15% 0%,
+      color-mix(in srgb, var(--k-brand-rain) 9%, transparent) 0%,
+      transparent 55%
+    ),
+    radial-gradient(
+      110% 80% at 85% 100%,
+      color-mix(in srgb, var(--k-brand-lilac) 11%, transparent) 0%,
+      transparent 55%
+    ),
     var(--k-bg) !important;
   background-attachment: fixed;
   transition: background var(--k-dur-slow) var(--k-ease);
@@ -32,14 +39,14 @@ body.login-page {
   height: 100%;
   z-index: 0;
   pointer-events: none;
-  opacity: .45;
+  opacity: 0.45;
 }
 .kokuu-auth-noise {
   position: fixed;
   inset: 0;
   z-index: 1;
   pointer-events: none;
-  opacity: .045;
+  opacity: 0.045;
   mix-blend-mode: multiply;
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
 }
@@ -56,18 +63,23 @@ body.login-page {
 
 /* 只写 from，避免残留 transform 造成层叠上下文 */
 @keyframes kAuthIn {
-  from { opacity: 0; translate: 0 18px; }
+  from {
+    opacity: 0;
+    translate: 0 18px;
+  }
 }
 
 /* ---------- 品牌行 ---------- */
-.login-logo { margin-bottom: var(--k-s-5); }
+.login-logo {
+  margin-bottom: var(--k-s-5);
+}
 .login-logo a {
   display: inline-flex;
   align-items: center;
   gap: var(--k-s-3);
   font-size: 22px;
   font-weight: var(--k-fw-black);
-  letter-spacing: -.02em;
+  letter-spacing: -0.02em;
   color: var(--k-text);
   text-decoration: none;
 }
@@ -77,18 +89,24 @@ body.login-page {
   image-rendering: pixelated;
   border-radius: var(--k-r-xs);
 }
-.kokuu-accent { color: var(--k-brand-rain); }
+.kokuu-accent {
+  color: var(--k-brand-rain);
+}
 
-/* ---------- 卡片本体：玻璃拟态 ---------- */
+/* ---------- 卡片本体 ----------
+   ⚠️ 这里**不能用 backdrop-filter**：
+   按 CSS 规范，backdrop-filter 会让元素成为 fixed 定位的包含块，
+   于是 reCAPTCHA 的 .grecaptcha-badge（position:fixed，本应贴浏览器
+   右下角）被锚定到这张卡片上，跑到容器内部与注册按钮重叠。
+   （2026-11-05 线上实测：卡片 computed backdrop-filter 为
+    saturate(1.8) blur(20px)，徽标 rect 落在 x=864/y=726 的卡片区域内。）
+   用高不透明度实色 + 柔和阴影替代玻璃效果，观感接近且不改变定位基准。 */
 .card {
-  background: color-mix(in srgb, var(--k-surface) 92%, transparent);
+  background: color-mix(in srgb, var(--k-surface) 97%, transparent);
   border: 1px solid var(--k-border-2);
   border-radius: var(--k-r-xl);
-  box-shadow:
-    var(--k-elev-3),
+  box-shadow: var(--k-elev-3),
     inset 0 1px 0 color-mix(in srgb, #fff 60%, transparent);
-  backdrop-filter: saturate(180%) blur(20px);
-  -webkit-backdrop-filter: saturate(180%) blur(20px);
   overflow: hidden;
 }
 
@@ -114,8 +132,7 @@ body.login-page {
   background: var(--k-surface-2);
   border: 1.5px solid var(--k-border);
   border-radius: var(--k-r-md);
-  transition:
-    border-color var(--k-dur-fast) var(--k-ease),
+  transition: border-color var(--k-dur-fast) var(--k-ease),
     background var(--k-dur-fast) var(--k-ease),
     box-shadow var(--k-dur-fast) var(--k-ease),
     translate var(--k-dur-fast) var(--k-ease);
@@ -133,8 +150,12 @@ body.login-page {
   border-color: var(--k-border);
   border-radius: var(--k-r-md) 0 0 var(--k-r-md);
 }
-.input-group .form-control { border-radius: 0 var(--k-r-md) var(--k-r-md) 0; }
-.mb-3 { margin-bottom: var(--k-s-4) !important; }
+.input-group .form-control {
+  border-radius: 0 var(--k-r-md) var(--k-r-md) 0;
+}
+.mb-3 {
+  margin-bottom: var(--k-s-4) !important;
+}
 
 /* 字段依次入场 */
 .login-card-body .form-group,
@@ -143,16 +164,27 @@ body.login-page {
   animation: kAuthField var(--k-dur-slow) var(--k-ease-out) both;
 }
 .login-card-body .form-group:nth-child(1),
-.login-card-body .mb-3:nth-child(1) { animation-delay: .04s; }
+.login-card-body .mb-3:nth-child(1) {
+  animation-delay: 0.04s;
+}
 .login-card-body .form-group:nth-child(2),
-.login-card-body .mb-3:nth-child(2) { animation-delay: .09s; }
+.login-card-body .mb-3:nth-child(2) {
+  animation-delay: 0.09s;
+}
 .login-card-body .form-group:nth-child(3),
-.login-card-body .mb-3:nth-child(3) { animation-delay: .14s; }
-.login-card-body .form-group:nth-child(n+4),
-.login-card-body .mb-3:nth-child(n+4) { animation-delay: .19s; }
+.login-card-body .mb-3:nth-child(3) {
+  animation-delay: 0.14s;
+}
+.login-card-body .form-group:nth-child(n + 4),
+.login-card-body .mb-3:nth-child(n + 4) {
+  animation-delay: 0.19s;
+}
 
 @keyframes kAuthField {
-  from { opacity: 0; translate: 0 8px; }
+  from {
+    opacity: 0;
+    translate: 0 8px;
+  }
 }
 
 /* ---------- 主按钮 ---------- */
@@ -169,8 +201,7 @@ body.login-page {
   border: none;
   border-radius: var(--k-r-pill);
   box-shadow: var(--k-elev-2);
-  transition:
-    box-shadow var(--k-dur-base) var(--k-ease),
+  transition: box-shadow var(--k-dur-base) var(--k-ease),
     translate var(--k-dur-base) var(--k-ease),
     filter var(--k-dur-base) var(--k-ease);
 }
@@ -179,9 +210,13 @@ body.login-page {
   color: #fff;
   filter: brightness(1.06) saturate(1.05);
   translate: 0 -2px;
-  box-shadow: var(--k-elev-3), 0 12px 30px -12px color-mix(in srgb, var(--k-brand-rain) 70%, transparent);
+  box-shadow: var(--k-elev-3),
+    0 12px 30px -12px color-mix(in srgb, var(--k-brand-rain) 70%, transparent);
 }
-.btn-primary:active { translate: 0 0; scale: .99; }
+.btn-primary:active {
+  translate: 0 0;
+  scale: 0.99;
+}
 
 /* ---------- 链接 ---------- */
 .login-card-body a,
@@ -192,31 +227,51 @@ body.login-page {
   text-decoration: none;
   transition: color var(--k-dur-fast) var(--k-ease);
 }
-.login-card-body a:hover { color: var(--k-text); }
+.login-card-body a:hover {
+  color: var(--k-text);
+}
 
 /* ---------- 辅助文字 ---------- */
 .login-box .small,
-.login-card-body .small { color: var(--k-text-3); }
+.login-card-body .small {
+  color: var(--k-text-3);
+}
 
 /* ---------- 深色态 ---------- */
 body.dark-mode.login-page {
-  background:
-    radial-gradient(120% 90% at 15% 0%, color-mix(in srgb, var(--k-brand-rain) 14%, transparent) 0%, transparent 55%),
-    radial-gradient(110% 80% at 85% 100%, color-mix(in srgb, var(--k-brand-lilac) 16%, transparent) 0%, transparent 55%),
+  background: radial-gradient(
+      120% 90% at 15% 0%,
+      color-mix(in srgb, var(--k-brand-rain) 14%, transparent) 0%,
+      transparent 55%
+    ),
+    radial-gradient(
+      110% 80% at 85% 100%,
+      color-mix(in srgb, var(--k-brand-lilac) 16%, transparent) 0%,
+      transparent 55%
+    ),
     var(--k-bg) !important;
 }
 
 /* ---------- 无障碍 ---------- */
 @media (prefers-reduced-motion: reduce) {
-  .login-box, .login-card-body > div, .login-card-body .form-group, .login-card-body .mb-3 {
+  .login-box,
+  .login-card-body > div,
+  .login-card-body .form-group,
+  .login-card-body .mb-3 {
     animation: none !important;
   }
-  .form-control:focus, .btn-primary:hover { translate: none; }
+  .form-control:focus,
+  .btn-primary:hover {
+    translate: none;
+  }
 }
 
 /* ---------- 窄屏 ---------- */
 @media (max-width: 480px) {
-  .login-box { margin-top: 4vh; }
-  .login-card-body { padding: var(--k-s-6) var(--k-s-5); }
+  .login-box {
+    margin-top: 4vh;
+  }
+  .login-card-body {
+    padding: var(--k-s-6) var(--k-s-5);
+  }
 }
-

@@ -208,24 +208,17 @@
       if (ev) {
         ev.preventDefault()
       }
-      var isDark = document.body.classList.toggle('dark-mode')
+      /* 统一走 theme-sync：localStorage + body.dark-mode + 服务端回写。
+         这样首页切到夜间后，进入皮肤库仍是夜间。 */
+      var isDark
+      if (window.KokuuTheme) {
+        isDark = window.KokuuTheme.toggle() === 'void'
+      } else {
+        isDark = document.body.classList.toggle('dark-mode')
+      }
       var icon = this.querySelector('i')
       if (icon) {
         icon.className = 'fas fa-' + (isDark ? 'moon' : 'sun')
-      }
-      try {
-        fetch(base + '/user/dark-mode', {
-          method: 'PUT',
-          credentials: 'same-origin',
-          headers: {
-            'X-Requested-With': 'XMLHttpRequest',
-            'X-CSRF-TOKEN':
-              (document.querySelector('meta[name="csrf-token"]') || {})
-                .content || '',
-          },
-        }).catch(function () {})
-      } catch (e) {
-        /* 忽略 */
       }
     }
 

@@ -36,6 +36,10 @@
   }
 
   function currentTheme() {
+    // theme-sync.js 是全站唯一真相源；它未加载时退回本地读取。
+    if (window.KokuuTheme) {
+      return window.KokuuTheme.get()
+    }
     try {
       var saved = localStorage.getItem(THEME_KEY)
       if (saved === 'void' || saved === 'paper') return saved
@@ -50,10 +54,16 @@
     if (root) {
       root.classList.toggle('kokuu-void', theme === 'void')
     }
-    try {
-      localStorage.setItem(THEME_KEY, theme)
-    } catch (e) {
-      /* 忽略 */
+    // 统一走 theme-sync：写 localStorage + body.dark-mode + 服务端回写，
+    // 保证跳到皮肤库等页面时仍是同一主题。
+    if (window.KokuuTheme) {
+      window.KokuuTheme.set(theme, true)
+    } else {
+      try {
+        localStorage.setItem(THEME_KEY, theme)
+      } catch (e) {
+        /* 忽略 */
+      }
     }
     updateToggleLabel(theme)
   }

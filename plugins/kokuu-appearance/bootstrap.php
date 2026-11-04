@@ -228,6 +228,13 @@ return function ($plugin) {
     // 全站外壳统一
     Hook::addScriptFileToPage($plugin->assets('shell.js'), ['*']);
 
+    /*
+     * 主题同步：必须最先执行（尽早给 body 打 dark-mode，避免浅色闪屏）。
+     * 以 localStorage 的 kokuu_theme 为唯一真相源，解决「首页切夜间、
+     * 点进皮肤库仍是浅色」的问题。
+     */
+    Hook::addScriptFileToPage($plugin->assets('theme-sync.js'), ['*']);
+
     // 后台外壳重建（侧栏悬浮、内容区重排、顶栏玻璃化）
     // ⚠️ 不要注入 auth/*：登录/注册是独立布局，套用后台外壳规则会让
     //    卡片、按钮与 reCAPTCHA 错位重叠（2026-11-05 线上复现）。

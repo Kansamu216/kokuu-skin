@@ -229,11 +229,12 @@ return function ($plugin) {
     Hook::addScriptFileToPage($plugin->assets('shell.js'), ['*']);
 
     // 后台外壳重建（侧栏悬浮、内容区重排、顶栏玻璃化）
-    // auth/* 也纳入：登录页没有顶栏，ensureDarkToggle 会补一个浮动切换按钮，
-    // 否则登录/注册页完全没有进入深色的入口（2026-11-04 用户反馈）。
+    // ⚠️ 不要注入 auth/*：登录/注册是独立布局，套用后台外壳规则会让
+    //    卡片、按钮与 reCAPTCHA 错位重叠（2026-11-05 线上复现）。
+    //    登录页的深浅色由 auth.js 直接继承首页偏好，无需单独按钮。
     Hook::addScriptFileToPage(
         $plugin->assets('rebuild.js'),
-        ['user', 'user/*', 'admin', 'admin/*', 'skinlib', 'skinlib/*', 'auth/*']
+        ['user', 'user/*', 'admin', 'admin/*', 'skinlib', 'skinlib/*']
     );
 
     /*

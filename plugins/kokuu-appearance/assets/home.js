@@ -108,7 +108,8 @@
       file: 'hero-fantasy-mc-3.webp',
       name: '林间秘境',
       tag: 'JUNGLE',
-      align: 'right',
+      // 三张统一走左侧文案；不再让第三张单独放右边。
+      align: 'left',
     },
   ]
 

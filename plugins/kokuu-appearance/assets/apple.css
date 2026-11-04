@@ -1028,41 +1028,7 @@ body.hold-transition .main-footer[data-kokuu-year='1'] #copyright-text {
 }
 
 /* =========================================================
-   登录页深色切换按钮（login-page 无顶栏，rebuild.js 动态插入）
-   ========================================================= */
-.kokuu-dark-fab {
-  position: fixed;
-  top: 18px;
-  right: 18px;
-  z-index: 1080;
-  width: 40px;
-  height: 40px;
-  display: grid;
-  place-items: center;
-  font-size: 15px;
-  color: #6b6483;
-  background: rgba(255, 255, 255, 0.82);
-  border: 1px solid rgba(43, 31, 82, 0.14);
-  border-radius: 50%;
-  cursor: pointer;
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  transition: color 0.18s ease, background 0.18s ease, border-color 0.18s ease;
-}
-.kokuu-dark-fab:hover {
-  color: #241a45;
-  border-color: rgba(43, 31, 82, 0.28);
-}
-body.dark-mode .kokuu-dark-fab {
-  color: #edeaff;
-  background: rgba(23, 17, 43, 0.86);
-  border-color: rgba(167, 139, 250, 0.28);
-}
-body.dark-mode .kokuu-dark-fab:hover {
-  border-color: rgba(167, 139, 250, 0.5);
-}
-
-/* 深色下输入框必须是「深底 + 浅字」；先前出现浅底浅字（不可读） */
+   /* 深色下输入框必须是「深底 + 浅字」；先前出现浅底浅字（不可读） */
 body.dark-mode input.form-control,
 body.dark-mode textarea.form-control,
 body.dark-mode select.form-control,

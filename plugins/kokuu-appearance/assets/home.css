@@ -1562,3 +1562,58 @@ body {
     display: none;
   }
 }
+
+/* =========================================================
+   右下角控件避让（2026-11-05）
+   场景标签（.kokuu-shot-cap）与轮播圆点（.kokuu-bg-dots）
+   之前都定位在右下角，直接叠在一起。现在：
+     · 场景标签留在右下
+     · 圆点移到左下，和暂停按钮分处对角
+   三张轮播的文案统一靠左，不再有单独放右侧的第三张。
+   ========================================================= */
+.kokuu-root .kokuu-shot-cap {
+  left: auto;
+  right: 18px;
+  bottom: 16px;
+  max-width: calc(100% - 180px);
+}
+.kokuu-root .kokuu-bg-dots {
+  left: 18px;
+  right: auto;
+  bottom: 20px;
+  padding: 0;
+  gap: 6px;
+}
+.kokuu-root .kokuu-bg-dot {
+  min-width: 10px;
+  min-height: 10px;
+  width: 10px;
+  height: 10px;
+}
+.kokuu-root .kokuu-bg-dot.is-on {
+  width: 22px;
+}
+/* 第三张也靠左后，右侧不再需要反向渐变遮罩 */
+.kokuu-align-right .kokuu-shot::after {
+  background: linear-gradient(
+      90deg,
+      rgba(18, 12, 34, 0.72) 0%,
+      rgba(18, 12, 34, 0.5) 38%,
+      rgba(18, 12, 34, 0.08) 78%,
+      transparent 100%
+    ),
+    linear-gradient(0deg, rgba(18, 12, 34, 0.38) 0%, transparent 38%);
+}
+@media (max-width: 640px) {
+  .kokuu-root .kokuu-shot-cap {
+    left: 14px;
+    right: auto;
+    bottom: 14px;
+    max-width: calc(100% - 28px);
+  }
+  .kokuu-root .kokuu-bg-dots {
+    left: auto;
+    right: 14px;
+    bottom: 14px;
+  }
+}

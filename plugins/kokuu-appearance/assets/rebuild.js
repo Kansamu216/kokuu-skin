@@ -243,22 +243,10 @@
     }
 
     /*
-     * 登录 / 注册 / 找回密码页（layout-top-nav 之外的 login-page）
-     * 完全没有顶栏，上面那条路径会直接 return → 用户没有任何入口切深色。
-     * 这里补一个固定定位的圆形按钮，复用同一套切换与持久化逻辑。
+     * 登录/注册页不再补按钮：它们直接继承首页的深浅色偏好（见 auth.js）。
+     * 保留这个分支仅作防御——若将来某页既无顶栏又需要入口，可在此扩展。
      */
-    if (!document.querySelector('.login-page')) {
-      return
-    }
-    var floating = document.createElement('button')
-    floating.type = 'button'
-    floating.id = 'toggle-dark-mode'
-    floating.className = 'kokuu-dark-fab'
-    floating.title = '切换深色模式'
-    floating.setAttribute('aria-label', '切换深色模式')
-    floating.innerHTML = '<i class="fas fa-sun" aria-hidden="true"></i>'
-    document.body.appendChild(floating)
-    floating.addEventListener('click', toggle)
+    return
   }
 
   /* 内容区整体进场动画（motion.css 的 kokuuApplePageIn）同样会残留
@@ -288,6 +276,19 @@
 
   function mount() {
     try {
+      /*
+       * 登录 / 注册 / 找回密码页是独立布局（login-page），没有侧栏、
+       * 内容区卡片和 AdminLTE 外壳。此前把 rebuild.js 注入 auth/* 后，
+       * markBody() 给 body 加上 kokuu-apple，激活了 apple.css 里
+       * 面向后台的外壳规则 → 卡片/按钮/验证码错位重叠（2026-11-05 反馈）。
+       *
+       * 因此这些页面**只补深色切换按钮**，其余外壳重建一律跳过。
+       */
+      if (document.querySelector('.login-page')) {
+        ensureDarkToggle()
+        return
+      }
+
       markBody()
       initSidebar()
       settlePageIn()
